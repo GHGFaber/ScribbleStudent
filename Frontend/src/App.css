@@ -1,42 +1,328 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+@font-face {
+  font-family: "Montserrat";
+  src: url("../fonts/Montserrat/Montserrat-VariableFont_wght.ttf");
+}
+
+@font-face {
+  font-family: "Montserrat Italic";
+  src: url("../fonts/Montserrat/Montserrat-Italic-VariableFont_wght.ttf");
+}
+
+.purple-nav {
+  background-color: #9090ff;
+  top: 0;
+  width: 100%;
+  height: 100px;
 }
 
 .logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+  width: 225px;
+  height: auto;
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.ctr {
+  width: 80%;
+  height: 100px;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+.nav-left {
+  margin: auto;
+}
+.nav-right {
+  text-align: right;
+  margin: auto;
+}
+.login-button {
+  align-items: right;
+  padding: 10px 40px 10px 40px;
+  color: #9090ff;
+  background-color: #ffff90;
+  border: none;
+  border-radius: 30px;
 }
 
-.card {
-  padding: 2em;
+.main-home {
+  background-image: url("images/scrib_bkg.png");
+  background-size: 100%;
+  width: 100%;
+  height: 900px;
+  text-align: center;
 }
 
-.read-the-docs {
-  color: #888;
+.main-login {
+  background-image: url("images/scrib_bkg2.png");
+  background-size: 100%;
+  width: 100%;
+  height: 900px;
+  text-align: center;
+}
+
+.main-create {
+  background-image: url("images/scrib_bkg2.png");
+  background-size: 100%;
+  width: 100%;
+  height: 900px;
+  text-align: center;
+}
+
+.login-panel {
+  padding: 10px 75px 10px 75px;
+  color: #ffff90;
+  background-color: #9090ff;
+  border: none;
+  /*resize: none; */
+  position: fixed;
+  border-radius: 30px;
+}
+
+.create-panel {
+  padding: 10px 75px 10px 75px;
+  color: #ffff90;
+  background-color: #9090ff;
+  border: none;
+  /*resize: none; */
+  position: fixed;
+  border-radius: 30px;
+}
+
+#uname-text, #ps-text {
+  text-align: left;
+  margin-bottom: 0px;
+  padding: 0px 0px 0px 0px;
+}
+
+#uname-create-text, #ps-create-text, #ps-confirm-text {
+  text-align: left;
+  margin-bottom: 0px;
+  padding: 0px 0px 0px 0px;
+}
+
+.cr-in {
+  width: 100%;
+}
+
+.center {
+  top: 70%;
+  left: 50%;
+  margin: auto;
+  position: absolute;
+  transform: translate(-50%, -50%);
+}
+
+.center-2 {
+  top: 50%;
+  left: 50%;
+  margin: auto;
+  position: absolute;
+  transform: translate(-50%, -50%);
+}
+
+.intro h1 {
+  margin: 0;
+  font-weight: bold;
+}
+
+.intro button {
+  margin: 20px;
+}
+
+.dark-button {
+  padding: 10px 150px 10px 150px;
+  color: #ffff90;
+  background-color: #9090ff;
+  border: none;
+  /*resize: none;*/
+  /*position: fixed;*/
+  border-radius: 30px;
+}
+
+.home-1 {
+  background-color: #c3c3ff;
+  background-size: 100%;
+  width: 100%;
+  height: 900px;
+}
+.home-2 {
+  background-color: #9090ff;
+  background-size: 100%;
+  width: 100%;
+  height: 900px;
+}
+.home-3 {
+  background-color: #c3c3ff;
+  background-size: 100%;
+  width: 100%;
+  height: 900px;
+}
+
+
+.disp-left-1, .disp-right-3 {
+  color: #414166;
+}
+
+.disp-left-1 h1 {
+  font-weight: bold;
+  padding-bottom: 10px;
+}
+
+.disp-right-3 h1 {
+  font-weight: bold;
+  padding-bottom: 10px;
+}
+
+.disp-left-2 {
+  color: #ffff90;
+}
+
+.disp-left-2 h1 {
+  font-weight: bold;
+  padding-bottom: 10px;
+}
+
+.the-container {
+  width: 100%;
+  height: 900px;
+}
+
+#pyr {
+  max-width: 100%;
+  max-height: 100%;
+}
+
+#c-ex, #n-ex {
+  max-width: 100%;
+  max-height: 100%;
+}
+
+body, .App {
+  color: #414166;
+  background-color: #c3c3ff;
+  font-family: "Montserrat", sans-serif;
+}
+
+.column1, .column3 {
+  width: 100%;
+  height: 900px;
+  background-size: 100%;
+  background-color: #9b9bcc;
+}
+
+.sidebar-content {
+  padding: 10px 0px 0px 0px;
+}
+
+.sidebar-content li {
+  padding: 10px 10px 10px 10px;
+}
+.column2 {
+  width: 100%;
+  height: 900px;
+  background-size: 100%;
+  background-color: #c3c3ff;
+}
+
+.the-chat-div {
+  padding: 0px 0px 0px 0px;
+  width: 100% !important;
+  background-color: #c3c3ff !important;
+  color: #414166;
+}
+
+.chat-panel {
+  border-bottom: 1px solid #9090ff;
+}
+.nav-items {
+  list-style-type: none;
+  padding: 20px 0px 0px 90px;
+}
+
+.the-nav {
+  background-color: #9090ff;
+  height: 50px;
+}
+.nav-items li {
+  display: inline;
+  padding: 20px 30px 10px 30px;
+}
+
+.sidebar-content {
+  list-style-type: none;
+}
+
+.scrib-emblem {
+  padding: 5px 0px 0px 10px;
+  height: 45px;
+  width: auto;
+  float: left;
+}
+
+.container-body p {
+  padding: 0px 0px 0px 0px;
+  margin: 2px;
+}
+
+.user-text {
+  font-weight: bold;
+}
+
+#welcome-text {
+  margin-bottom: 0px;
+}
+
+#welcome-create-text {
+  margin-bottom: 0px;
+}
+
+.spacer-0 {
+  height: 25px;
+}
+
+#log-page-button {
+  padding: 10px 40px 10px 40px;
+  color: #9090ff;
+  background-color: #ffff90;
+  border: none;
+  border-radius: 30px;
+}
+
+#create-account-button {
+  padding: 10px 40px 10px 40px;
+  color: #9090ff;
+  background-color: #ffff90;
+  border: none;
+  border-radius: 30px;
+}
+
+#the-textarea {
+  /* position: absolute; */
+  bottom: 0;
+}
+
+
+#txt {
+  width: 100%;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+}
+
+#send-button {
+  width: 100%;
+  color: #9090ff;
+  background-color: #ffff90;
+  border: none;
+  border-radius: 30px;
+}
+
+#note-window {
+  height: 100%;
+}
+
+#note-text {
+  width: 100%;
+  height: 100%;
+}
+
+.err-msg-1, .err-msg-2 {
+  color: #ff0000;
+  display: none;
 }
