@@ -1,10 +1,9 @@
 <!DOCTYPE html>
+<html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Scribble | Log In</title>
-    <link href="../node_modules/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="App.css" rel="stylesheet">
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -19,68 +18,69 @@
 
         .login-panel {
             background-color: #fff;
-            padding: 30px;
+            padding: 40px;
             border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             text-align: center;
+            margin-top: 20px;
         }
 
-        #welcome-text {
-            font-size: 24px;
+        h1 {
+            text-align: center;
             margin-bottom: 20px;
         }
 
-        p {
-            margin: 10px 0;
-            font-size: 16px;
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
         }
 
         input[type="text"],
         input[type="password"],
-        button {
+        input[type="submit"] {
             width: 100%;
             padding: 10px;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
             border-radius: 4px;
             border: 1px solid #ccc;
             box-sizing: border-box;
             font-size: 16px;
         }
 
-        button {
-            background-color: #007bff;
+        input[type="submit"] {
+            background-color: #4caf50;
             color: #fff;
             cursor: pointer;
             transition: background-color 0.3s ease;
         }
 
-        button:hover {
-            background-color: #0056b3;
+        input[type="submit"]:hover {
+            background-color: #45a049;
         }
 
         a {
             text-decoration: none;
-            color: #007bff;
+            color: #4c56af;
             font-size: 14px;
         }
     </style>
-    <script src="scrib.js"></script>
 </head>
 <body>
     <div class="main-login">
         <div class="center-2 login-panel">
-            <h3 id="welcome-text">Welcome back!</h3>
+            <h1>Welcome back!</h1>
             <form action="/login" method="post">
-            <p id="uname-text">Username</p>
-            <!-- Needed to make sure that the input boxes were named
-                 to have express grab the data from them after submission -->
-            <input type="text" id="uname-input" name="username"/>
-            <p id="ps-text">Password</p>
-            <input type="password" id="ps-input" name="password"/>
-            <!-- <button id="log-page-button" onclick="">Log In</button> -->
-            <input type="submit" value="Submit">
-            <a href="create_account.html">No account? Create one!</a>
-            <form>
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username"/>
+                
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password"/>
+                
+                <input type="submit" value="Log In">
+                <br>
+                <a href="acc.html">No account? Create one!</a>
+            </form>
         </div>
     </div>
 </body>
