@@ -322,6 +322,10 @@ body, .App {
   height: 100%;
 }
 
+#the-notes {
+  background-color: #ffffff;
+}
+
 .err-msg-1, .err-msg-2 {
   color: #ff0000;
   display: none;
