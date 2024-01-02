@@ -234,6 +234,7 @@ body, .App {
 .nav-items {
   list-style-type: none;
   padding: 20px 0px 0px 90px;
+  display: inline-block;
 }
 
 .the-nav {
@@ -324,9 +325,91 @@ body, .App {
 
 #the-notes {
   background-color: #ffffff;
+  padding: 0px 0px 0px 0px;
+}
+
+.the-note-section {
+  padding-left: 0px !important;
+  padding-right: 0px !important;
 }
 
 .err-msg-1, .err-msg-2 {
   color: #ff0000;
   display: none;
+}
+.nav-items li {
+  padding: 0px 10px 0px 10px;
+}
+.nav-items li label {
+  border-radius: 10px 10px 0 0;
+  padding: 10px 35px 10px 35px;
+}
+
+.nav-items li:nth-child(1) label {
+  background-color: #c95757;
+}
+
+.nav-items li:nth-child(1) label:hover {
+  background-color: #ba8787;
+}
+
+.nav-items li:nth-child(2) label {
+  background-color: #c98557;
+}
+
+.nav-items li:nth-child(2) label:hover {
+  background-color: #baa087;
+}
+
+.nav-items li:nth-child(3) label {
+  background-color: #c9c357;
+}
+
+.nav-items li:nth-child(3) label:hover {
+  background-color: #bab487;
+}
+
+.nav-items li:nth-child(4) label {
+  background-color: #57c97b;
+}
+
+.nav-items li:nth-child(4) label:hover {
+  background-color: #87ba87;
+}
+
+.nav-items li:nth-child(5) label {
+  background-color: #5766c9;
+}
+
+.nav-items li:nth-child(5) label:hover {
+  background-color: #878dba;
+}
+
+.nav-items li:nth-child(6) label {
+  background-color: #8557c9;
+}
+
+.nav-items li:nth-child(6) label:hover {
+  background-color: #a187ba;
+}
+
+.nav-items li:nth-child(7) label {
+  background-color: #bf57c9;
+}
+
+.nav-items li:nth-child(7) label:hover {
+  background-color: #b487ba;
+}
+
+.sign-out-button {
+  position: absolute;
+  display: inline-flex;
+  background-color: #ffff90;
+  color: #9090ff;
+  text-align: right;
+  top: 10px;
+  right: 20px;
+  border-radius: 30px;
+  padding: 5px 10px 5px 10px;
+  border: none;
 }

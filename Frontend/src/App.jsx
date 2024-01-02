@@ -30,6 +30,21 @@ function App() {
     }
   ]);
 
+  const [classes, setClasses] = useState([
+    {
+      classInSchoolName: "CHEM-225"
+    },
+    {
+      classInSchoolName: "COMP-300"
+    },
+    {
+      classInSchoolName: "COMP-345"
+    },
+    {
+      classInSchoolName: "ENGL-101"
+    }
+  ]);
+
   return (
     <BrowserRouter>
       <div className="App">
@@ -37,8 +52,8 @@ function App() {
             <Route index element={<Home/>}/>
             <Route path="login-page" element={<LoginPage/>}/>
             <Route path="create-account" element={<CreateAccount/>}/>
-            <Route path="notebook" element={<Notebook/>}/>
-            <Route path="chatroom" element={<Chatroom chats={chats}/>}/>   
+            <Route path="notebook" element={<Notebook classes={classes}/>}/>
+            <Route path="chatroom" element={<Chatroom chats={chats} classes={classes}/>}/>   
         </Routes>
       </div>
     </BrowserRouter>

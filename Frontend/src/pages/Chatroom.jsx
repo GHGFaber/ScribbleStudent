@@ -1,7 +1,7 @@
 import Navbar from "../components/Navbar.jsx";
 import Sidebar from "../components/Sidebar.jsx";
 
-function Chatroom({chats}) {
+function Chatroom({chats, classes}) {
 
     function show_chats() {
         return (
@@ -19,7 +19,7 @@ function Chatroom({chats}) {
     }
     return (
         <>
-            <Navbar/>
+            <Navbar classes={classes}/>
             <div className="container-fluid">
                 <div className="row no-gutters">
                     <div className="col-2 column1">
