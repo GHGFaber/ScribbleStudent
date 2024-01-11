@@ -30,14 +30,14 @@ function Notebook({classes}) {
                     <Sidebar/>
                 </div>
                 <div className="col-10 column2 the-note-section">
-                    <div id="note-window container-fluid">
+                    {/*<div id="note-window container-fluid"> */}
                     <ReactQuill
                         id="the-notes" 
                         modules={module}
                         theme="snow" 
                         value={value} 
                         onChange={setValue} />
-                    </div>
+                    {/*</div>*/}
                 </div>  
             </div> 
         </div>

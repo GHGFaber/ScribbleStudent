@@ -202,9 +202,14 @@ body, .App {
 
 .column1, .column3 {
   width: 100%;
-  height: 900px;
+  height: 800px;
   background-size: 100%;
   background-color: #9b9bcc;
+}
+
+.column1 {
+  padding-left: 0px !important;
+  padding-right: 0px !important;
 }
 
 .sidebar-content {
@@ -216,9 +221,10 @@ body, .App {
 }
 .column2 {
   width: 100%;
-  height: 900px;
+  height: 800px;
   background-size: 100%;
   background-color: #c3c3ff;
+  position: relative;
 }
 
 .the-chat-div {
@@ -297,6 +303,8 @@ body, .App {
 #the-textarea {
   /* position: absolute; */
   bottom: 0;
+  padding-left: 0px;
+  padding-right: 0px;
 }
 
 
@@ -314,9 +322,11 @@ body, .App {
   border-radius: 30px;
 }
 
+/*
 #note-window {
-  height: 100%;
+  height: 800px;
 }
+*/
 
 #note-text {
   width: 100%;
@@ -326,6 +336,7 @@ body, .App {
 #the-notes {
   background-color: #ffffff;
   padding: 0px 0px 0px 0px;
+  height: 800px;
 }
 
 .the-note-section {
@@ -412,4 +423,62 @@ body, .App {
   border-radius: 30px;
   padding: 5px 10px 5px 10px;
   border: none;
+}
+
+.active-users, .inactive-users {
+  list-style: none;
+  padding-left: 0px;
+  padding-top: 20px;
+  color: #ffff90;
+}
+
+.the-chat-form {
+  position: absolute;
+  margin-top: 10px;
+  bottom: 10px;
+  width: 936px;
+}
+
+.full-datetime {
+  font-style: italic;
+  font-size: smaller;
+  float: right;
+}
+
+.ql-container {
+  height: 756px !important;
+}
+
+.side-selection {
+  width: 100%;
+  padding: 10px 0;
+}
+
+.side-selection h5 {
+  padding-left: 12px;
+  color: #ffff90;
+}
+
+.side-selection:hover {
+  background-color: #6c6c90;
+}
+
+.side-list {
+  padding: 0px 0px 0px 0px !important;
+}
+
+.the-link:link {
+  text-decoration: none;
+}
+
+.the-link:visited {
+  text-decoration: none;
+}
+
+.the-link:hover {
+  text-decoration: none;
+}
+
+.the-link:active {
+  text-decoration: none;
 }

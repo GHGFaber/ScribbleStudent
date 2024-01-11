@@ -4,11 +4,19 @@ function Sidebar() {
         <sidebar>
             <div className="the-column">
                 <ul className="sidebar-content">
-                    <li>
-                        <Link to="/chatroom">Chatroom</Link>
+                    <li className="side-list">
+                        <Link className="the-link" to="/chatroom">
+                            <div className="side-selection">
+                                <h5>Chatroom</h5>
+                            </div>
+                        </Link>
                     </li>
-                    <li>
-                        <Link to="/notebook">Notebook</Link>
+                    <li className="side-list">
+                        <Link className="the-link" to="/notebook">
+                            <div className="side-selection">
+                                <h5>Notebook</h5>
+                            </div>
+                        </Link>
                     </li>
                 </ul>
             </div>
