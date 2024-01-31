@@ -3,8 +3,14 @@ import Sidebar from "../components/Sidebar.jsx";
 import ReactQuill from "react-quill";
 import 'react-quill/dist/quill.snow.css';
 import {useState} from "react";
-function Notebook({classes}) {
+function Notebook({classes, notePages, initData}) {
+
+    // const [initData, setInitData] = useState('');
     const [value, setValue] = useState('');
+    const temp = location.state;
+    console.log(location.state);
+
+    let currentFile = "";
     var toolbarOptions = [
         [{ 'font': [] }],
         [{ 'size': ['small', false, 'large', 'huge'] }], 
@@ -20,6 +26,18 @@ function Notebook({classes}) {
         toolbar: toolbarOptions
     };
 
+    {/* currentFile.text */}
+
+    function get_that_data(childData, initData) {
+       if (initData != '') {
+            setValue(initData.text);
+            initData = '';
+       } else {
+            setValue(temp.text);
+            console.log("get_that_data()");
+       }
+    }
+
     return (
         <>
          
@@ -27,17 +45,15 @@ function Notebook({classes}) {
          <div className="container-fluid">
             <div className="row no-gutters">
                 <div className="col-2 column1">
-                    <Sidebar/>
+                    <Sidebar parentCallback={get_that_data} notePages={notePages} initData={initData}/>
                 </div>
-                <div className="col-10 column2 the-note-section">
-                    {/*<div id="note-window container-fluid"> */}
+                <div className="col-10 column2 the-note-section">         
                     <ReactQuill
                         id="the-notes" 
                         modules={module}
                         theme="snow" 
                         value={value} 
                         onChange={setValue} />
-                    {/*</div>*/}
                 </div>  
             </div> 
         </div>

@@ -1,8 +1,17 @@
 import Navbar from "../components/Navbar.jsx";
 import Sidebar from "../components/Sidebar.jsx";
 import Userbar from "../components/Userbar.jsx";
+import {useState} from "react";
 
-function Chatroom({chats, classes, activeUsers, inactiveUsers}) {
+function Chatroom({chats, classes, activeUsers, inactiveUsers, notePages}) {
+
+    const [initData, setInitData] = useState('');
+    const [value, setValue] = useState('');
+    let temp = '';
+
+    let dummyCallback = (childData, initData) => {
+        initData = childData;
+    }
 
     function get_time(timestamp) {
         const date = new Date(timestamp);
@@ -34,7 +43,7 @@ function Chatroom({chats, classes, activeUsers, inactiveUsers}) {
             <div className="container-fluid">
                 <div className="row no-gutters">
                     <div className="col-2 column1">
-                        <Sidebar/>
+                        <Sidebar parentCallback={dummyCallback} notePages={notePages} initData={initData} temp={temp}/>
                     </div>
                     <div className="col-8 column2">
                         <div id="chat-window">

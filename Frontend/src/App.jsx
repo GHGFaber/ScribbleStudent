@@ -4,10 +4,12 @@ import LoginPage from './pages/LoginPage.jsx';
 import CreateAccount from './pages/CreateAccount.jsx';
 import Chatroom from './pages/Chatroom.jsx';
 import Notebook from './pages/Notebook.jsx';
-import {useState} from 'react';
+import {createRef, useState} from 'react';
 import {BrowserRouter, Routes, Route} from "react-router-dom";
 
 function App() {
+
+  const [initial, setInitial] = useState('');
 
   const [chats, setChats] = useState([
     {
@@ -80,6 +82,33 @@ function App() {
     }
   ]);
 
+  const [userNotes, setUserNotes] = useState([
+    {
+      title: "Notes 1",
+      filename: "notes1.txt",
+      fileID: 1234567890,
+      text: "I'm just playing games"
+    },
+    {
+      title: "Notes 2",
+      filename: "notes2.txt",
+      fileID: 9876543210,
+      text: "I know that's plastic love"
+    },
+    {
+      title: "Notes 3",
+      filename: "notes3.txt",
+      fileID: 2252252250,
+      text: "Dance to the plastic beat"
+    },
+    {
+      title: "Notes 4",
+      filename: "notes4.txt",
+      fileID: 7777777777,
+      text: "Another morning comes"
+    }
+  ]);
+
   return (
     <BrowserRouter>
       <div className="App">
@@ -87,8 +116,8 @@ function App() {
             <Route index element={<Home/>}/>
             <Route path="login-page" element={<LoginPage/>}/>
             <Route path="create-account" element={<CreateAccount/>}/>
-            <Route path="notebook" element={<Notebook classes={classes}/>}/>
-            <Route path="chatroom" element={<Chatroom chats={chats} classes={classes} activeUsers={activeUsers} inactiveUsers={inactiveUsers}/>}/>   
+            <Route path="notebook" element={<Notebook classes={classes} notePages={userNotes} initData={initial}/>}/>
+            <Route path="chatroom" element={<Chatroom chats={chats} classes={classes} activeUsers={activeUsers} inactiveUsers={inactiveUsers} notePages={userNotes}/>}/>   
         </Routes>
       </div>
     </BrowserRouter>
