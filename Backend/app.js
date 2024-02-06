@@ -89,26 +89,31 @@ app.post("/create-account", async (req, res) => {
         "Username or email already exists. Please choose a different one."
       );
     } else {
-      // Hash the password before storing it
-      const hashedPassword = await bcrypt.hash(password, 10); // 10 is the number of salt rounds
-
-      // Insert new user data (including the hashed password) into the database
-      await pool.query(
-        "INSERT INTO user (username, email, password) VALUES (?, ?, ?)",
-        [username, email, hashedPassword]
-      );
-
-      // Check if the account was successfully created by querying the database again
-      const [newUser] = await pool.query(
-        "SELECT * FROM user WHERE username = ?",
-        [username]
-      );
-
-      if (newUser.length > 0) {
-        // res.send("Account created successfully!");
-        res.send({ success: true });
+      // Check if the password meets the minimum length requirement
+      if (password.length < 8) {
+        res.send('Password must be at least 8 characters long.');
       } else {
-        res.send("Failed to create an account. Please try again.");
+        // Hash the password before storing it
+        const hashedPassword = await bcrypt.hash(password, 10); // 10 is the number of salt rounds
+
+        // Insert new user data (including the hashed password) into the database
+        await pool.query(
+          "INSERT INTO user (username, email, password) VALUES (?, ?, ?)",
+          [username, email, hashedPassword]
+        );
+
+        // Check if the account was successfully created by querying the database again
+        const [newUser] = await pool.query(
+          "SELECT * FROM user WHERE username = ?",
+          [username]
+        );
+
+        if (newUser.length > 0) {
+          // res.send("Account created successfully!");
+          res.send({ success: true });
+        } else {
+          res.send("Failed to create an account. Please try again.");
+        }
       }
     }
   } catch (error) {
