@@ -2,11 +2,8 @@
 // First is doing a pool query outside of an async function
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-//--------------------------------
-// TEST APP - by Spencer
-//--------------------------------
-
 import express from "express";
+import session from "express-session"; // create session token
 import { pool } from "./database.js"; // imported from our pool made and exportedin database.js
 import bodyParser from "body-parser";
 import path from "path";
@@ -23,6 +20,22 @@ const app = express(); // create application
 app.use(cors({ origin: "http://localhost:5173" }));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.json());
+
+// // generate secret key
+// const crypto = require('crypto');
+
+// const generateSecretKey = () => {
+//   return crypto.randomBytes(64).toString('hex');
+// };
+
+// Set up session middleware
+app.use(
+  session({
+    secret: "your-secret-key", // Replace with a secret key for session encryption
+    resave: false,
+    saveUninitialized: true,
+  })
+);
 
 const folderPath = path.join(__dirname, "..\\Frontend");
 
@@ -56,12 +69,17 @@ app.post("/login", async (req, res) => {
       res.send("Invalid username or password");
     } else {
       const hashedPassword = userData[0].password;
+      const userid = userData[0].user_id; // grab userid
 
       // Compare the entered password with the hashed password from the database
       const passwordMatch = await bcrypt.compare(password, hashedPassword);
 
       if (passwordMatch) {
-        res.send({ success: true });
+        //store userid in the session
+        req.session.userid = userid;
+        res.send({ success: true, userid });
+        // Print userid to stdout
+        //console.log("Userid:", userid);
       } else {
         res.send("Invalid username or password");
       }
@@ -69,6 +87,24 @@ app.post("/login", async (req, res) => {
   } catch (error) {
     res.status(500).send("Error checking username");
     console.error(error);
+  }
+});
+
+// Route to demonstrate session token
+app.get("/user-info", (req, res) => {
+  // Check if user is authenticated by checking if user ID is stored in session
+  if (req.session.userid) {
+    // User is authenticated, retrieve user ID from session
+    const userid = req.session.userid;
+
+    // Log user ID to stdout
+    console.log("User ID:", userid);
+    
+    // Respond with user ID
+    res.send(`User ID: ${userid}`);
+  } else {
+    // User is not authenticated
+    res.status(401).send("Unauthorized. Please log in first.");
   }
 });
 
