@@ -12,22 +12,6 @@ function Chatroom({chats, classes, activeUsers, inactiveUsers}) {
         return timeString;
     }
 
-    // function show_chats() {
-    //     return (
-    //         chats.map(chat => (
-    //             <div className="chat-panel">
-    //                 <div className="container-fluid the-chat-div rounded-0">
-    //                     <div className="container-body">
-    //                         <p className="full-datetime">{get_time(chat.timestamp)}</p>
-    //                         <p className="user-text">{chat.username}</p>
-    //                         <p className="text-content">{chat.text}</p>
-    //                     </div>
-    //                 </div>     
-    //             </div>      
-    //         ))
-    //     )
-    // }
-
     function show_chats() {
         return (
             chats.map((chat, index) => (

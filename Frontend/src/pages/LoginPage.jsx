@@ -43,11 +43,12 @@ function LoginPage() {
             <label id="ps-text">Password</label>
             <br />
             <input name="password" type="password" id="password" />
-          </form>
+          
           <div className="spacer-0"></div>
           <button id="log-page-button" onClick={handleLogin}>
             Log In
           </button>
+          </form>
           <div className="spacer-0"></div>
           <Link to="/create-account">No account? Create one!</Link>
           <div className="spacer-0"></div>

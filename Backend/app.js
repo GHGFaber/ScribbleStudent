@@ -18,6 +18,7 @@ const __dirname = dirname(__filename);
 const app = express(); // create application
 
 app.use(cors({ origin: "http://localhost:5173" }));
+// app.use(cors({ origin: "http://localhost:5173", credentials: true }));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.json());
 
@@ -51,6 +52,38 @@ app.get("/create-account", (req, res) => {
   res.sendFile(htmlPath);
 });
 
+//------------------------------------------------------------------------------------------------------
+// Route to retrieve user information based on session data
+app.get("/user-info", async (req, res) => {
+  try {
+    // Check if user is authenticated by checking if user ID is stored in session
+    if (req.session.userid) {
+      // User is authenticated, retrieve user ID from session
+      const userid = req.session.userid;
+      
+      // Query the database to retrieve user information based on user ID
+      const [userData] = await pool.query("SELECT * FROM user WHERE user_id = ?", [userid]);
+
+      if (userData.length === 1) {
+        // User data found, send user information to the frontend
+        res.json(userData[0]);
+      } else {
+        // User not found in the database
+        res.status(404).send("User not found");
+      }
+    } else {
+      // User is not authenticated, return unauthorized status
+      res.status(401).send("Unauthorized. Please log in first.");
+    }
+  } catch (error) {
+    // Error occurred while fetching user information
+    console.error("Error fetching user information:", error);
+    res.status(500).send("Internal server error");
+  }
+});
+//------------------------------------------------------------------------------------------------------
+
+
 // Check login credentials
 app.post("/login", async (req, res) => {
   let username = req.body.username;
@@ -68,18 +101,31 @@ app.post("/login", async (req, res) => {
       // Username not found
       res.send("Invalid username or password");
     } else {
-      const hashedPassword = userData[0].password;
+      // Grabbing user info from User table
+      const hashedPassword = userData[0].password; // grab hashed password
       const userid = userData[0].user_id; // grab userid
+      const username = userData[0].username; // grab username
+      const email = userData[0].email; // grab email
 
       // Compare the entered password with the hashed password from the database
       const passwordMatch = await bcrypt.compare(password, hashedPassword);
 
       if (passwordMatch) {
         //store userid in the session
-        req.session.userid = userid;
-        res.send({ success: true, userid });
-        // Print userid to stdout
-        //console.log("Userid:", userid);
+        req.session.userid = userid; // this stores the userid in session
+
+        // sends user info to the Frontend on submit
+        res.send({ 
+          success: true, 
+          username, 
+          email, 
+          Userid: req.session.userid, 
+          hashedPassword, 
+        }); 
+
+        // Print userid to stdout (Backend)
+        console.log("Userid:", userid);
+
       } else {
         res.send("Invalid username or password");
       }
@@ -90,23 +136,6 @@ app.post("/login", async (req, res) => {
   }
 });
 
-// Route to demonstrate session token
-app.get("/user-info", (req, res) => {
-  // Check if user is authenticated by checking if user ID is stored in session
-  if (req.session.userid) {
-    // User is authenticated, retrieve user ID from session
-    const userid = req.session.userid;
-
-    // Log user ID to stdout
-    console.log("User ID:", userid);
-    
-    // Respond with user ID
-    res.send(`User ID: ${userid}`);
-  } else {
-    // User is not authenticated
-    res.status(401).send("Unauthorized. Please log in first.");
-  }
-});
 
 // Account creation post
 app.post("/create-account", async (req, res) => {
