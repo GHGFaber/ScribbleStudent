@@ -15,9 +15,10 @@ function LoginPage() {
       const response = await axios.post("http://localhost:3000/login", {
         username: formData.current[0].value,
         password: formData.current[1].value,
+        withCredentials: true,
       });
-      console.log(response.data);
       if (response.data.success) {
+        console.log(response.data);
         // Redirect to the LoggedInComponent
         navigate("/chatroom");
       } else {

@@ -17,10 +17,26 @@ const __dirname = dirname(__filename);
 
 const app = express(); // create application
 
-app.use(cors({ origin: "http://localhost:5173" }));
-// app.use(cors({ origin: "http://localhost:5173", credentials: true }));
+// Set up session middleware
+app.set('trust proxy', 1) // trust first proxy
+app.use(
+  session({
+    secret: "your-secret-key", // Replace with a secret key for session encryption
+    resave: false,
+    saveUninitialized: true,
+    cookie: {
+      secure: false,
+      // maxAge: 60000 // 1 min
+    }
+  })
+);
+
+//app.use(cors({ origin: "http://localhost:5173" }));
+app.use(cors({ origin: "http://localhost:5173", credentials: true }));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.json());
+
+// const session = {};
 
 // // generate secret key
 // const crypto = require('crypto');
@@ -29,51 +45,57 @@ app.use(express.json());
 //   return crypto.randomBytes(64).toString('hex');
 // };
 
-// Set up session middleware
-app.use(
-  session({
-    secret: "your-secret-key", // Replace with a secret key for session encryption
-    resave: false,
-    saveUninitialized: true,
-  })
-);
+// const folderPath = path.join(__dirname, "..\\Frontend");
 
-const folderPath = path.join(__dirname, "..\\Frontend");
+// // Login
+// app.get("/login", (req, res) => {
+//   const htmlPath = path.join(__dirname, "http://localhost:5173/src/pages/LoginPage.jsx");
+//   //res.sendFile(htmlPath);
+//   res.sendFile(htmlPath);
+// });
 
-// Login
-app.get("/login", (req, res) => {
-  const htmlPath = path.join(__dirname, "src/LoginPage.jsx");
-  res.sendFile(htmlPath);
-});
+// // Account creation
+// app.get("/create-account", (req, res) => {
+//   const htmlPath = path.join(__dirname, "public/create-account.html");
+//   res.sendFile(htmlPath);
+// });
 
-// Account creation
-app.get("/create-account", (req, res) => {
-  const htmlPath = path.join(__dirname, "public/create-account.html");
-  res.sendFile(htmlPath);
-});
+// app.get('/logout', function(req, res){
+//   req.session.destroy(function(){
+//      res.send({})
+//   });
+//   res.redirect('src/LoginPage.jsx');
+// });
+
 
 //------------------------------------------------------------------------------------------------------
 // Route to retrieve user information based on session data
 app.get("/user-info", async (req, res) => {
   try {
     // Check if user is authenticated by checking if user ID is stored in session
-    if (req.session.userid) {
+    // req.session.userid
+    if (req.session) {
+      //console.log(req.session.userid);
       // User is authenticated, retrieve user ID from session
       const userid = req.session.userid;
-      
+
       // Query the database to retrieve user information based on user ID
       const [userData] = await pool.query("SELECT * FROM user WHERE user_id = ?", [userid]);
-
       if (userData.length === 1) {
         // User data found, send user information to the frontend
-        res.json(userData[0]);
+        res.json(userData);
       } else {
         // User not found in the database
         res.status(404).send("User not found");
       }
+      // res.json(userid);
+      //
+      console.log('Current Session ID:', req.sessionID);
+      //
     } else {
       // User is not authenticated, return unauthorized status
       res.status(401).send("Unauthorized. Please log in first.");
+      console.log("Unauthorized");
     }
   } catch (error) {
     // Error occurred while fetching user information
@@ -84,7 +106,7 @@ app.get("/user-info", async (req, res) => {
 //------------------------------------------------------------------------------------------------------
 
 
-// Check login credentials
+// Check login credentials (create user session)
 app.post("/login", async (req, res) => {
   let username = req.body.username;
   let password = req.body.password;
@@ -113,6 +135,10 @@ app.post("/login", async (req, res) => {
       if (passwordMatch) {
         //store userid in the session
         req.session.userid = userid; // this stores the userid in session
+        req.session.username = username;
+        // req.session.save();
+
+        console.log('Session ID:', req.sessionID);
 
         // sends user info to the Frontend on submit
         res.send({ 
@@ -126,6 +152,11 @@ app.post("/login", async (req, res) => {
         // Print userid to stdout (Backend)
         console.log("Userid:", userid);
 
+        // const sessionId = uuidv4();
+        // session[sessionId] = { username, userid };
+        // // res.set('Set-Cookie', `session=${sessionId}`);
+        // // res.send('success');
+
       } else {
         res.send("Invalid username or password");
       }
@@ -134,6 +165,21 @@ app.post("/login", async (req, res) => {
     res.status(500).send("Error checking username");
     console.error(error);
   }
+});
+
+
+// Logout (destroy session)
+app.post("/logout", (req, res) => {
+  // destroy session w/ error handling
+  console.log("Destroy Session: ", req.sessionID);
+  req.session.destroy((err) => {
+    if (err) {
+      console.error("Error destroying session:", err);
+      res.status(500).send("Error destroying session");
+    } else {
+      res.status(200).send("Session destroyed successfully");
+    }
+  });
 });
 
 
@@ -199,7 +245,7 @@ app.use((err, req, res, next) => {
   res.status(500).send("No worky ):");
 });
 
-app.use(express.json());
+// app.use(express.json());
 
 // Use async/await with the promise-based query
 async function queryDatabase() {
