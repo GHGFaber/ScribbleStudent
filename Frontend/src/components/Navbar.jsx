@@ -85,8 +85,8 @@ function Navbar({ classes }) {
           {/* </Link> */}
 
           {/* Get username from backend session and display (DONE)*/}
-          {/* Hello, {username} */}
           <button className="sign-out-button my-auto"
+              //onClick={userUpdate}
               style={{
                 right: "220px",
                 borderRadius: "5%",

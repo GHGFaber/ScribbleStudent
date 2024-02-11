@@ -208,9 +208,9 @@ app.post("/update-user-info", async (req, res) => {
   }
 });
 
-// Updates user password (*** UNFINISHED ***) (NOT WORKING YET)
+// Updates user password
 app.post("/reset-password", async (req, res) => {
-  const { oldPassword, newPassword, repeatPassword } = req.body;
+  const { oldPassword, newPassword } = req.body;
   
   try {
     // Check if user is authenticated by checking if user ID is stored in session
@@ -224,35 +224,23 @@ app.post("/reset-password", async (req, res) => {
       if (userData.length === 1) {
         // User data found, proceed with password update logic
         
-        // Check if old password, new password, and repeat password are provided
-        if (oldPassword && newPassword && repeatPassword) {
-          // Check if the old password matches the stored password hash
-          const passwordMatch = await bcrypt.compare(oldPassword, userData[0].password);
-          if (!passwordMatch) {
-            return res.status(401).send("Old password is incorrect");
-          }
-
-          // Check if the new password meets the minimum length requirement
-          if (newPassword.length < 8) {
-            return res.status(400).send('New password must be at least 8 characters long.');
-          }
-
-          // Check if the new password and repeated password match
-          if (newPassword !== repeatPassword) {
-            return res.status(400).send("New password and repeated password do not match");
-          }
-
-          // Hash the new password
-          const hashedPassword = await bcrypt.hash(newPassword, 10); // 10 is the number of salt rounds
-
-          // Update the user's password hash in the database
-          await pool.query("UPDATE user SET password = ? WHERE user_id = ?", [hashedPassword, userId]);
+        // Check if the old password matches the stored password hash
+        const passwordMatch = await bcrypt.compare(oldPassword, userData[0].password);
+        if (!passwordMatch) {
+          return res.status(401).send("Old password is incorrect");
         }
+
+        // console.log("New Password:", newPassword); //testing
+        // Hash the new password
+        const hashedPassword = await bcrypt.hash(newPassword, 10); // 10 is the number of salt rounds
+
+        // Update the user's password hash in the database
+        await pool.query("UPDATE user SET password = ? WHERE user_id = ?", [hashedPassword, userId]); 
 
         res.json({ success: true });
       } else {
         // User not found in the database
-        res.status(404).send("User not found");
+        return res.status(404).send("User not found");
       }
     } else {
       // User is not authenticated, return unauthorized status
