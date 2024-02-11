@@ -13,18 +13,6 @@ function Navbar({ classes }) {
 //-----------------------------------------------
 
   const formData = useRef(null);
-  const test = async (e) => {
-    e.preventDefault();
-    try {
-      const response = await axios.get("http://localhost:3000/user-info");
-      const { username, email, password, user_id, userType, name } 
-          = response.data[0];
-      console.log(`username: ${username} \nuserid: ${user_id}`);
-    } catch (error) {
-      console.error("Error during fetch", error);
-      //   let errorMSG = document.getElementsByClassName("err-msg-2");
-    }
-  }
   // Destroy sessionID and return to login page
   const logout = async (e) => {
     e.preventDefault();
@@ -36,42 +24,42 @@ function Navbar({ classes }) {
       console.error("Error during logout", error);
     }
   }
-
   
+  // User update page nav
+  const userUpdate = async (e) => {
+    e.preventDefault();
+    try {
+      window.location.href = "/user-update";
+    } catch (error) {
+      console.error("Error during logout", error);
+    }
+  }
+  
+  // Strictly for grabbing the username
+  const fetchUsername = async() => {
+    try {
+      const response = await axios.get("http://localhost:3000/username");
+      const username = response.data.username;
+      
+      console.log(`Username: ${username}`);
 
-  const [name, setName] = useState(null);
-  const [userType, setUserType] = useState(null);
-  const [email, setUserEmail] = useState(null);
+      // if empty username, set username "Anonymous"
+      if (username === "") {
+        setUsername("Anonymous");
+      } else {
+        setUsername(username); //stores username
+      }
+      
+    } catch (error) {
+      console.log("Error fetching user info:", error);
+    }
+  };
+
   const [username, setUsername] = useState(null);
-  useEffect(() => {
-      const fetchUserInfo = async () => {
-        try {
-          const response = await axios.get("http://localhost:3000/user-info");
+  useEffect(() => {    
 
-          const { username, email, password, user_id, userType, name } 
-          = response.data[0];
-          console.log("Data: ", response.data[0]);
+    fetchUsername();
 
-          console.log(`
-            Username: ${username}
-            email: ${email}
-            password: ${password}
-            userid: ${user_id}
-          `);
-          
-          // if empty username, set username "Anonymous"
-          if (username === "") {
-            setUsername("Anonymous");
-          } else {
-            setUsername(username); //stores username
-          }
-          
-        } catch (error) {
-          console.log("Error fetching user info:", error);
-        }
-      };
-
-      fetchUserInfo();
   }, []);
 
 //------------------------------------------------
@@ -86,7 +74,7 @@ function Navbar({ classes }) {
               ))
             }
           </ul>
-          <Link to="#" >
+          {/* <Link to="#" > */}
             <button className="sign-out-button my-auto"
             onClick={logout}
               style={{
@@ -94,7 +82,7 @@ function Navbar({ classes }) {
                 boxShadow: "2px 2px 4px rgba(0, 0, 0, 0.2)",
                 outline: "none",
               }}>Sign Out</button>
-          </Link>
+          {/* </Link> */}
 
           {/* Get username from backend session and display (DONE)*/}
           {/* Hello, {username} */}
@@ -112,7 +100,7 @@ function Navbar({ classes }) {
 
           {/* Add a black border around button (DONE)*/}
           <button className='sign-out-button my-auto'
-          onClick={test} 
+          onClick={userUpdate} 
           style={{
             right: "125px",
             backgroundColor: "orange",

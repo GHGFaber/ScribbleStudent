@@ -4,6 +4,8 @@ import LoginPage from './pages/LoginPage.jsx';
 import CreateAccount from './pages/CreateAccount.jsx';
 import Chatroom from './pages/Chatroom.jsx';
 import Notebook from './pages/Notebook.jsx';
+import UserUpdate from './pages/UserUpdate.jsx';
+import ResetPassword from './pages/ResetPassword.jsx';
 import {useState} from 'react';
 import {BrowserRouter, Routes, Route} from "react-router-dom";
 
@@ -88,7 +90,10 @@ function App() {
             <Route path="login-page" element={<LoginPage/>}/>
             <Route path="create-account" element={<CreateAccount/>}/>
             <Route path="notebook" element={<Notebook classes={classes}/>}/>
-            <Route path="chatroom" element={<Chatroom chats={chats} classes={classes} activeUsers={activeUsers} inactiveUsers={inactiveUsers}/>}/>   
+            <Route path="chatroom" element={<Chatroom chats={chats} classes={classes} activeUsers={activeUsers} inactiveUsers={inactiveUsers}/>}/>  
+            <Route path="user-update" element={<UserUpdate/>}/>
+            <Route path="reset-password" element={<ResetPassword/>}/>
+
         </Routes>
       </div>
     </BrowserRouter>

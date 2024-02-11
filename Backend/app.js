@@ -36,7 +36,6 @@ app.use(cors({ origin: "http://localhost:5173", credentials: true }));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.json());
 
-// const session = {};
 
 // // generate secret key
 // const crypto = require('crypto');
@@ -103,6 +102,171 @@ app.get("/user-info", async (req, res) => {
     res.status(500).send("Internal server error");
   }
 });
+
+// retrieve username of current user in session
+app.get("/username", async (req, res) => {
+  try {
+    // Check if user is authenticated by checking if user ID is stored in session
+    // req.session.userid
+    if (req.session && req.session.userid) {
+      //console.log(req.session.userid);
+      // User is authenticated, retrieve user ID from session
+      const userid = req.session.userid;
+
+      // Query the database to retrieve user information based on user ID
+      const [userData] = await pool.query("SELECT username FROM user WHERE user_id = ?", [userid]);
+      
+      if (userData.length === 1) {
+        const username = userData[0].username;
+        // console.log("Username: ", username);
+        // User data found, send user information to the frontend
+        res.json({username: username});
+      } else {
+        // User not found in the database
+        res.status(404).send("User not found");
+      }
+    } else {
+      // User is not authenticated, return unauthorized status
+      res.status(401).send("Unauthorized. Please log in first.");
+      console.log("Unauthorized");
+    }
+  } catch (error) {
+    // Error occurred while fetching user information
+    console.error("Error fetching user information:", error);
+    res.status(500).send("Internal server error");
+  }
+});
+
+// Updates user accounts from the user update page
+app.post("/update-user-info", async (req, res) => {
+  const { name, username, email } = req.body;
+  
+  try {
+    // Check if user is authenticated by 
+    //checking if user ID is stored in session
+    if (req.session) {
+      // User is authenticated, retrieve user ID from session
+      const userId = req.session.userid;
+
+      // Query the database to retrieve essential user information based on user ID
+      const [userData] = await pool.query("SELECT name, username, email FROM user WHERE user_id = ?", [userId]);
+
+      if (userData.length === 1) {
+        // User data found, update user information based on input
+        
+        // Check if any new information is provided and not blank
+        const updates = {};
+        if (name) updates.name = name;
+        if (username) updates.username = username;
+        if (email) updates.email = email;
+
+        // Check if provided email is valid
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (updates.email && !emailRegex.test(updates.email)) {
+          return res.status(400).send("Invalid email format");
+        }
+
+        // Check if username or email already exists in the database
+        const [existingUser] = await pool.query(
+          "SELECT user_id FROM user WHERE (username = ? OR email = ?) AND user_id != ?",
+          [updates.username, updates.email, userId]
+        );
+        // Check if the provided email or username matches 
+        //the existing email or username of the user
+        const [currentUser] = await pool.query(
+          "SELECT user_id FROM user WHERE user_id = ? AND (username = ? OR email = ?)",
+          [userId, username, email]
+        );
+        if (existingUser.length > 0) {
+          return res.status(400).send("Username or email already exists. Please choose a different one.");
+        }
+        // Check if currentUser has any data, 
+        //indicating that the provided email or username 
+        //matches the existing email or username of the user
+        if (currentUser.length > 0) {
+          // Send a specific error message indicating that the user is attempting to update to an existing email or username
+          return res.status(400).send("You cannot update to your own existing email or username.");
+        }   
+
+        // Update the user information in the database
+        await pool.query("UPDATE user SET ? WHERE user_id = ?", [updates, userId]);
+
+        res.json({ success: true });
+      } else {
+        // User not found in the database
+        res.status(404).send("User not found");
+      }
+    } else {
+      // User is not authenticated, return unauthorized status
+      res.status(401).send("Unauthorized. Please log in first.");
+      console.log("Unauthorized");
+    }
+  } catch (error) {
+    // Error occurred while updating user information
+    console.error("Error updating user information:", error);
+    res.status(500).send("No Updates Made");
+  }
+});
+
+// Updates user password (*** UNFINISHED ***) (NOT WORKING YET)
+app.post("/reset-password", async (req, res) => {
+  const { oldPassword, newPassword, repeatPassword } = req.body;
+  
+  try {
+    // Check if user is authenticated by checking if user ID is stored in session
+    if (req.session) {
+      // User is authenticated, retrieve user ID from session
+      const userId = req.session.userid;
+
+      // Query the database to retrieve the user's password based on user ID
+      const [userData] = await pool.query("SELECT password FROM user WHERE user_id = ?", [userId]);
+
+      if (userData.length === 1) {
+        // User data found, proceed with password update logic
+        
+        // Check if old password, new password, and repeat password are provided
+        if (oldPassword && newPassword && repeatPassword) {
+          // Check if the old password matches the stored password hash
+          const passwordMatch = await bcrypt.compare(oldPassword, userData[0].password);
+          if (!passwordMatch) {
+            return res.status(401).send("Old password is incorrect");
+          }
+
+          // Check if the new password meets the minimum length requirement
+          if (newPassword.length < 8) {
+            return res.status(400).send('New password must be at least 8 characters long.');
+          }
+
+          // Check if the new password and repeated password match
+          if (newPassword !== repeatPassword) {
+            return res.status(400).send("New password and repeated password do not match");
+          }
+
+          // Hash the new password
+          const hashedPassword = await bcrypt.hash(newPassword, 10); // 10 is the number of salt rounds
+
+          // Update the user's password hash in the database
+          await pool.query("UPDATE user SET password = ? WHERE user_id = ?", [hashedPassword, userId]);
+        }
+
+        res.json({ success: true });
+      } else {
+        // User not found in the database
+        res.status(404).send("User not found");
+      }
+    } else {
+      // User is not authenticated, return unauthorized status
+      res.status(401).send("Unauthorized. Please log in first.");
+      console.log("Unauthorized");
+    }
+  } catch (error) {
+    // Error occurred while updating user information
+    console.error("Error updating user information:", error);
+    res.status(500).send("Internal server error");
+  }
+});
+
+
 //------------------------------------------------------------------------------------------------------
 
 
@@ -245,7 +409,6 @@ app.use((err, req, res, next) => {
   res.status(500).send("No worky ):");
 });
 
-// app.use(express.json());
 
 // Use async/await with the promise-based query
 async function queryDatabase() {
