@@ -2,19 +2,19 @@ import logo from '../react_images/scrib_emblem.png';
 
 function Navbar({classes}) {
     return (
-        <navbar>
-          <nav className="the-nav">
+        <nav>
+          <div className="the-nav">
             <img className="scrib-emblem" src={logo} alt="Scribble-emblem"/>
             <ul className="nav-items my-auto">
-              {
-                classes.map(classInSchool => (
-                  <li><label>{classInSchool.classInSchoolName}</label></li>
-                ))
-              }
+            {
+              classes.map((classInSchool, index) => (
+                <li key={index}><label>{classInSchool.classInSchoolName}</label></li>
+              ))
+            }
             </ul>
             <button className="sign-out-button my-auto">Sign Out</button>
-          </nav>
-        </navbar>
+          </div>
+        </nav>
     );
   }
 export default Navbar;

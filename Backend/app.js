@@ -15,6 +15,14 @@ import { dirname, join } from "path";
 import bcrypt from "bcrypt";
 import cors from "cors";
 
+// External modification +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+import chat_items from './scrib_chats.json' assert {type: "json"};
+import user_classes from './user_classes.json' assert {type: "json"};
+import active_users from './active_chat_users.json' assert {type: "json"};
+import inactive_users from './inactive_chat_users.json' assert {type: "json"};
+import user_notes from './user_notes.json' assert {type: "json"};
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
@@ -37,6 +45,26 @@ app.get("/create-account", (req, res) => {
   const htmlPath = path.join(__dirname, "public/create-account.html");
   res.sendFile(htmlPath);
 });
+
+// External modification begins ++++++++++++++++++++++++++++++++++++++++++++++++
+// This is where the chatroom data is received; replace with appropriate code
+// once database is fully established
+app.get("/chat_data", (req, res) => {
+  res.json(chat_items);
+});
+app.get("/class_data", (req, res) => {
+  res.json(user_classes);
+});
+app.get("/active_data", (req, res) => {
+  res.json(active_users);
+});
+app.get("/inactive_data", (req, res) => {
+  res.json(inactive_users);
+});
+app.get("/notes_data", (req, res) => {
+  res.json(user_notes);
+});
+// End of external modification ++++++++++++++++++++++++++++++++++++++++++++++++
 
 // Check login credentials
 app.post("/login", async (req, res) => {

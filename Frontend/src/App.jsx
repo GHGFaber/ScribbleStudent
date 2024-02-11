@@ -4,120 +4,243 @@ import LoginPage from './pages/LoginPage.jsx';
 import CreateAccount from './pages/CreateAccount.jsx';
 import Chatroom from './pages/Chatroom.jsx';
 import Notebook from './pages/Notebook.jsx';
-import {createRef, useState} from 'react';
+import {createRef, useState, useEffect} from 'react';
 import {BrowserRouter, Routes, Route} from "react-router-dom";
+import axios from 'axios';
 
 function App() {
 
+  console.log("Initiating app...");
+
   const [initial, setInitial] = useState('');
 
-  const [chats, setChats] = useState([
-    {
-      username: "tianapowell225",
-      text: "It's gonna take a lotta love...",
-      timestamp: 1704479956000
-    },
-    {
-      username: "JLennon",
-      text: "$a0!!!!!!!!!!",
-      timestamp: 1704480316000
-    },
-    {
-      username: "Chubli_Deepnargle",
-      text: "Dernoy! Dernoy bluse!",
-      timestamp: 1704480445000
-    },
-    {
-      username: "Fleeko1999",
-      text: "Zombo!",
-      timestamp: 1704482118000
-    }
-  ]);
+  let isRendered = false;
 
-  const [classes, setClasses] = useState([
-    {
-      classInSchoolName: "CHEM-225"
-    },
-    {
-      classInSchoolName: "COMP-300"
-    },
-    {
-      classInSchoolName: "COMP-345"
-    },
-    {
-      classInSchoolName: "ENGL-101"
-    }
-  ]);
+  const [isFirstTime, setIsFirstTime] = useState(true);
 
-  const [activeUsers, setActiveUsers] = useState([
-    {
-      username: "tianapowell225"
-    },
-    {
-      username: "JLennon"
-    },
-    {
-      username: "Chubli_Deepnargle"
-    },
-    {
-      username: "Fleeko1999"
-    }
-  ]);
+  const [chats, setChats] = useState('');
+  const [classes, setClasses] = useState('');
+  const [activeUsers, setActiveUsers] = useState('');
+  const [inactiveUsers, setInactiveUsers] = useState('');
+  const [userNotes, setUserNotes] = useState('');
+  const [renderedChats, setRenderedChats] = useState('');
+  //try to push
+  const [stringChats, setStringChats] = useState('');
+  let count = 0;
 
-  const [inactiveUsers, setInactiveUsers] = useState([
-    {
-      username: "Cecil [TA]"
-    },
-    {
-      username: "SitarKid"
-    },
-    {
-      username: "Ringo334"
-    },
-    {
-      username: "rolling_stone_1962"
-    },
-    {
-      username: "n46_iwantyou"
-    }
-  ]);
+  let newChats = '';
+  let newClasses = '';
+  let newActiveUsers = '';
+  let newInactiveUsers = '';
+  let newUserNotes = '';
 
-  const [userNotes, setUserNotes] = useState([
-    {
-      title: "Notes 1",
-      filename: "notes1.txt",
-      fileID: 1234567890,
-      text: "I'm just playing games"
-    },
-    {
-      title: "Notes 2",
-      filename: "notes2.txt",
-      fileID: 9876543210,
-      text: "I know that's plastic love"
-    },
-    {
-      title: "Notes 3",
-      filename: "notes3.txt",
-      fileID: 2252252250,
-      text: "Dance to the plastic beat"
-    },
-    {
-      title: "Notes 4",
-      filename: "notes4.txt",
-      fileID: 7777777777,
-      text: "Another morning comes"
+  /*
+  get_chat_from_server();
+  get_users_classes_from_server();
+  get_active_users_from_server();
+  get_inactive_users_from_server();
+  get_users_notes_from_server();
+  */
+
+  useEffect(() =>
+  {
+    // localStorage.setItem("messages", null);
+    console.log("useEffect has ran");
+    get_chat_from_server();
+    get_users_classes_from_server();
+    get_active_users_from_server();
+    get_inactive_users_from_server();
+    get_users_notes_from_server();
+    /*
+    newChats = [...chats];
+    console.log(newChats);
+    newClasses = [...classes];
+    console.log(newClasses);
+    newActiveUsers = [...activeUsers];
+    newInactiveUsers = [...inactiveUsers];
+    newUserNotes = [...userNotes];
+    */
+    
+    //foo();
+    setIsFirstTime(false);
+  },[]);
+
+  // call get function on second use Effect
+  
+  
+  useEffect(() =>
+  {
+    console.log("second useEffect has ran");
+    localStorage.setItem("messages", JSON.stringify(chats));
+    // will this work?
+    // get_chat_from_server();
+    localStorage.setItem("classes", JSON.stringify(classes));
+    localStorage.setItem("activeUsers", JSON.stringify(activeUsers));
+    localStorage.setItem("inactiveUsers", JSON.stringify(inactiveUsers));
+    localStorage.setItem("userNotes", JSON.stringify(userNotes));
+  }, [chats, classes, activeUsers, inactiveUsers, userNotes]);
+  
+
+  function get_chat_from_server() {
+    axios.get('http://localhost:3000/chat_data')
+    .then(res => {
+      // setChats(res.data);
+      if (JSON.parse(localStorage.getItem("messages")).length != 0) {
+        console.log("Your session storage: " + localStorage.getItem("messages"));
+        console.log("Chicago is rainy: " + localStorage.getItem("messages").length);
+        setChats(JSON.parse(localStorage.getItem("messages")));
+        // localStorage.setItem("messages", JSON.stringify(res.data));
+        // console.log("the data is : " + localStorage.getItem("messages"));
+      } else {
+        console.log("Res.data is: " + JSON.stringify(res.data));
+        console.log("Chicago is windy");
+        setChats(res.data);
+        console.log("Chats set to: " + chats);
+        localStorage.setItem("messages", JSON.stringify(res.data));
+        console.log("Your session storage: " + localStorage.getItem("messages"));
+        console.log(JSON.stringify(chats));
+      }
+      console.log("connected");
+    })
+    .catch(error => {
+      console.error('Error fetching data from the API:', error);
+      console.log("not connected");
+    });
+  }
+
+  function get_users_classes_from_server() {
+    axios.get('http://localhost:3000/class_data')
+    .then(res => {
+      // setClasses(res.data);
+      if (JSON.parse(localStorage.getItem("classes")).length != 0) {
+        setClasses(JSON.parse(localStorage.getItem("classes")));
+        // localStorage.setItem("messages", JSON.stringify(res.data));
+        // console.log("the data is : " + localStorage.getItem("messages"));
+      } else { 
+        setClasses(res.data); 
+        localStorage.setItem("classes", JSON.stringify(classes));
+        console.log("Your class session storage: " + localStorage.getItem("classes"));
+      }   
+      console.log("connected");
+    })
+    .catch(error => {
+      console.error('Error fetching data from the API:', error);
+      console.log("not connected");
+    });
+  }
+
+  function get_active_users_from_server() {
+    axios.get('http://localhost:3000/active_data')
+    .then(res => {
+      // setActiveUsers(res.data);
+      if (JSON.parse(localStorage.getItem("activeUsers")).length != 0) {
+        setActiveUsers(JSON.parse(localStorage.getItem("activeUsers")));
+        // localStorage.setItem("messages", JSON.stringify(res.data));
+        // console.log("the data is : " + localStorage.getItem("messages"));
+      } else 
+      {
+        setActiveUsers(res.data);
+        localStorage.setItem("activeUsers", JSON.stringify(activeUsers));
+        console.log("Your ac. user session storage: " + localStorage.getItem("activeUsers"));
+      }
+      
+      console.log("connected");
+    })
+    .catch(error => {
+      console.error('Error fetching data from the API:', error);
+      console.log("not connected");
+    });
+  }
+
+  function get_inactive_users_from_server() {
+    axios.get('http://localhost:3000/inactive_data')
+    .then(res => {
+      // setInactiveUsers(res.data);
+      if (JSON.parse(localStorage.getItem("inactiveUsers")).length != 0) {
+        setInactiveUsers(JSON.parse(localStorage.getItem("inactiveUsers")));
+        console.log(inactiveUsers);
+        // localStorage.setItem("messages", JSON.stringify(res.data));
+        // console.log("the data is : " + localStorage.getItem("messages"));
+      } else {
+          setInactiveUsers(res.data);
+          localStorage.setItem("inactiveUsers", JSON.stringify(inactiveUsers));
+          console.log("Your in. user session storage: " + localStorage.getItem("inactiveUsers"));
+          console.log(inactiveUsers);
+      }
+      
+      console.log("connected");
+    })
+    .catch(error => {
+      console.error('Error fetching data from the API:', error);
+      console.log("not connected");
+    });
+  }
+
+  function get_users_notes_from_server() {
+    axios.get('http://localhost:3000/notes_data')
+    .then(res => {
+      // setUserNotes(res.data);
+      if (JSON.parse(localStorage.getItem("userNotes")).length != 0) {
+        setUserNotes(JSON.parse(localStorage.getItem("userNotes")));
+        // localStorage.setItem("messages", JSON.stringify(res.data));
+        // console.log("the data is : " + localStorage.getItem("messages"));
+      } else {
+        setUserNotes(res.data);
+        localStorage.setItem("userNotes", JSON.stringify(userNotes));
+        console.log("Your notes session storage: " + localStorage.getItem("userNotes"));
+      }
+      console.log("connected");
+    })
+    .catch(error => {
+      console.error('Error fetching data from the API:', error);
+      console.log("not connected");
+    });  
+  }
+
+  function foo() {
+    if (!isRendered) {
+      /*
+      // if there is nothing in session storage/if it is populated with a value
+      setStringChats(JSON.stringify(chats));
+      console.log("string chats are: " + chats);
+      //localStorage.setItem("messages", JSON.stringify(chats));
+      console.log("ss is " + localStorage.getItem("messages"));
+      const temp = localStorage.getItem("messages");
+      console.log("temp is "+ localStorage.getItem("messages"));
+      setRenderedChats(temp);
+      //console.log(renderedChats);
+      */
+
+     /*
+      setChats(localStorage.getItem("messages"));
+      setClasses(localStorage.getItem("classes"));
+      setActiveUsers(localStorage.getItem("activeUsers"));
+      setInactiveUsers(localStorage.getItem("inactiveUsers"));
+      setUserNotes(localStorage.getItem("userNotes"));
+      isRendered = true;
+      */
     }
-  ]);
+    //console.log("stringChats are: " + stringChats); 
+    //console.log('session is ' + localStorage.getItem("messages"));
+  }
+
+  function count_refresh() {
+    console.log("The count is: " + count);
+    ++count;
+  }
 
   return (
     <BrowserRouter>
+    {
+      foo()
+    }
       <div className="App">
         <Routes>
             <Route index element={<Home/>}/>
             <Route path="login-page" element={<LoginPage/>}/>
             <Route path="create-account" element={<CreateAccount/>}/>
-            <Route path="notebook" element={<Notebook classes={classes} notePages={userNotes} initData={initial}/>}/>
-            <Route path="chatroom" element={<Chatroom chats={chats} classes={classes} activeUsers={activeUsers} inactiveUsers={inactiveUsers} notePages={userNotes}/>}/>   
+            <Route path="notebook" element={<Notebook classes={classes} notePages={userNotes}/>}/>   
+            <Route path="chatroom" element={<Chatroom /*chats={renderedChats}*/ chats={chats} classes={classes} activeUsers={activeUsers} inactiveUsers={inactiveUsers} notePages={userNotes}/>}/>   
         </Routes>
       </div>
     </BrowserRouter>

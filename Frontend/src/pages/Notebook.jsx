@@ -3,14 +3,32 @@ import Sidebar from "../components/Sidebar.jsx";
 import ReactQuill from "react-quill";
 import 'react-quill/dist/quill.snow.css';
 import {useState} from "react";
-function Notebook({classes, notePages, initData}) {
+import { useLocation } from "react-router-dom";
+function Notebook(props, targetPage) {
+
+    let classes = props.classes;
+    let notePages = props.notePages;
+    let temp = "";
+    //const {state} = props.location.state;
+    //console.log(targetPage.text);
+
+
+    /**
+     * Potential strategy: send the current page info as prop
+     * set the prop outside the parent callback function
+     */
+    
+    //const location = useLocation();
+    //const data = location.state;
+    //console.log("temp is " + data);
+    //console.log("location.state: " + props.location.state);
+    //let temp = state;
 
     // const [initData, setInitData] = useState('');
     const [value, setValue] = useState('');
-    const temp = location.state;
-    console.log(location.state);
+    
+    function set_init_value() {setValue(targetPage.text)};
 
-    let currentFile = "";
     var toolbarOptions = [
         [{ 'font': [] }],
         [{ 'size': ['small', false, 'large', 'huge'] }], 
@@ -26,26 +44,31 @@ function Notebook({classes, notePages, initData}) {
         toolbar: toolbarOptions
     };
 
-    {/* currentFile.text */}
+    
+    function get_that_data(childData) {
+        setValue(childData.text);
+        return '';
+    }
 
-    function get_that_data(childData, initData) {
-       if (initData != '') {
-            setValue(initData.text);
-            initData = '';
-       } else {
-            setValue(temp.text);
-            console.log("get_that_data()");
-       }
+    function get_that_data_wrapper(childData) {
+        return get_that_data(childData);
+    }
+    
+
+    function dummy() {
+        return 0;
     }
 
     return (
         <>
-         
+        {
+           // set_init_value()
+        }
          <Navbar classes={classes}/>
          <div className="container-fluid">
             <div className="row no-gutters">
                 <div className="col-2 column1">
-                    <Sidebar parentCallback={get_that_data} notePages={notePages} initData={initData}/>
+                    <Sidebar parentCallback={get_that_data} notePages={notePages}/>
                 </div>
                 <div className="col-10 column2 the-note-section">         
                     <ReactQuill

@@ -5,12 +5,10 @@ import {useState} from "react";
 
 function Chatroom({chats, classes, activeUsers, inactiveUsers, notePages}) {
 
-    const [initData, setInitData] = useState('');
-    const [value, setValue] = useState('');
-    let temp = '';
+    const isChatroom = true;
 
-    let dummyCallback = (childData, initData) => {
-        initData = childData;
+    let dummyCallback = (data) => {
+        return data;
     }
 
     function get_time(timestamp) {
@@ -22,19 +20,24 @@ function Chatroom({chats, classes, activeUsers, inactiveUsers, notePages}) {
     }
 
     function show_chats() {
-        return (
-            chats.map(chat => (
-                <div className="chat-panel">
-                    <div className="container-fluid the-chat-div rounded-0">
-                        <div className="container-body">
-                            <p className="full-datetime">{get_time(chat.timestamp)}</p>
-                            <p className="user-text">{chat.username}</p>
-                            <p className="text-content">{chat.text}</p>
-                        </div>
-                    </div>     
-                </div>      
-            ))
-        )
+        try {
+            return (
+                chats.map((chat, index) => (
+                    <div key={index} className="chat-panel">
+                        <div className="container-fluid the-chat-div rounded-0">
+                            <div className="container-body">
+                                <p className="full-datetime">{get_time(chat.timestamp)}</p>
+                                <p className="user-text">{chat.username}</p>
+                                <p className="text-content">{chat.text}</p>
+                            </div>
+                        </div>     
+                    </div>      
+                ))
+            )
+        } catch (error) {
+            console.log("Error: chats.map has failed");
+        }
+        
     }
 
     return (
@@ -43,7 +46,7 @@ function Chatroom({chats, classes, activeUsers, inactiveUsers, notePages}) {
             <div className="container-fluid">
                 <div className="row no-gutters">
                     <div className="col-2 column1">
-                        <Sidebar parentCallback={dummyCallback} notePages={notePages} initData={initData} temp={temp}/>
+                        <Sidebar parentCallback={dummyCallback} notePages={notePages}/>
                     </div>
                     <div className="col-8 column2">
                         <div id="chat-window">
