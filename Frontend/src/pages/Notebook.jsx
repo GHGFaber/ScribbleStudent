@@ -1,20 +1,43 @@
 import Navbar from "../components/Navbar.jsx";
 import Sidebar from "../components/Sidebar.jsx";
+import ReactQuill from "react-quill";
+import 'react-quill/dist/quill.snow.css';
+import {useState} from "react";
+function Notebook({classes}) {
+    const [value, setValue] = useState('');
+    var toolbarOptions = [
+        [{ 'font': [] }],
+        [{ 'size': ['small', false, 'large', 'huge'] }], 
+        [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+        ['bold', 'italic', 'underline', 'strike'],
+        [{'list': 'ordered'}, {'list': 'bullet'}],
+        [{'script': 'sub'}, {'script': 'super'}],
+        [{'indent': '-1'}, {'indent': '+1'}],
+        ['link', 'image'],
+        [{ 'align': [] }]
+    ];
+    const module = {
+        toolbar: toolbarOptions
+    };
 
-function Notebook() {
     return (
         <>
-         <Navbar/>
+         
+         <Navbar classes={classes}/>
          <div className="container-fluid">
             <div className="row no-gutters">
                 <div className="col-2 column1">
                     <Sidebar/>
                 </div>
-                <div className="col-10 column2">
-                    <div id="edit-bar"></div>
-                    <div id="note-window container-fluid">
-                        <textarea id="note-text"></textarea>
-                    </div>
+                <div className="col-10 column2 the-note-section">
+                    {/*<div id="note-window container-fluid"> */}
+                    <ReactQuill
+                        id="the-notes" 
+                        modules={module}
+                        theme="snow" 
+                        value={value} 
+                        onChange={setValue} />
+                    {/*</div>*/}
                 </div>  
             </div> 
         </div>

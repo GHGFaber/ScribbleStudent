@@ -1,7 +1,16 @@
 import Navbar from "../components/Navbar.jsx";
 import Sidebar from "../components/Sidebar.jsx";
+import Userbar from "../components/Userbar.jsx";
 
-function Chatroom({chats}) {
+function Chatroom({chats, classes, activeUsers, inactiveUsers}) {
+
+    function get_time(timestamp) {
+        const date = new Date(timestamp);
+        const returnedDate = date.toLocaleDateString("en-US");
+        const returnedTime = date.toLocaleTimeString("en-US");
+        const timeString = returnedDate.concat(" ", returnedTime);
+        return timeString;
+    }
 
     function show_chats() {
         return (
@@ -9,6 +18,7 @@ function Chatroom({chats}) {
                 <div className="chat-panel">
                     <div className="container-fluid the-chat-div rounded-0">
                         <div className="container-body">
+                            <p className="full-datetime">{get_time(chat.timestamp)}</p>
                             <p className="user-text">{chat.username}</p>
                             <p className="text-content">{chat.text}</p>
                         </div>
@@ -17,9 +27,10 @@ function Chatroom({chats}) {
             ))
         )
     }
+
     return (
         <>
-            <Navbar/>
+            <Navbar classes={classes}/>
             <div className="container-fluid">
                 <div className="row no-gutters">
                     <div className="col-2 column1">
@@ -31,7 +42,7 @@ function Chatroom({chats}) {
                                 show_chats()
                             }
                         </div>
-                        <form>
+                        <form className="the-chat-form">
                             <div id="the-textarea" className="container-fluid">
                                 <textarea id="txt"></textarea>
                             </div>
@@ -40,7 +51,9 @@ function Chatroom({chats}) {
                             </div>       
                         </form>     
                     </div>
-                    <div className="col-2 column3"></div>
+                    <div className="col-2 column3">
+                        <Userbar activeUsers={activeUsers} inactiveUsers={inactiveUsers}/>
+                    </div>
                 </div>
             </div>
         </>
