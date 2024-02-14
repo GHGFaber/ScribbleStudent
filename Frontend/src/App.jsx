@@ -1,38 +1,37 @@
-import './App.css';
-import Home from './pages/Home.jsx';
-import LoginPage from './pages/LoginPage.jsx';
-import CreateAccount from './pages/CreateAccount.jsx';
-import Chatroom from './pages/Chatroom.jsx';
-import Notebook from './pages/Notebook.jsx';
-import {createRef, useState, useEffect} from 'react';
-import {BrowserRouter, Routes, Route} from "react-router-dom";
-import axios from 'axios';
+import "./App.css";
+import Home from "./pages/Home.jsx";
+import LoginPage from "./pages/LoginPage.jsx";
+import CreateAccount from "./pages/CreateAccount.jsx";
+import Chatroom from "./pages/Chatroom.jsx";
+import Notebook from "./pages/Notebook.jsx";
+import { createRef, useState, useEffect } from "react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import axios from "axios";
 
 function App() {
-
   console.log("Initiating app...");
 
-  const [initial, setInitial] = useState('');
+  const [initial, setInitial] = useState("");
 
   let isRendered = false;
 
   const [isFirstTime, setIsFirstTime] = useState(true);
 
-  const [chats, setChats] = useState('');
-  const [classes, setClasses] = useState('');
-  const [activeUsers, setActiveUsers] = useState('');
-  const [inactiveUsers, setInactiveUsers] = useState('');
-  const [userNotes, setUserNotes] = useState('');
-  const [renderedChats, setRenderedChats] = useState('');
+  const [chats, setChats] = useState([]);
+  const [classes, setClasses] = useState([]);
+  const [activeUsers, setActiveUsers] = useState([]);
+  const [inactiveUsers, setInactiveUsers] = useState([]);
+  const [userNotes, setUserNotes] = useState([]);
+  const [renderedChats, setRenderedChats] = useState("");
   //try to push
-  const [stringChats, setStringChats] = useState('');
+  const [stringChats, setStringChats] = useState("");
   let count = 0;
 
-  let newChats = '';
-  let newClasses = '';
-  let newActiveUsers = '';
-  let newInactiveUsers = '';
-  let newUserNotes = '';
+  let newChats = "";
+  let newClasses = "";
+  let newActiveUsers = "";
+  let newInactiveUsers = "";
+  let newUserNotes = "";
 
   /*
   get_chat_from_server();
@@ -42,8 +41,7 @@ function App() {
   get_users_notes_from_server();
   */
 
-  useEffect(() =>
-  {
+  useEffect(() => {
     // localStorage.setItem("messages", null);
     console.log("useEffect has ran");
     get_chat_from_server();
@@ -60,141 +58,120 @@ function App() {
     newInactiveUsers = [...inactiveUsers];
     newUserNotes = [...userNotes];
     */
-    
+
     //foo();
     setIsFirstTime(false);
-  },[]);
+  }, []);
 
   // call get function on second use Effect
-  
-  
-  useEffect(() =>
-  {
-    console.log("second useEffect has ran");
-    localStorage.setItem("messages", JSON.stringify(chats));
-    // will this work?
-    // get_chat_from_server();
-    localStorage.setItem("classes", JSON.stringify(classes));
-    localStorage.setItem("activeUsers", JSON.stringify(activeUsers));
-    localStorage.setItem("inactiveUsers", JSON.stringify(inactiveUsers));
-    localStorage.setItem("userNotes", JSON.stringify(userNotes));
-  }, [chats, classes, activeUsers, inactiveUsers, userNotes]);
-  
 
+  // useEffect(() => {
+  //   localStorage.setItem("chats", JSON.stringify(chats));
+  //   localStorage.setItem("classes", JSON.stringify(classes));
+  //   localStorage.setItem("active", JSON.stringify(activeUsers));
+
+  //   localStorage.setItem("notes", JSON.stringify(userNotes));
+  // }, [chats, classes, activeUsers, inactiveUsers, userNotes]);
+
+  // function get_chat_from_server() {
+  //   axios
+  //     .get("http://localhost:3000/chat_data")
+  //     .then((res) => {
+  //       // setChats(res.data);
+  //       if (JSON.parse(localStorage.getItem("messages")).length != 0) {
+  //         console.log(
+  //           "Your session storage: " + localStorage.getItem("messages")
+  //         );
+  //         console.log(
+  //           "Chicago is rainy: " + localStorage.getItem("messages").length
+  //         );
+  //         setChats(JSON.parse(localStorage.getItem("messages")));
+  //         // localStorage.setItem("messages", JSON.stringify(res.data));
+  //         // console.log("the data is : " + localStorage.getItem("messages"));
+  //       } else {
+  //         console.log("Res.data is: " + JSON.stringify(res.data));
+  //         console.log("Chicago is windy");
+  //         setChats(res.data);
+  //         console.log("Chats set to: " + chats);
+  //         localStorage.setItem("messages", JSON.stringify(res.data));
+  //         console.log(
+  //           "Your session storage: " + localStorage.getItem("messages")
+  //         );
+  //         console.log(JSON.stringify(chats));
+  //       }
+  //       console.log("connected");
+  //     })
+  //     .catch((error) => {
+  //       console.error("Error fetching data from the API:", error);
+  //       console.log("not connected");
+  //     });
+  // }
   function get_chat_from_server() {
-    axios.get('http://localhost:3000/chat_data')
-    .then(res => {
-      // setChats(res.data);
-      if (JSON.parse(localStorage.getItem("messages")).length != 0) {
-        console.log("Your session storage: " + localStorage.getItem("messages"));
-        console.log("Chicago is rainy: " + localStorage.getItem("messages").length);
-        setChats(JSON.parse(localStorage.getItem("messages")));
-        // localStorage.setItem("messages", JSON.stringify(res.data));
-        // console.log("the data is : " + localStorage.getItem("messages"));
-      } else {
-        console.log("Res.data is: " + JSON.stringify(res.data));
-        console.log("Chicago is windy");
+    axios
+      .get("http://localhost:3000/chat_data")
+      .then((res) => {
         setChats(res.data);
-        console.log("Chats set to: " + chats);
-        localStorage.setItem("messages", JSON.stringify(res.data));
-        console.log("Your session storage: " + localStorage.getItem("messages"));
-        console.log(JSON.stringify(chats));
-      }
-      console.log("connected");
-    })
-    .catch(error => {
-      console.error('Error fetching data from the API:', error);
-      console.log("not connected");
-    });
+
+        localStorage.setItem("chats", JSON.stringify(res.data));
+      })
+      .catch((error) => {
+        console.error("Error fetching data from the API:", error);
+        console.log("not connected");
+      });
   }
 
   function get_users_classes_from_server() {
-    axios.get('http://localhost:3000/class_data')
-    .then(res => {
-      // setClasses(res.data);
-      if (JSON.parse(localStorage.getItem("classes")).length != 0) {
-        setClasses(JSON.parse(localStorage.getItem("classes")));
-        // localStorage.setItem("messages", JSON.stringify(res.data));
-        // console.log("the data is : " + localStorage.getItem("messages"));
-      } else { 
-        setClasses(res.data); 
-        localStorage.setItem("classes", JSON.stringify(classes));
-        console.log("Your class session storage: " + localStorage.getItem("classes"));
-      }   
-      console.log("connected");
-    })
-    .catch(error => {
-      console.error('Error fetching data from the API:', error);
-      console.log("not connected");
-    });
+    axios
+      .get("http://localhost:3000/class_data")
+      .then((res) => {
+        setClasses(res.data);
+
+        localStorage.setItem("classes", JSON.stringify(res.data));
+      })
+      .catch((error) => {
+        console.error("Error fetching data from the API:", error);
+        console.log("not connected");
+      });
   }
 
   function get_active_users_from_server() {
-    axios.get('http://localhost:3000/active_data')
-    .then(res => {
-      // setActiveUsers(res.data);
-      if (JSON.parse(localStorage.getItem("activeUsers")).length != 0) {
-        setActiveUsers(JSON.parse(localStorage.getItem("activeUsers")));
-        // localStorage.setItem("messages", JSON.stringify(res.data));
-        // console.log("the data is : " + localStorage.getItem("messages"));
-      } else 
-      {
+    axios
+      .get("http://localhost:3000/active_data")
+      .then((res) => {
         setActiveUsers(res.data);
-        localStorage.setItem("activeUsers", JSON.stringify(activeUsers));
-        console.log("Your ac. user session storage: " + localStorage.getItem("activeUsers"));
-      }
-      
-      console.log("connected");
-    })
-    .catch(error => {
-      console.error('Error fetching data from the API:', error);
-      console.log("not connected");
-    });
+        localStorage.setItem("active", JSON.stringify(res.data));
+      })
+      .catch((error) => {
+        console.error("Error fetching data from the API:", error);
+        console.log("not connected");
+      });
   }
 
   function get_inactive_users_from_server() {
-    axios.get('http://localhost:3000/inactive_data')
-    .then(res => {
-      // setInactiveUsers(res.data);
-      if (JSON.parse(localStorage.getItem("inactiveUsers")).length != 0) {
-        setInactiveUsers(JSON.parse(localStorage.getItem("inactiveUsers")));
-        console.log(inactiveUsers);
-        // localStorage.setItem("messages", JSON.stringify(res.data));
-        // console.log("the data is : " + localStorage.getItem("messages"));
-      } else {
-          setInactiveUsers(res.data);
-          localStorage.setItem("inactiveUsers", JSON.stringify(inactiveUsers));
-          console.log("Your in. user session storage: " + localStorage.getItem("inactiveUsers"));
-          console.log(inactiveUsers);
-      }
-      
-      console.log("connected");
-    })
-    .catch(error => {
-      console.error('Error fetching data from the API:', error);
-      console.log("not connected");
-    });
+    axios
+      .get("http://localhost:3000/inactive_data")
+      .then((res) => {
+        setInactiveUsers(res.data);
+        localStorage.setItem("inactive", JSON.stringify(res.data));
+      })
+      .catch((error) => {
+        console.error("Error fetching data from the API:", error);
+        console.log("not connected");
+      });
   }
 
   function get_users_notes_from_server() {
-    axios.get('http://localhost:3000/notes_data')
-    .then(res => {
-      // setUserNotes(res.data);
-      if (JSON.parse(localStorage.getItem("userNotes")).length != 0) {
-        setUserNotes(JSON.parse(localStorage.getItem("userNotes")));
-        // localStorage.setItem("messages", JSON.stringify(res.data));
-        // console.log("the data is : " + localStorage.getItem("messages"));
-      } else {
+    axios
+      .get("http://localhost:3000/notes_data")
+      .then((res) => {
         setUserNotes(res.data);
-        localStorage.setItem("userNotes", JSON.stringify(userNotes));
-        console.log("Your notes session storage: " + localStorage.getItem("userNotes"));
-      }
-      console.log("connected");
-    })
-    .catch(error => {
-      console.error('Error fetching data from the API:', error);
-      console.log("not connected");
-    });  
+
+        localStorage.setItem("notes", JSON.stringify(res.data));
+      })
+      .catch((error) => {
+        console.error("Error fetching data from the API:", error);
+        console.log("not connected");
+      });
   }
 
   function foo() {
@@ -210,8 +187,7 @@ function App() {
       setRenderedChats(temp);
       //console.log(renderedChats);
       */
-
-     /*
+      /*
       setChats(localStorage.getItem("messages"));
       setClasses(localStorage.getItem("classes"));
       setActiveUsers(localStorage.getItem("activeUsers"));
@@ -220,7 +196,7 @@ function App() {
       isRendered = true;
       */
     }
-    //console.log("stringChats are: " + stringChats); 
+    //console.log("stringChats are: " + stringChats);
     //console.log('session is ' + localStorage.getItem("messages"));
   }
 
@@ -231,16 +207,28 @@ function App() {
 
   return (
     <BrowserRouter>
-    {
-      foo()
-    }
+      {foo()}
       <div className="App">
         <Routes>
-            <Route index element={<Home/>}/>
-            <Route path="login-page" element={<LoginPage/>}/>
-            <Route path="create-account" element={<CreateAccount/>}/>
-            <Route path="notebook" element={<Notebook classes={classes} notePages={userNotes}/>}/>   
-            <Route path="chatroom" element={<Chatroom /*chats={renderedChats}*/ chats={chats} classes={classes} activeUsers={activeUsers} inactiveUsers={inactiveUsers} notePages={userNotes}/>}/>   
+          <Route index element={<Home />} />
+          <Route path="login-page" element={<LoginPage />} />
+          <Route path="create-account" element={<CreateAccount />} />
+          <Route
+            path="notebook"
+            element={<Notebook classes={classes} notePages={userNotes} />}
+          />
+          <Route
+            path="chatroom"
+            element={
+              <Chatroom
+                /*chats={renderedChats}*/ chats={chats}
+                classes={classes}
+                activeUsers={activeUsers}
+                inactiveUsers={inactiveUsers}
+                notePages={userNotes}
+              />
+            }
+          />
         </Routes>
       </div>
     </BrowserRouter>
