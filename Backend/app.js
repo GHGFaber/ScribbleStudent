@@ -18,7 +18,7 @@ const __dirname = dirname(__filename);
 const app = express(); // create application
 
 // Set up session middleware
-app.set('trust proxy', 1) // trust first proxy
+app.set("trust proxy", 1); // trust first proxy
 app.use(
   session({
     secret: "your-secret-key", // Replace with a secret key for session encryption
@@ -27,7 +27,7 @@ app.use(
     cookie: {
       secure: false,
       // maxAge: 60000 // 1 min
-    }
+    },
   })
 );
 
@@ -35,7 +35,6 @@ app.use(
 app.use(cors({ origin: "http://localhost:5173", credentials: true }));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.json());
-
 
 // // generate secret key
 // const crypto = require('crypto');
@@ -66,7 +65,6 @@ app.use(express.json());
 //   res.redirect('src/LoginPage.jsx');
 // });
 
-
 //------------------------------------------------------------------------------------------------------
 // Route to retrieve user information based on session data
 app.get("/user-info", async (req, res) => {
@@ -79,7 +77,10 @@ app.get("/user-info", async (req, res) => {
       const userid = req.session.userid;
 
       // Query the database to retrieve user information based on user ID
-      const [userData] = await pool.query("SELECT * FROM user WHERE user_id = ?", [userid]);
+      const [userData] = await pool.query(
+        "SELECT * FROM user WHERE userID = ?",
+        [userid]
+      );
       if (userData.length === 1) {
         // User data found, send user information to the frontend
         res.json(userData);
@@ -89,7 +90,7 @@ app.get("/user-info", async (req, res) => {
       }
       // res.json(userid);
       //
-      console.log('Current Session ID:', req.sessionID);
+      console.log("Current Session ID:", req.sessionID);
       //
     } else {
       // User is not authenticated, return unauthorized status
@@ -114,13 +115,16 @@ app.get("/username", async (req, res) => {
       const userid = req.session.userid;
 
       // Query the database to retrieve user information based on user ID
-      const [userData] = await pool.query("SELECT username FROM user WHERE user_id = ?", [userid]);
-      
+      const [userData] = await pool.query(
+        "SELECT username FROM user WHERE userID = ?",
+        [userid]
+      );
+
       if (userData.length === 1) {
         const username = userData[0].username;
         // console.log("Username: ", username);
         // User data found, send user information to the frontend
-        res.json({username: username});
+        res.json({ username: username });
       } else {
         // User not found in the database
         res.status(404).send("User not found");
@@ -140,20 +144,23 @@ app.get("/username", async (req, res) => {
 // Updates user accounts from the user update page
 app.post("/update-user-info", async (req, res) => {
   const { name, username, email } = req.body;
-  
+
   try {
-    // Check if user is authenticated by 
+    // Check if user is authenticated by
     //checking if user ID is stored in session
     if (req.session) {
       // User is authenticated, retrieve user ID from session
       const userId = req.session.userid;
 
       // Query the database to retrieve essential user information based on user ID
-      const [userData] = await pool.query("SELECT name, username, email FROM user WHERE user_id = ?", [userId]);
+      const [userData] = await pool.query(
+        "SELECT name, username, email FROM user WHERE userID = ?",
+        [userId]
+      );
 
       if (userData.length === 1) {
         // User data found, update user information based on input
-        
+
         // Check if any new information is provided and not blank
         const updates = {};
         if (name) updates.name = name;
@@ -168,28 +175,37 @@ app.post("/update-user-info", async (req, res) => {
 
         // Check if username or email already exists in the database
         const [existingUser] = await pool.query(
-          "SELECT user_id FROM user WHERE (username = ? OR email = ?) AND user_id != ?",
+          "SELECT userID FROM user WHERE (username = ? OR email = ?) AND userID != ?",
           [updates.username, updates.email, userId]
         );
-        // Check if the provided email or username matches 
+        // Check if the provided email or username matches
         //the existing email or username of the user
         const [currentUser] = await pool.query(
-          "SELECT user_id FROM user WHERE user_id = ? AND (username = ? OR email = ?)",
+          "SELECT userID FROM user WHERE userID = ? AND (username = ? OR email = ?)",
           [userId, username, email]
         );
         if (existingUser.length > 0) {
-          return res.status(400).send("Username or email already exists. Please choose a different one.");
+          return res
+            .status(400)
+            .send(
+              "Username or email already exists. Please choose a different one."
+            );
         }
-        // Check if currentUser has any data, 
-        //indicating that the provided email or username 
+        // Check if currentUser has any data,
+        //indicating that the provided email or username
         //matches the existing email or username of the user
         if (currentUser.length > 0) {
           // Send a specific error message indicating that the user is attempting to update to an existing email or username
-          return res.status(400).send("You cannot update to your own existing email or username.");
-        }   
+          return res
+            .status(400)
+            .send("You cannot update to your own existing email or username.");
+        }
 
         // Update the user information in the database
-        await pool.query("UPDATE user SET ? WHERE user_id = ?", [updates, userId]);
+        await pool.query("UPDATE user SET ? WHERE userID = ?", [
+          updates,
+          userId,
+        ]);
 
         res.json({ success: true });
       } else {
@@ -211,7 +227,7 @@ app.post("/update-user-info", async (req, res) => {
 // Updates user password
 app.post("/reset-password", async (req, res) => {
   const { oldPassword, newPassword } = req.body;
-  
+
   try {
     // Check if user is authenticated by checking if user ID is stored in session
     if (req.session) {
@@ -219,13 +235,19 @@ app.post("/reset-password", async (req, res) => {
       const userId = req.session.userid;
 
       // Query the database to retrieve the user's password based on user ID
-      const [userData] = await pool.query("SELECT password FROM user WHERE user_id = ?", [userId]);
+      const [userData] = await pool.query(
+        "SELECT password FROM user WHERE userID = ?",
+        [userId]
+      );
 
       if (userData.length === 1) {
         // User data found, proceed with password update logic
-        
+
         // Check if the old password matches the stored password hash
-        const passwordMatch = await bcrypt.compare(oldPassword, userData[0].password);
+        const passwordMatch = await bcrypt.compare(
+          oldPassword,
+          userData[0].password
+        );
         if (!passwordMatch) {
           return res.status(401).send("Old password is incorrect");
         }
@@ -235,7 +257,10 @@ app.post("/reset-password", async (req, res) => {
         const hashedPassword = await bcrypt.hash(newPassword, 10); // 10 is the number of salt rounds
 
         // Update the user's password hash in the database
-        await pool.query("UPDATE user SET password = ? WHERE user_id = ?", [hashedPassword, userId]); 
+        await pool.query("UPDATE user SET password = ? WHERE userID = ?", [
+          hashedPassword,
+          userId,
+        ]);
 
         res.json({ success: true });
       } else {
@@ -254,9 +279,7 @@ app.post("/reset-password", async (req, res) => {
   }
 });
 
-
 //------------------------------------------------------------------------------------------------------
-
 
 // Check login credentials (create user session)
 app.post("/login", async (req, res) => {
@@ -277,7 +300,7 @@ app.post("/login", async (req, res) => {
     } else {
       // Grabbing user info from User table
       const hashedPassword = userData[0].password; // grab hashed password
-      const userid = userData[0].user_id; // grab userid
+      const userid = userData[0].userID; // grab userid
       const username = userData[0].username; // grab username
       const email = userData[0].email; // grab email
 
@@ -290,16 +313,16 @@ app.post("/login", async (req, res) => {
         req.session.username = username;
         // req.session.save();
 
-        console.log('Session ID:', req.sessionID);
+        console.log("Session ID:", req.sessionID);
 
         // sends user info to the Frontend on submit
-        res.send({ 
-          success: true, 
-          username, 
-          email, 
-          Userid: req.session.userid, 
-          hashedPassword, 
-        }); 
+        res.send({
+          success: true,
+          username,
+          email,
+          Userid: req.session.userid,
+          hashedPassword,
+        });
 
         // Print userid to stdout (Backend)
         console.log("Userid:", userid);
@@ -308,7 +331,6 @@ app.post("/login", async (req, res) => {
         // session[sessionId] = { username, userid };
         // // res.set('Set-Cookie', `session=${sessionId}`);
         // // res.send('success');
-
       } else {
         res.send("Invalid username or password");
       }
@@ -318,7 +340,6 @@ app.post("/login", async (req, res) => {
     console.error(error);
   }
 });
-
 
 // Logout (destroy session)
 app.post("/logout", (req, res) => {
@@ -333,7 +354,6 @@ app.post("/logout", (req, res) => {
     }
   });
 });
-
 
 // Account creation post
 app.post("/create-account", async (req, res) => {
@@ -354,7 +374,7 @@ app.post("/create-account", async (req, res) => {
     } else {
       // Check if the password meets the minimum length requirement
       if (password.length < 8) {
-        res.send('Password must be at least 8 characters long.');
+        res.send("Password must be at least 8 characters long.");
       } else {
         // Hash the password before storing it
         const hashedPassword = await bcrypt.hash(password, 10); // 10 is the number of salt rounds
@@ -396,7 +416,6 @@ app.use((err, req, res, next) => {
   res.status(200).send("hi");
   res.status(500).send("No worky ):");
 });
-
 
 // Use async/await with the promise-based query
 async function queryDatabase() {
