@@ -16,11 +16,11 @@ import bcrypt from "bcrypt";
 import cors from "cors";
 
 // External modification +++++++++++++++++++++++++++++++++++++++++++++++++++++++
-import chat_items from './scrib_chats.json' assert {type: "json"};
-import user_classes from './user_classes.json' assert {type: "json"};
-import active_users from './active_chat_users.json' assert {type: "json"};
-import inactive_users from './inactive_chat_users.json' assert {type: "json"};
-import user_notes from './user_notes.json' assert {type: "json"};
+import chat_items from "./scrib_chats.json" assert { type: "json" };
+import user_classes from "./user_classes.json" assert { type: "json" };
+import active_users from "./active_chat_users.json" assert { type: "json" };
+import inactive_users from "./inactive_chat_users.json" assert { type: "json" };
+import user_notes from "./user_notes.json" assert { type: "json" };
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 const __filename = fileURLToPath(import.meta.url);
@@ -52,9 +52,25 @@ app.get("/create-account", (req, res) => {
 app.get("/chat_data", (req, res) => {
   res.json(chat_items);
 });
-app.get("/class_data", (req, res) => {
-  res.json(user_classes);
+
+app.get("/class_data", async (req, res) => {
+  const userID = req.query.id;
+  console.log("id: " + userID);
+  try {
+    const [userClassData] = await pool.query(
+      "SELECT * FROM classes WHERE ownerID = ?",
+      [userID]
+    );
+
+    console.log(userClassData);
+    res.send({ class: [userClassData] });
+    console.log("sent");
+  } catch (error) {
+    res.status(500).send("Error retrieving classes");
+    console.error(error);
+  }
 });
+
 app.get("/active_data", (req, res) => {
   res.json(active_users);
 });
@@ -89,7 +105,10 @@ app.post("/login", async (req, res) => {
       const passwordMatch = await bcrypt.compare(password, hashedPassword);
 
       if (passwordMatch) {
-        res.send({ success: true });
+        res.send({
+          success: true,
+          user: userData[0].userID,
+        });
       } else {
         res.send("Invalid username or password");
       }

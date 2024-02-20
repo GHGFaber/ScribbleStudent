@@ -16,7 +16,7 @@ function App() {
   let isRendered = false;
 
   const [isFirstTime, setIsFirstTime] = useState(true);
-
+  const user = localStorage.getItem("id");
   const [chats, setChats] = useState([]);
   const [classes, setClasses] = useState([]);
   const [activeUsers, setActiveUsers] = useState([]);
@@ -45,7 +45,7 @@ function App() {
     // localStorage.setItem("messages", null);
     console.log("useEffect has ran");
     get_chat_from_server();
-    get_users_classes_from_server();
+    // get_users_classes_from_server();
     get_active_users_from_server();
     get_inactive_users_from_server();
     get_users_notes_from_server();
@@ -113,20 +113,6 @@ function App() {
         setChats(res.data);
 
         localStorage.setItem("chats", JSON.stringify(res.data));
-      })
-      .catch((error) => {
-        console.error("Error fetching data from the API:", error);
-        console.log("not connected");
-      });
-  }
-
-  function get_users_classes_from_server() {
-    axios
-      .get("http://localhost:3000/class_data")
-      .then((res) => {
-        setClasses(res.data);
-
-        localStorage.setItem("classes", JSON.stringify(res.data));
       })
       .catch((error) => {
         console.error("Error fetching data from the API:", error);
@@ -222,7 +208,7 @@ function App() {
             element={
               <Chatroom
                 /*chats={renderedChats}*/ chats={chats}
-                classes={classes}
+                // classes={classes}
                 activeUsers={activeUsers}
                 inactiveUsers={inactiveUsers}
                 notePages={userNotes}

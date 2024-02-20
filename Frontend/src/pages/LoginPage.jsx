@@ -18,7 +18,8 @@ function LoginPage() {
       });
       console.log(response.data);
       if (response.data.success) {
-        // Redirect to the LoggedInComponent
+        console.log(response.data.user);
+        localStorage.setItem("id", response.data.user);
         navigate("/chatroom");
       } else {
         alert("wrong user!");
