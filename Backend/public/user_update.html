@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Scribble | Log In</title>
+    <title>Scribble | Update User</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -16,7 +16,7 @@
             background-color: #f0f0f0;
         }
 
-        .login-panel {
+        .update-panel {
             background-color: #fff;
             padding: 40px;
             border-radius: 8px;
@@ -37,6 +37,7 @@
         }
 
         input[type="text"],
+        input[type="email"],
         input[type="password"],
         input[type="submit"] {
             width: 100%;
@@ -67,32 +68,24 @@
     </style>
 </head>
 <body>
-    <div class="main-login">
-        <div class="center-2 login-panel">
-            <h1>Welcome back!</h1>
-            <form action="/login" method="post" onsubmit="return loginUser()">
+    <div class="main-update">
+        <div class="center-2 update-panel">
+            <h1>Update Your Information</h1>
+            <form action="/update" method="post">
                 <label for="username">Username</label>
                 <input type="text" id="username" name="username"/>
                 
-                <label for="password">Password</label>
-                <input type="password" id="password" name="password"/>
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email"/>
                 
-                <input type="submit" value="Log In">
+                <label for="name">Name</label>
+                <input type="text" id="name" name="name"/>
+                
+                <input type="submit" value="Update">
                 <br>
-                <a href="acc.html">No account? Create one!</a>
+                <a href="index.html">Sign Out</a>
             </form>
         </div>
     </div>
-
-    <script>
-        function loginUser() {
-            // Perform login authentication here
-
-            // Assuming login is successful, redirect to user_update.html
-            window.location.href = "user_update.html";
-            return false; // Prevent form submission
-        }
-    </script>
-
 </body>
 </html>
