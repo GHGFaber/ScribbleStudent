@@ -202,15 +202,20 @@ function App() {
           <Route index element={<Home />} />
           <Route path="login-page" element={<LoginPage />} />
           <Route path="create-account" element={<CreateAccount />} />
-          <Route path="notebook" element={<Notebook classes={classes} />} />
+          <Route
+            path="notebook"
+            element={<Notebook classes={classes} notePages={userNotes} />}
+          />
+
           <Route
             path="chatroom"
             element={
               <Chatroom
                 chats={chats}
-                classes={classes}
+                //classes={classes}
                 activeUsers={activeUsers}
                 inactiveUsers={inactiveUsers}
+                notePages={userNotes}
               />
             }
           />

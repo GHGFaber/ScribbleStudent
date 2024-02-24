@@ -123,7 +123,6 @@ function Chatroom() {
       .get("http://localhost:3000/notes_data")
       .then((res) => {
         setNotes(res.data);
-
         localStorage.setItem("notes", JSON.stringify(res.data));
       })
       .catch((error) => {

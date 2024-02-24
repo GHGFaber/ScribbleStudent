@@ -6,6 +6,8 @@ function Sidebar({ parentCallback, notePages }) {
   let targetFile = "";
   let temp = "";
 
+  console.log(localStorage.getItem("notes"));
+
   function get_that_file(setOfNotes, filename) {
     return setOfNotes.find((page) => page.filename == filename);
   }

@@ -66,7 +66,7 @@ function Navbar({ classes }) {
         <ul className="nav-items my-auto">
           {classes.map((classInSchool, index) => (
             <li key={index}>
-              <label>{classInSchool.classInSchoolName}</label>
+              <label>{classInSchool.className}</label>
             </li>
           ))}
         </ul>

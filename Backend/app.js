@@ -353,10 +353,6 @@ app.post("/login", async (req, res) => {
       const passwordMatch = await bcrypt.compare(password, hashedPassword);
 
       if (passwordMatch) {
-        res.send({
-          success: true,
-          user: userData[0].userID,
-        });
         //store userid in the session
         req.session.userid = userid; // this stores the userid in session
         req.session.username = username;
@@ -366,6 +362,7 @@ app.post("/login", async (req, res) => {
 
         // sends user info to the Frontend on submit
         res.send({
+          user: userData[0].userID,
           success: true,
           username,
           email,
