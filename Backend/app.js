@@ -11,6 +11,7 @@ import { fileURLToPath } from "url";
 import { dirname, join } from "path";
 import bcrypt from "bcrypt";
 import cors from "cors";
+import multer from "multer";
 
 // External modification +++++++++++++++++++++++++++++++++++++++++++++++++++++++
 import chat_items from "./scrib_chats.json" assert { type: "json" };
@@ -25,6 +26,10 @@ const __dirname = dirname(__filename);
 
 const app = express(); // create application
 
+const upload = multer({ storage: multer.memoryStorage() });
+
+app.use(bodyParser.urlencoded({ extended: true, limit: "50mb" }));
+app.use(bodyParser.json({ limit: "50mb" }));
 // Set up session middleware
 app.set("trust proxy", 1); // trust first proxy
 app.use(
@@ -402,9 +407,8 @@ app.post("/logout", (req, res) => {
 });
 
 // Account creation post
-app.post("/create-account", async (req, res) => {
+app.post("/create-account", upload.single("Image"), async (req, res) => {
   const { username, email, password, croppedimg } = req.body;
-
   try {
     // Check if the username or email already exists in the database
     const [existingUser] = await pool.query(
@@ -427,12 +431,9 @@ app.post("/create-account", async (req, res) => {
 
         // Insert new user data (including the hashed password) into the database
         await pool.query(
-          "INSERT INTO user (username, email, password) VALUES (?, ?, ?)",
-          [username, email, hashedPassword]
+          "INSERT INTO user (username, email, password, avatar) VALUES (?, ?, ?, ?)",
+          [username, email, hashedPassword, croppedimg]
         );
-
-        // Upload profile picture
-        await pool.query("INSERT INTO user (content) VALUES (?)", [croppedimg]);
 
         // Check if the account was successfully created by querying the database again
         const [newUser] = await pool.query(

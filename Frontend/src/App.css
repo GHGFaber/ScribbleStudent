@@ -524,3 +524,22 @@ body::-webkit-scrollbar {
   border: none;
   border-radius: 30px;
 }
+
+.cropper {
+  flex-direction: column;
+  justify-content: center;
+}
+
+.cropper > div > img {
+  border-radius: 50%;
+  border-style: solid;
+  justify-self: end;
+}
+
+input[type="file"] {
+  display: none;
+}
+
+.buttonPress {
+  cursor: pointer;
+}
