@@ -1,7 +1,9 @@
-import {Link} from "react-router-dom";
+import { Link } from "react-router-dom";
+import axios from "axios";
+
 function Sidebar() {
     return (
-        <sidebar>
+        <div>
             <div className="the-column">
                 <ul className="sidebar-content">
                     <li className="side-list">
@@ -18,10 +20,20 @@ function Sidebar() {
                             </div>
                         </Link>
                     </li>
+
+                    {/* display logged in users' info in console */}
+                    {/* <li className="side-list">
+                        <Link className="the-link" onClick={handleUserInfoClick}>
+                            <div className="side-selection">
+                                <h5>User Info</h5>
+                            </div>
+                        </Link>
+                    </li> */}
+
                 </ul>
             </div>
-        </sidebar>
+        </div>
     );
-  }
+}
 
 export default Sidebar;

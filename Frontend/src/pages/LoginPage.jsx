@@ -1,8 +1,16 @@
 import { Link } from "react-router-dom";
 import { useState, useRef } from "react";
-
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+
+import socket from '../components/Socket.jsx';
+
+// //++++++++++++++++++++++++++++++++++
+// import io from "socket.io-client";
+// const socket = io.connect("http://localhost:3000", {
+//   reconnection: false
+// }); //connect to socket.io server
+// //++++++++++++++++++++++++++++++++++
 
 function LoginPage() {
   const navigate = useNavigate();
@@ -15,9 +23,16 @@ function LoginPage() {
       const response = await axios.post("http://localhost:3000/login", {
         username: formData.current[0].value,
         password: formData.current[1].value,
+        withCredentials: true,
       });
-      console.log(response.data);
       if (response.data.success) {
+        console.log(response.data);
+        //Store username in sessionStorage
+        const dataToStore = { username: formData.current[0].value };
+        sessionStorage.setItem('userData', JSON.stringify(dataToStore));
+        //Send the username to the backend ('username')
+        socket.emit('username', formData.current[0].value);
+
         // Redirect to the LoggedInComponent
         navigate("/chatroom");
       } else {
@@ -43,11 +58,12 @@ function LoginPage() {
             <label id="ps-text">Password</label>
             <br />
             <input name="password" type="password" id="password" />
-          </form>
+          
           <div className="spacer-0"></div>
           <button id="log-page-button" onClick={handleLogin}>
             Log In
           </button>
+          </form>
           <div className="spacer-0"></div>
           <Link to="/create-account">No account? Create one!</Link>
           <div className="spacer-0"></div>

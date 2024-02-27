@@ -70,6 +70,8 @@ function CreateAccount() {
             </button>
           </Link>
           <div className="spacer-0"></div>
+          <Link to="/login-page">Have an account? Log In!</Link>
+          <div className="spacer-0"></div>
         </div>
       </div>
     </>
