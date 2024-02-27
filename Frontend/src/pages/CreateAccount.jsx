@@ -17,7 +17,12 @@ function CreateAccount() {
 
   const formData = {
     cropper: useRef(null),
+    croppedimg: useRef(null),
+    username: useRef(null),
+    password: useRef(null),
+    email: useRef(null),
   };
+
   const handleAccount = async (event) => {
     event.preventDefault();
     console.log("hi");
@@ -26,10 +31,10 @@ function CreateAccount() {
       const response = await axios.post(
         "http://localhost:3000/create-account",
         {
-          username: formData.current[3].value,
-          password: formData.current[4].value,
-          email: formData.current[5].value,
-          croppedimg: formData.current[2].value,
+          username: formData.username.current.value,
+          password: formData.password.current.value,
+          email: formData.email.current.value,
+          croppedimg: formData.croppedimg.current.value,
         }
       );
       console.log(response.data);
@@ -105,7 +110,7 @@ function CreateAccount() {
           >
             {!image && !imgData && (
               <label
-                for="file"
+                htmlFor="file"
                 id="create-account-button"
                 className="buttonPress"
               >
@@ -174,13 +179,19 @@ function CreateAccount() {
                 </div>
               )}
             </div>
-            <input type="hidden" value={profileData} name="croppedimg" />
+            <input
+              type="hidden"
+              value={profileData}
+              ref={formData.croppedimg}
+              name="croppedimg"
+            />
             <br />
             <p id="uname-create-text">Create Username</p>
             <input
               type="text"
               className="cr-in"
               id="username"
+              ref={formData.username}
               name="username"
             />
             <div className="spacer-0"></div>
@@ -189,11 +200,18 @@ function CreateAccount() {
               type="password"
               className="cr-in"
               id="password"
+              ref={formData.password}
               name="password"
             />
             <div className="spacer-0"></div>
             <p id="ps-create-text">Email</p>
-            <input type="text" className="cr-in" id="email" name="email" />
+            <input
+              type="text"
+              className="cr-in"
+              id="email"
+              name="email"
+              ref={formData.email}
+            />
             {/* <div className="spacer-0"></div>
             <p id="ps-confirm-text">Confirm Password</p>
             <input type="password" className="cr-in" id="ps-confirm-input" /> */}
