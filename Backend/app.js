@@ -403,7 +403,7 @@ app.post("/logout", (req, res) => {
 
 // Account creation post
 app.post("/create-account", async (req, res) => {
-  const { username, email, password } = req.body;
+  const { username, email, password, croppedimg } = req.body;
 
   try {
     // Check if the username or email already exists in the database
@@ -430,6 +430,9 @@ app.post("/create-account", async (req, res) => {
           "INSERT INTO user (username, email, password) VALUES (?, ?, ?)",
           [username, email, hashedPassword]
         );
+
+        // Upload profile picture
+        await pool.query("INSERT INTO user (content) VALUES (?)", [croppedimg]);
 
         // Check if the account was successfully created by querying the database again
         const [newUser] = await pool.query(
