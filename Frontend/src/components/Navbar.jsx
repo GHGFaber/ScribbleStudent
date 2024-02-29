@@ -83,7 +83,7 @@ function Navbar({ classes }) {
           Sign Out
         </button>
         {/* </Link> */}
-
+        <img></img>
         {/* Get username from backend session and display (DONE)*/}
         <button
           className="sign-out-button my-auto"
@@ -99,7 +99,7 @@ function Navbar({ classes }) {
             cursor: "initial", // removes cursor change when hovering
           }}
         >
-          Hello, {username}
+          {username}
         </button>
 
         {/* Add a black border around button (DONE)*/}

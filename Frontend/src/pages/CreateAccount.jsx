@@ -27,7 +27,6 @@ function CreateAccount() {
     event.preventDefault();
     console.log("hi");
     try {
-      console.log(formData.current[3].value);
       const response = await axios.post(
         "http://localhost:3000/create-account",
         {
@@ -102,12 +101,7 @@ function CreateAccount() {
           <div className="spacer-0"></div>
           <h3 id="welcome-create-text">Welcome to Scribble!</h3>
           <div className="spacer-0"></div>
-          <form
-            id="create-form"
-            ref={formData}
-            method="POST"
-            encType="multipart/form-data"
-          >
+          <form id="create-form" method="POST" encType="multipart/form-data">
             {!image && !imgData && (
               <label
                 htmlFor="file"
