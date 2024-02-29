@@ -2,17 +2,10 @@ import { useEffect, useState } from "react";
 
 import socket from '../components/Socket.jsx';
 
-// //++++++++++++++++++++++++++++++++++
-// import io from "socket.io-client";
-// const socket = io.connect("http://localhost:3000", {
-//   reconnection: false
-// }); //connect to socket.io server
-// //++++++++++++++++++++++++++++++++++
-
 
 // function Userbar({ activeUsers, inactiveUsers }) {
   //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-function Userbar({ inactiveUsers }) {
+function Userbar() {
   
   // Grab username from session storage (seemed to solve problem with not displaying in private mode)
   const storedData = JSON.parse(sessionStorage.getItem('userData')); // Grab object
@@ -30,9 +23,14 @@ function Userbar({ inactiveUsers }) {
       
   //active users state
   // const [activeUsers, setActiveUsers] = useState([]);
-  // Load active users from local storage on component mount
+  // Load active users from session storage on component mount
   const [activeUsers, setActiveUsers] = useState(() => {
-    const savedUsers = localStorage.getItem('activeUsers');
+    const savedUsers = sessionStorage.getItem('activeUsers');
+    return savedUsers ? JSON.parse(savedUsers) : [];
+  });
+  // Load inactive users session storage on component mount
+  const [inactiveUsers, setInactiveUsers] = useState(() => {
+    const savedUsers = sessionStorage.getItem('inactiveUsers');
     return savedUsers ? JSON.parse(savedUsers) : [];
   });
   
@@ -41,17 +39,24 @@ function Userbar({ inactiveUsers }) {
     //receive updated list of active users
     socket.on('activeUsers', (users) => {
       setActiveUsers(users);
-      // Save active users to local storage
-      localStorage.setItem('activeUsers', JSON.stringify(users));
-      //alert("activeUsers socket"); //testing
+      // Save active and inactive users to session storage
+      sessionStorage.setItem('activeUsers', JSON.stringify(users));
+    });
+
+    // Receive updated list of inactive users
+    socket.on('inactiveUsers', (users) => {
+      setInactiveUsers(users);
+      // Save inactive users to session storage
+      sessionStorage.setItem('inactiveUsers', JSON.stringify(users));
     });
     
     // Clean up the socket listener
     return () => {
-      socket.off("notified_users");
+      socket.off("activeUsers");
+      socket.off("inactiveUsers");
     };
     
-  }, [socket])
+  }, [socket, activeUsers, inactiveUsers])
   //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   
   return (

@@ -11,12 +11,6 @@ import {BrowserRouter, Routes, Route} from "react-router-dom";
 
 import socket from './components/Socket.jsx';
 
-// //++++++++++++++++++++++++++++++++++
-// import io from "socket.io-client";
-// const socket = io.connect("http://localhost:3000", {
-//   reconnection: false
-// }); //connect to socket.io server
-// //++++++++++++++++++++++++++++++++++
 
 function App() {
   

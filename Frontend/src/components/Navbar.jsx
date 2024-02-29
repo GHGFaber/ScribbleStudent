@@ -11,19 +11,14 @@ import socket from '../components/Socket.jsx';
 // else backend creates new session for every request.
 axios.defaults.withCredentials = true
 
-// //++++++++++++++++++++++++++++++++++
-// import io from "socket.io-client";
-// const socket = io.connect("http://localhost:3000", {
-//   reconnection: false
-// }); //connect to socket.io server
-// //++++++++++++++++++++++++++++++++++
 
 function Navbar({ classes }) {
 //-----------------------------------------------
 
 
 const formData = useRef(null);
-// Destroy sessionID and return to login page
+
+// Destroy sessionID, clear sessionStorage and return to login page
 const logout = async (e) => {
   e.preventDefault();
   try {
@@ -33,7 +28,8 @@ const logout = async (e) => {
     const username = storedData.username; // Grab data from object
     //remove user from active users list
     socket.emit('logout', username);
-    //localStorage.removeItem('activeUsers');
+    //clearn session storage
+    //sessionStorage.clear();
     window.location.href = "/login-page";//navigate to login page
     } catch (error) {
       console.error("Error during logout", error);

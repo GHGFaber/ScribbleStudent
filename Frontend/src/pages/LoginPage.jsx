@@ -5,12 +5,6 @@ import { useNavigate } from "react-router-dom";
 
 import socket from '../components/Socket.jsx';
 
-// //++++++++++++++++++++++++++++++++++
-// import io from "socket.io-client";
-// const socket = io.connect("http://localhost:3000", {
-//   reconnection: false
-// }); //connect to socket.io server
-// //++++++++++++++++++++++++++++++++++
 
 function LoginPage() {
   const navigate = useNavigate();
@@ -28,10 +22,12 @@ function LoginPage() {
       if (response.data.success) {
         console.log(response.data);
         //Store username in sessionStorage
-        const dataToStore = { username: formData.current[0].value };
+        // const dataToStore = { username: formData.current[0].value };
+        const dataToStore = { username: response.data.username };
         sessionStorage.setItem('userData', JSON.stringify(dataToStore));
         //Send the username to the backend ('username')
-        socket.emit('username', formData.current[0].value);
+        socket.emit('username', response.data.username);//Form data will be different from reponse data
+        
 
         // Redirect to the LoggedInComponent
         navigate("/chatroom");

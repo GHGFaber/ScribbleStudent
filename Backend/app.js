@@ -64,28 +64,67 @@ app.use(sessionMiddleware);
   
   //session context shared w/ socket.io
   io.engine.use(sessionMiddleware);
-  
+
+
+  //(Might need to use userID along with username 
+  //to add and delete from active and inactive)
+  // Async function to query database and populate inactive users map
+  async function populateInactiveUsers() {
+    try {
+      const [results] = await pool.query('SELECT userID, username FROM user');
+      results.forEach((row) => {
+        const username = row.username;
+        inactiveUsers.set(username, {username});
+        // inactiveUsers.set(userID, {username});
+      });
+      console.log('Inactive users populated:', inactiveUsers);
+    } catch (error) {
+      console.error('Error fetching usernames:', error);
+    }
+  }
+
+  // Call the async function to populate inactive users map
+  populateInactiveUsers();
+
   //List of active users
   const activeUsers = new Map();
+  //List of inactive users
+  const inactiveUsers = new Map();
 
   io.on("connection", (socket) => {
 
     console.log(`User Connected: ${socket.id}`);
+    //console.log(`userID: ${socket.handshake.session.userID}`);
 
     //receive username from client
     socket.on('username', (username) => {
       //store username and socket ID
       activeUsers.set(socket.id, { username });
-      //Broadcast updated list of active users
-      io.emit('activeUsers', Array.from(activeUsers.values()));
+      // remove from inactive users if exists
+      if (inactiveUsers.has(username)) {
+        inactiveUsers.delete(username);
+      }
+      if (!activeUsers.has(username)) {
+        //Broadcast updated list of active users
+        io.emit('activeUsers', Array.from(activeUsers.values()));
+        //Broadcast updated list of inactive active users
+        io.emit('inactiveUsers', Array.from(inactiveUsers.values()));
+      }
     });
 
     //receive username from logout
     socket.on('logout', (username) => {
-      //remove user from active users list
-      activeUsers.delete(socket.id);
+      // remove user from active users list
+      const user = activeUsers.get(socket.id);
+      if (user) {
+        activeUsers.delete(socket.id);
+        // add to inactive users
+        inactiveUsers.set(username, user);
+      }
       //broadcast updated list of active users
       io.emit('activeUsers', Array.from(activeUsers.values()));
+      //Broadcast updated list of inactive active users
+      io.emit('inactiveUsers', Array.from(inactiveUsers.values()));
     });
 
     // // Remove the user from the activeUsers list on disconnect
@@ -96,16 +135,18 @@ app.use(sessionMiddleware);
     //   io.emit('activeUsers', Array.from(activeUsers.values()));
     // });
 
-    // //Setting up a socket to the chatroom
-    // //when a user first logs in, send the username back here
-    // //then emit the username to the rest of the users in the chatroom
-    // socket.on("notify_users", (data) => {
-    //   // I want to emit a broadcast to all users when a user logs in
-    //   socket.broadcast.emit("notified_users", data);
-    // });
-
     //For joining a specific room with other users
     socket.on("join_room", (data) => {
+      // Get the list of rooms the socket is currently in
+      const rooms = Object.keys(socket.rooms);
+
+      // Leave all existing rooms except the one we want to join
+      rooms.forEach(room => {
+        if (room !== roomToJoin) {
+          socket.leave(room);
+        }
+      });
+      //Join new room
       socket.join(data);
     });
 
@@ -120,7 +161,7 @@ app.use(sessionMiddleware);
       socket.to(data.room).emit("receive_message", messageData);
     });
 
-    //Broadcasts message to users
+    //Broadcast message to users
     socket.on("send_broadcast", (data) => {
       // Include username along with message data
       const messageData = {
@@ -440,6 +481,7 @@ app.post("/login", async (req, res) => {
         req.session.username = username;
 
         console.log('Session ID:', req.sessionID);
+        //console.log("UserID: ", session.userID);
 
         // sends user info to the Frontend on submit
         res.send({ 
@@ -578,6 +620,8 @@ async function queryDatabase() {
     // const timestamp = '2024-02-21T12:56:00.000Z';
     // const message = "Does anyone have the notes from today's class?";
     // await pool.query("INSERT INTO chatrooms (classID, timestamp, message, userID) VALUES (?, ?, ?, ?)", [classID, timestamp, message, userID]);
+
+    
 
   } catch (error) {
     console.error(error);

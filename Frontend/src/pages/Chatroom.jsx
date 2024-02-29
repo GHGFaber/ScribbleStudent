@@ -5,14 +5,6 @@ import { useEffect, useState } from "react";
 
 import socket from '../components/Socket.jsx';
 
-// //++++++++++++++++++++++++++++++++++
-
-// import io from "socket.io-client";
-// const socket = io.connect("http://localhost:3000", {
-//   reconnection: false
-// }); //connect to socket.io server
-// //++++++++++++++++++++++++++++++++++
-
 
 
 // function Chatroom({chats, classes, activeUsers, inactiveUsers}) {    
@@ -116,7 +108,7 @@ import socket from '../components/Socket.jsx';
       };
 
     // }, []);
-    }, [socket])
+    }, [socket, room, message])
     //++++++++++++++++++++++++++++++++++++++++++++++++++++
     
     return (
