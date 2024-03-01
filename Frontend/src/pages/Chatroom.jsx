@@ -2,17 +2,14 @@ import Navbar from "../components/Navbar.jsx";
 import Sidebar from "../components/Sidebar.jsx";
 import Userbar from "../components/Userbar.jsx";
 import { useEffect, useState } from "react";
-
 import socket from '../components/Socket.jsx';
 
-
-
-// function Chatroom({chats, classes, activeUsers, inactiveUsers}) {    
+   
   function Chatroom({classes, activeUsers, inactiveUsers}) { 
-    //++++++++++++++++++++++++
-    //chat State
+
+    // Chat State
     const [chats, setChats] = useState([]);
-    //++++++++++++++++++++++++
+
     
     function get_time(timestamp) {
         const date = new Date(timestamp);
@@ -37,17 +34,13 @@ import socket from '../components/Socket.jsx';
             ))
         );
       }
-    //++++++++++++++++++++++++++++++++++++++++++++++++++++
-    // //grab username from localStorage (preserves data across multiple sessions)
-    // const storedData = JSON.parse(localStorage.getItem('userData'));//grab object
-    // const username = storedData.username;//grab data from object
+
 
     // Grab username from session storage (data disappears when browser is closed)
     const storedData = JSON.parse(sessionStorage.getItem('userData')); // Grab object
-    //const username = storedData.username; // Grab data from object
 
       
-    //Room State
+    // Room State
     var [room, setRoom] = useState("");
     // Message States
     const [message, setMessage] = useState("");
@@ -60,11 +53,11 @@ import socket from '../components/Socket.jsx';
 
     function handleKeyDown(event) {
       if (event.key === 'Enter') {
-        sendMessage(); // Call your sendMessage function to submit the message
+        sendMessage(); 
       }
     }
 
-    //Shows the user's own message
+    // Shows the user's own message
     function userMsg() {
       const curChat = {
         username: "(Me) " + storedData.username,
@@ -75,41 +68,42 @@ import socket from '../components/Socket.jsx';
     }
     
     const sendMessage = () => {
-      // Check if the message is empty (works)
-      //If message empty, do nothing (allows for whitespace)
+      // If message empty, do nothing (allows for whitespace)
       if (message.trim() !== '' || message !== '') {
         // Clear the textarea value after submit
         document.getElementById('txt').value = '';
         setMessage('');
-
-        event.preventDefault(); //stops page from refreshing on submission
+        // Stops page from refreshing on submission
+        event.preventDefault(); 
         userMsg();
         if (room !== "") {
-          socket.emit("send_message", { username: storedData.username, message, room }); //sending username, message and room
+          // Send username, message and room
+          socket.emit("send_message", { username: storedData.username, message, room }); 
         } else {
-          socket.emit("send_broadcast", { username: storedData.username, message }); //if a room number isn't entered then send broadcast
+          // No room then send broadcast
+          socket.emit("send_broadcast", { username: storedData.username, message }); 
         }
       }
     };
     
     useEffect(() => {
       socket.on("receive_message", (data) => {
-        //creates new chats to insert in chats State
+        // Creates new chats to insert in chats State
         const newChat = {
           username: data.username,
           text: data.message,
           timestamp: Date.now()
         };
-        setChats((prevChats) => [...prevChats, newChat]); //update chats
+        // Update chats
+        setChats((prevChats) => [...prevChats, newChat]); 
       })
     
       return () => {
         socket.off("receive_message");
       };
 
-    // }, []);
     }, [socket, room, message])
-    //++++++++++++++++++++++++++++++++++++++++++++++++++++
+
     
     return (
       <>
@@ -129,9 +123,6 @@ import socket from '../components/Socket.jsx';
                             {
                               show_chats()
                             }
-                            {/* Displays message being sent */}
-                            {/* <br></br><h2>Message:</h2>
-                            {messageReceived} */}
                         </div>
                         <form className="the-chat-form">
                             <div id="the-textarea" className="container-fluid">

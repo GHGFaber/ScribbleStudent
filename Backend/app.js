@@ -11,9 +11,9 @@ import { fileURLToPath } from "url";
 import { dirname, join } from "path";
 import bcrypt from "bcrypt";
 import cors from "cors";
+import { Server } from "socket.io";
 
 //++++++++++++++++++++++++++++++++++++++++++++
-import { Server } from "socket.io";
 import http from "http";
 import sharedSession from "express-socket.io-session";
 //++++++++++++++++++++++++++++++++++++++++++++
@@ -23,12 +23,12 @@ import sharedSession from "express-socket.io-session";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-const app = express(); // create application
+const app = express(); // Create application
 
 
 
 // Set up session middleware
-app.set('trust proxy', 1) // trust first proxy
+app.set('trust proxy', 1) // Trust first proxy
 const sessionMiddleware = session({
     secret: "your-secret-key", // Replace with a secret key for session encryption
     resave: false,
@@ -40,149 +40,143 @@ const sessionMiddleware = session({
   })
 app.use(sessionMiddleware);
   
-  //app.use(cors({ origin: "http://localhost:5173" }));
-  app.use(cors({ origin: "http://localhost:5173", credentials: true }));
-  app.use(bodyParser.urlencoded({ extended: false }));
-  app.use(express.json());
+app.use(cors({ origin: "http://localhost:5173", credentials: true }));
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(express.json());
   
 
-  //++++++++++++++++++++++++++++++++++++++++++++
-  
-  // const server = http.createServer(app); //server for socket.io
+const server =  app.listen(3000, () => {
+  console.log("App listening on port 3000");
+});
 
-  const server =  app.listen(3000, () => {
-    console.log("App listening on port 3000");
-  });
-
-  const io = new Server(server, {
-    cors: {
-      origin: "http://localhost:5173",
-      methods: ["GET", "POST"],
-    }
-  });
-
-  
-  //session context shared w/ socket.io
-  io.engine.use(sessionMiddleware);
-
-
-  //(Might need to use userID along with username 
-  //to add and delete from active and inactive)
-  // Async function to query database and populate inactive users map
-  async function populateInactiveUsers() {
-    try {
-      const [results] = await pool.query('SELECT userID, username FROM user');
-      results.forEach((row) => {
-        const username = row.username;
-        inactiveUsers.set(username, {username});
-        // inactiveUsers.set(userID, {username});
-      });
-      console.log('Inactive users populated:', inactiveUsers);
-    } catch (error) {
-      console.error('Error fetching usernames:', error);
-    }
+const io = new Server(server, {
+  cors: {
+    origin: "http://localhost:5173",
+    methods: ["GET", "POST"],
   }
+});
 
+  
+// Session context shared w/ socket.io
+io.engine.use(sessionMiddleware);
+
+
+// Call function inside socket
+// Async function to query database and populate inactive users map
+async function populateInactiveUsers() {
+  try {
+    const [results] = await pool.query('SELECT userID, username FROM user');
+    results.forEach((row) => {
+      const username = row.username;
+      inactiveUsers.set(username, {username});
+    });
+  } catch (error) {
+    console.error('Error fetching usernames:', error);
+  }
+}
+
+  
+// List of active users
+const activeUsers = new Map();
+// List of inactive users
+const inactiveUsers = new Map();
+
+let user = "";
+
+io.on("connection", (socket) => {
+  
+  console.log(`User Connected: ${socket.id}`);
   // Call the async function to populate inactive users map
   populateInactiveUsers();
-
-  //List of active users
-  const activeUsers = new Map();
-  //List of inactive users
-  const inactiveUsers = new Map();
-
-  io.on("connection", (socket) => {
-
-    console.log(`User Connected: ${socket.id}`);
-    //console.log(`userID: ${socket.handshake.session.userID}`);
-
-    //receive username from client
-    socket.on('username', (username) => {
-      //store username and socket ID
+  
+  // Receive username from client
+  socket.on('username', (username) => {
+    // Remove from inactive users if exists
+    if (inactiveUsers.has(username)) {
+      inactiveUsers.delete(username);
+    }
+    if (!activeUsers.has(username)) {
+      // Store username and socket ID
       activeUsers.set(socket.id, { username });
-      // remove from inactive users if exists
-      if (inactiveUsers.has(username)) {
-        inactiveUsers.delete(username);
-      }
-      if (!activeUsers.has(username)) {
-        //Broadcast updated list of active users
-        io.emit('activeUsers', Array.from(activeUsers.values()));
-        //Broadcast updated list of inactive active users
-        io.emit('inactiveUsers', Array.from(inactiveUsers.values()));
-      }
-    });
-
-    //receive username from logout
-    socket.on('logout', (username) => {
-      // remove user from active users list
-      const user = activeUsers.get(socket.id);
-      if (user) {
-        activeUsers.delete(socket.id);
-        // add to inactive users
-        inactiveUsers.set(username, user);
-      }
-      //broadcast updated list of active users
+      // Broadcast updated list of active users
       io.emit('activeUsers', Array.from(activeUsers.values()));
-      //Broadcast updated list of inactive active users
+      // Broadcast updated list of inactive active users
       io.emit('inactiveUsers', Array.from(inactiveUsers.values()));
-    });
-
-    // // Remove the user from the activeUsers list on disconnect
-    // // (IS REMOVING THE USER WHEN THE PAGE IS REFRESHED DUE TO THE SOCKET ID BEING RESET)
-    // socket.on('disconnect', () => {
-    //   activeUsers.delete(socket.id);
-    //   // Broadcast the updated list of active users to all clients
-    //   io.emit('activeUsers', Array.from(activeUsers.values()));
-    // });
-
-    //For joining a specific room with other users
-    socket.on("join_room", (data) => {
-      // Get the list of rooms the socket is currently in
-      const rooms = Object.keys(socket.rooms);
-
-      // Leave all existing rooms except the one we want to join
-      rooms.forEach(room => {
-        if (room !== roomToJoin) {
-          socket.leave(room);
-        }
-      });
-      //Join new room
-      socket.join(data);
-    });
-
-    //Which room we are sending the message to
-    socket.on("send_message", (data) => {
-      // Include username along with message data
-      const messageData = {
-        username: data.username,
-        message: data.message,
-        room: data.room
-      };
-      socket.to(data.room).emit("receive_message", messageData);
-    });
-
-    //Broadcast message to users
-    socket.on("send_broadcast", (data) => {
-      // Include username along with message data
-      const messageData = {
-        username: data.username,
-        message: data.message
-      };
-      socket.broadcast.emit("receive_message", messageData);
-    });
-    
+    }
   });
-  
 
-  // //runing socket.io server
-  // server.listen(3001, () => {
-  //   console.log("App listening on port 3000");
-  // });
- 
+  // Receive username from logout
+  socket.on('logout', (username) => {
+    // Remove user from active users list
+    const user = activeUsers.get(socket.id);
+    if (user) {
+      activeUsers.delete(socket.id);
+      // Add to inactive users
+      inactiveUsers.set(username, user);
+    }
+    // Broadcast updated list of active users
+    io.emit('activeUsers', Array.from(activeUsers.values()));
+    // Broadcast updated list of inactive active users
+    io.emit('inactiveUsers', Array.from(inactiveUsers.values()));
+  });
+
+  // Remove user from activeUsers on disconnect
+  socket.on('disconnect', () => {
+    // Remove user from active users list
+    const user = activeUsers.get(socket.id);
+    if (user) {
+      // Retreive username from active users
+      const username = activeUsers.get(socket.id)?.username;
+      activeUsers.delete(socket.id);
+      // Add to inactive users
+      inactiveUsers.set(username, user);
+    }
+    // Broadcast the updated list of active users to all clients
+    io.emit('activeUsers', Array.from(activeUsers.values()));
+    // Broadcast updated list of inactive active users
+    io.emit('inactiveUsers', Array.from(inactiveUsers.values()));
+  });
+
+  // Join a specific room with other users
+  socket.on("join_room", (data) => {
+    // Get the list of rooms the socket is currently in
+    const rooms = Object.keys(socket.rooms);
+
+    // Leave all existing rooms except the one we want to join
+    rooms.forEach(room => {
+      if (room !== roomToJoin) {
+        socket.leave(room);
+      }
+    });
+    // Join new room
+    socket.join(data);
+  });
+
+  // Which room we are sending the message to
+  socket.on("send_message", (data) => {
+    // Include username along with message data
+    const messageData = {
+      username: data.username,
+      message: data.message,
+      room: data.room
+    };
+    socket.to(data.room).emit("receive_message", messageData);
+  });
+
+  // Broadcast message to users
+  socket.on("send_broadcast", (data) => {
+    // Include username along with message data
+    const messageData = {
+      username: data.username,
+      message: data.message
+    };
+    socket.broadcast.emit("receive_message", messageData);
+  });
+    
+});
   
-  //++++++++++++++++++++++++++++++++++++++++++++
   
-  // // generate secret key
+// // generate secret key
 // const crypto = require('crypto');
 
 // const generateSecretKey = () => {
@@ -344,16 +338,13 @@ app.post("/insert-message", async (req, res) => {
 
 // Updates user accounts from the user update page
 app.post("/update-user-info", async (req, res) => {
-  const { name, username, email } = req.body;
-  
+  const { name, username, email, croppedImg } = req.body;
   try {
-
     if (req.session) {
-
       const userId = req.session.userid;
 
       // Query the database to retrieve essential user information based on user ID
-      const [userData] = await pool.query("SELECT name, username, email FROM user WHERE userID = ?", [userId]);
+      const [userData] = await pool.query("SELECT name, username, email, avatar FROM user WHERE userID = ?", [userId]);
 
       if (userData.length === 1) {
         
@@ -362,6 +353,7 @@ app.post("/update-user-info", async (req, res) => {
         if (name) updates.name = name;
         if (username) updates.username = username;
         if (email) updates.email = email;
+        if (croppedImg) updates.avatar = croppedImg;
 
         // Check if provided email is valid
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -431,7 +423,7 @@ app.post("/reset-password", async (req, res) => {
         }
 
         // Hash the new password
-        const hashedPassword = await bcrypt.hash(newPassword, 10); // 10 is the number of salt rounds
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
 
         // Update the user's password hash in the database
         await pool.query("UPDATE user SET password = ? WHERE userID = ?", [hashedPassword, userId]); 
@@ -471,25 +463,26 @@ app.post("/login", async (req, res) => {
       const userid = userData[0].userID; 
       const username = userData[0].username; 
       const email = userData[0].email; 
+      // (***) Grab the image data (***)
+      const img = userData[0].avatar;
 
       // Compare the entered password with the hashed password from the database
       const passwordMatch = await bcrypt.compare(password, hashedPassword);
 
       if (passwordMatch) {
-        //store userid in the session
-        req.session.userid = userid; // this stores the userid in session
+        // Store userid in the session
+        req.session.userid = userid; // Stores the userid in session
         req.session.username = username;
 
         console.log('Session ID:', req.sessionID);
-        //console.log("UserID: ", session.userID);
 
         // sends user info to the Frontend on submit
         res.send({ 
           success: true, 
           username, 
           email, 
-          userID: req.session.userid, 
-          hashedPassword, 
+          userID: req.session.userid,
+          croppedImg: img,
         }); 
 
         // Print userid to stdout (Backend)
@@ -509,7 +502,7 @@ app.post("/login", async (req, res) => {
 
 // Logout (destroy session)
 app.post("/logout", (req, res) => {
-  // destroy session w/ error handling
+  // Destroy session w/ error handling
   console.log("Destroy Session: ", req.sessionID);
   req.session.destroy((err) => {
     if (err) {
@@ -602,9 +595,9 @@ async function queryDatabase() {
     // console.log(userData);
     
     
-    // const [rows, fields] = await pool.query
-    // ("SELECT * FROM user");
-    // console.log(rows);
+    // const [userData] = await pool.query
+    // ("SELECT * FROM user WHERE user.userID = 25");
+    // console.log(userData[0].avatar);
     
     //console.log(rows); // rows contains rows returned by the server
     // console.log(fields); // fields contains extra meta data about results, if available

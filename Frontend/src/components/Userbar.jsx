@@ -2,27 +2,12 @@ import { useEffect, useState } from "react";
 
 import socket from '../components/Socket.jsx';
 
-
-// function Userbar({ activeUsers, inactiveUsers }) {
-  //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 function Userbar() {
   
-  // Grab username from session storage (seemed to solve problem with not displaying in private mode)
-  const storedData = JSON.parse(sessionStorage.getItem('userData')); // Grab object
-  const username = storedData.username; // Grab data from object
-  
-  
-  // //store active users
-  // function userActive(username) {
-    //   const user = {
-      //     username: username
-      //   };
-      //   setActiveUsers((prevActiveUsers) => [...prevActiveUsers, user]); //update activeUsers
-      // }
+  // Grab username object from session storage
+  const storedData = JSON.parse(sessionStorage.getItem('userData'));
       
       
-  //active users state
-  // const [activeUsers, setActiveUsers] = useState([]);
   // Load active users from session storage on component mount
   const [activeUsers, setActiveUsers] = useState(() => {
     const savedUsers = sessionStorage.getItem('activeUsers');
@@ -35,8 +20,11 @@ function Userbar() {
   });
   
   useEffect(() => {
+    socket.connect();
+    // Send the username to socket.io ('username')
+    socket.emit('username', storedData.username);
     
-    //receive updated list of active users
+    // Receive updated list of active users
     socket.on('activeUsers', (users) => {
       setActiveUsers(users);
       // Save active and inactive users to session storage
@@ -57,7 +45,7 @@ function Userbar() {
     };
     
   }, [socket, activeUsers, inactiveUsers])
-  //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
   
   return (
       <>

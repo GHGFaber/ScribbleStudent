@@ -13,27 +13,26 @@ axios.defaults.withCredentials = true
 
 
 function Navbar({ classes }) {
-//-----------------------------------------------
 
+  const formData = useRef(null);
+  const [username, setUsername] = useState(null);
 
-const formData = useRef(null);
-
-// Destroy sessionID, clear sessionStorage and return to login page
-const logout = async (e) => {
-  e.preventDefault();
-  try {
-    await axios.post("http://localhost:3000/logout");// Destroy session ID
-    // Grab username from session storage (seemed to solve problem with not displaying in private mode)
-    const storedData = JSON.parse(sessionStorage.getItem('userData')); // Grab object
-    const username = storedData.username; // Grab data from object
-    //remove user from active users list
-    socket.emit('logout', username);
-    //clearn session storage
-    //sessionStorage.clear();
-    window.location.href = "/login-page";//navigate to login page
-    } catch (error) {
-      console.error("Error during logout", error);
-    }
+  // Destroy sessionID, clear sessionStorage and return to login page
+  const logout = async (e) => {
+    e.preventDefault();
+    try {
+      await axios.post("http://localhost:3000/logout");// Destroy session ID
+      // Grab username from session storage (seemed to solve problem with not displaying in private mode)
+      const storedData = JSON.parse(sessionStorage.getItem('userData')); // Grab object
+      const username = storedData.username; // Grab data from object
+      //remove user from active users list
+      socket.emit('logout', username);
+      // Clear session storage
+      //sessionStorage.clear();
+      window.location.href = "/login-page"; // Navigate to login page
+      } catch (error) {
+        console.error("Error during logout", error);
+      }
   }
   
   // User update page nav
@@ -45,20 +44,22 @@ const logout = async (e) => {
       console.error("Error during logout", error);
     }
   }
+
   
-  // Strictly for grabbing the username(can be replaced with sessionStorage call)
+  // Fetch and set username
   const fetchUsername = async() => {
     try {
-      const response = await axios.get("http://localhost:3000/username");
-      const username = response.data.username;
+      const storedData = JSON.parse(sessionStorage.getItem('userData'));
+      const username = storedData.username;
       
       console.log(`Username: ${username}`);
 
-      // if empty username, set username "Anonymous"
+      // If empty username, set username "Anonymous"
       if (username === "") {
         setUsername("Anonymous");
       } else {
-        setUsername(username); //stores username
+        // Store username
+        setUsername(username); 
       }
       
     } catch (error) {
@@ -66,7 +67,6 @@ const logout = async (e) => {
     }
   };
 
-  const [username, setUsername] = useState(null);
   useEffect(() => {    
 
     fetchUsername();
@@ -94,7 +94,7 @@ const logout = async (e) => {
               }}>Sign Out</button>
           {/* </Link> */}
 
-          {/* Get username from backend session and display (DONE)*/}
+          {/* Get username from backend session and display */}
           <button className="sign-out-button my-auto"
               //onClick={userUpdate}
               style={{
@@ -108,7 +108,7 @@ const logout = async (e) => {
                 cursor: "initial",// removes cursor change when hovering
               }}>Hello, {username}</button>
 
-          {/* Add a black border around button (DONE)*/}
+          {/* Add a black border around button */}
           <button className='sign-out-button my-auto'
           onClick={userUpdate} 
           style={{
