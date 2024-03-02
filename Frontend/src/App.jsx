@@ -8,7 +8,6 @@ import UserUpdate from './pages/UserUpdate.jsx';
 import ResetPassword from './pages/ResetPassword.jsx';
 import {useEffect, useState} from 'react';
 import {BrowserRouter, Routes, Route} from "react-router-dom";
-
 import socket from './components/Socket.jsx';
 
 

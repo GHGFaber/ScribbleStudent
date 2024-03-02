@@ -41,15 +41,9 @@ import socket from '../components/Socket.jsx';
 
       
     // Room State
-    var [room, setRoom] = useState("");
+    var [room, setRoom] = useState(null);
     // Message States
-    const [message, setMessage] = useState("");
-
-    const joinRoom = () => {
-      if (room !== "") {
-        socket.emit("join_room", room);
-      }
-    };
+    const [message, setMessage] = useState(null);
 
     function handleKeyDown(event) {
       if (event.key === 'Enter') {
@@ -76,19 +70,19 @@ import socket from '../components/Socket.jsx';
         // Stops page from refreshing on submission
         event.preventDefault(); 
         userMsg();
-        if (room !== "") {
-          // Send username, message and room
-          socket.emit("send_message", { username: storedData.username, message, room }); 
-        } else {
-          // No room then send broadcast
-          socket.emit("send_broadcast", { username: storedData.username, message }); 
-        }
+        // Send username, message and room
+        socket.emit("send_message", { username: storedData.username, message }); 
+        // socket.emit("send_message", { username: storedData.username, message, room }); 
+        // if (room !== null) {
+        // } else {
+        //   // No room then send broadcast
+        //   socket.emit("send_broadcast", { username: storedData.username, message }); 
+        // }
       }
     };
     
     useEffect(() => {
       socket.on("receive_message", (data) => {
-        // Creates new chats to insert in chats State
         const newChat = {
           username: data.username,
           text: data.message,
@@ -97,21 +91,46 @@ import socket from '../components/Socket.jsx';
         // Update chats
         setChats((prevChats) => [...prevChats, newChat]); 
       })
-    
+      
+      // User joined
+      // *** Display message + username when user joins a room ***
+      socket.once("user joined", (data) => {
+        // const joined = {
+        //   username: null, 
+        //   text: "User Joined",
+        //   timestamp: Date.now()
+        // };
+        // setChats((prevChats) => [...prevChats, joined]); 
+      });
+
+      // User left
+      // *** Display message + username when user leaves a room ***
+      socket.once("user left", (data) => {
+        // const left = {
+        //   username: null, 
+        //   text: "User Left",
+        //   timestamp: Date.now()
+        // };
+        // setChats((prevChats) => [...prevChats, left]); 
+      });
+      
       return () => {
         socket.off("receive_message");
+        socket.off("user joined");
+        socket.off("user left");
       };
 
-    }, [socket, room, message])
+    }, [socket, message])
 
     
     return (
       <>
-      {/* Testing separate chatrooms */}
-      <button onClick={joinRoom}>class</button>
-      <input placeholder="Enter a class" onChange={(event) => {
+      {/* Testing separate chatrooms
+      <button>class</button>
+      <input onChange={(event) => {
         setRoom(event.target.value);
-      }}></input>
+      }}></input> */}
+
             <Navbar classes={classes}/>
             <div className="container-fluid">
                 <div className="row no-gutters">

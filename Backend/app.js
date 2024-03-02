@@ -81,8 +81,6 @@ const activeUsers = new Map();
 // List of inactive users
 const inactiveUsers = new Map();
 
-let user = "";
-
 io.on("connection", (socket) => {
   
   console.log(`User Connected: ${socket.id}`);
@@ -90,7 +88,7 @@ io.on("connection", (socket) => {
   populateInactiveUsers();
   
   // Receive username from client
-  socket.on('username', (username) => {
+  socket.on('login', (username) => {
     // Remove from inactive users if exists
     if (inactiveUsers.has(username)) {
       inactiveUsers.delete(username);
@@ -102,6 +100,7 @@ io.on("connection", (socket) => {
       io.emit('activeUsers', Array.from(activeUsers.values()));
       // Broadcast updated list of inactive active users
       io.emit('inactiveUsers', Array.from(inactiveUsers.values()));
+      // Add user to default class room
     }
   });
 
@@ -137,41 +136,46 @@ io.on("connection", (socket) => {
     io.emit('inactiveUsers', Array.from(inactiveUsers.values()));
   });
 
-  // Join a specific room with other users
+  // Join a room
   socket.on("join_room", (data) => {
-    // Get the list of rooms the socket is currently in
-    const rooms = Object.keys(socket.rooms);
-
-    // Leave all existing rooms except the one we want to join
-    rooms.forEach(room => {
-      if (room !== roomToJoin) {
+    // Leave all rooms
+    socket.rooms.forEach(room => 
+      {if (room !== socket.id) {
         socket.leave(room);
-      }
-    });
+        socket.to(room).emit('user left', socket.id);
+      }});
     // Join new room
-    socket.join(data);
+    socket.room = data;
+    socket.join(socket.room);
+    socket.to(socket.room).emit('user joined', socket.id);
+    // console.log("New room: ", socket.rooms);
   });
 
   // Which room we are sending the message to
   socket.on("send_message", (data) => {
     // Include username along with message data
-    const messageData = {
-      username: data.username,
-      message: data.message,
-      room: data.room
-    };
-    socket.to(data.room).emit("receive_message", messageData);
-  });
-
-  // Broadcast message to users
-  socket.on("send_broadcast", (data) => {
-    // Include username along with message data
+    // const messageData = {
+    //   username: data.username,
+    //   message: data.message,
+    //   room: data.room
+    // };
+    // console.log("To room: ", socket.room);
     const messageData = {
       username: data.username,
       message: data.message
     };
-    socket.broadcast.emit("receive_message", messageData);
+    socket.to(socket.room).emit("receive_message", messageData);
   });
+
+  // // Broadcast message to users
+  // socket.on("send_broadcast", (data) => {
+  //   // Include username along with message data
+  //   const messageData = {
+  //     username: data.username,
+  //     message: data.message
+  //   };
+  //   socket.broadcast.emit("receive_message", messageData);
+  // });
     
 });
   

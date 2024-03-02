@@ -2,7 +2,6 @@ import logo from '../react_images/scrib_emblem.png';
 import { Link } from "react-router-dom";
 import axios from "axios";
 import { useEffect, useState, useRef } from "react";
-
 import socket from '../components/Socket.jsx';
 
 // Maintains current user sessionID
@@ -16,6 +15,7 @@ function Navbar({ classes }) {
 
   const formData = useRef(null);
   const [username, setUsername] = useState(null);
+  const [room, setRoom] = useState(null);
 
   // Destroy sessionID, clear sessionStorage and return to login page
   const logout = async (e) => {
@@ -67,23 +67,60 @@ function Navbar({ classes }) {
     }
   };
 
+  // Display 1st class tab name
+  // Will be used to set the default room for user
+  const defaultTab = () => {
+    // If there is a default class then set to room
+    const defaultClass = document.querySelector(".nav-items li:first-child");
+    if (defaultClass.textContent !== null) {
+      const room = defaultClass.textContent;
+      //setRoom(defaultClass.textContent);
+      console.log("1st class: ", room);
+      socket.emit("join_room", room);
+    }
+    console.log("Deafult Room: ", defaultClass.textContent);
+  };
+
+  // *** Not joining the new room ***
+  // Join a room
+  const joinRoom = (className) => {
+    if (className !== null) {
+      const room = className;
+      console.log("class: ", room);
+      //setRoom(room);
+      socket.emit("join_room", room);
+    }
+  };
+
   useEffect(() => {    
 
     fetchUsername();
+    defaultTab();
 
   }, []);
 
   return (
-      <nav>
+      <nav style={{ height: "100px" }}>
         <div className="the-nav">
           <img className="scrib-emblem" src={logo} alt="Scribble-emblem"/>
-          <ul className="nav-items my-auto">
-            {
-              classes.map((classInSchool, index) => (
-                <li key={index}><label>{classInSchool.classInSchoolName}</label></li>
-              ))
-            }
-          </ul>
+          <div className="class-buttons" 
+          style={{ 
+            position: "absolute",
+            marginTop: "35px",
+            marginLeft: "10%",
+            }}>
+          {/* Added function to display class name of tab clicked */}
+            <ul className="nav-items my-auto">
+              {
+                classes.map((classInSchool, index) => (
+                  <li onClick={() => joinRoom(classInSchool.classInSchoolName)} key={index}>
+                    <label style={{ cursor: "pointer" }}>{classInSchool.classInSchoolName}</label>
+                  </li>
+                ))
+              }
+            </ul>            
+          </div>
+ 
           {/* <Link to="#" > */}
             <button className="sign-out-button my-auto"
             onClick={logout}
@@ -96,7 +133,6 @@ function Navbar({ classes }) {
 
           {/* Get username from backend session and display */}
           <button className="sign-out-button my-auto"
-              //onClick={userUpdate}
               style={{
                 right: "220px",
                 borderRadius: "5%",

@@ -26,7 +26,7 @@ function LoginPage() {
         const dataToStore = { username: response.data.username };
         sessionStorage.setItem('userData', JSON.stringify(dataToStore));
         // Send the username to socket.io ('username')
-        socket.emit('username', response.data.username);
+        socket.emit('login', response.data.username);
         
         // Redirect to the chatroom
         navigate("/chatroom");

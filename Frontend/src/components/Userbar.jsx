@@ -22,7 +22,7 @@ function Userbar() {
   useEffect(() => {
     socket.connect();
     // Send the username to socket.io ('username')
-    socket.emit('username', storedData.username);
+    socket.emit('login', storedData.username);
     
     // Receive updated list of active users
     socket.on('activeUsers', (users) => {
