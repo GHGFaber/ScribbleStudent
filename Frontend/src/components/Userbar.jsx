@@ -44,7 +44,7 @@ function Userbar() {
       socket.off("inactiveUsers");
     };
     
-  }, [socket, activeUsers, inactiveUsers])
+  }, [socket])
 
   
   return (

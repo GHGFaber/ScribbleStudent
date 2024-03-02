@@ -11,11 +11,12 @@ import socket from '../components/Socket.jsx';
 axios.defaults.withCredentials = true
 
 
-function Navbar({ classes }) {
+function Navbar() {
 
   const formData = useRef(null);
   const [username, setUsername] = useState(null);
   const [room, setRoom] = useState(null);
+  const [classes, setClasses] = useState(null);
 
   // Destroy sessionID, clear sessionStorage and return to login page
   const logout = async (e) => {
@@ -45,7 +46,6 @@ function Navbar({ classes }) {
     }
   }
 
-  
   // Fetch and set username
   const fetchUsername = async() => {
     try {
@@ -67,21 +67,31 @@ function Navbar({ classes }) {
     }
   };
 
-  // Display 1st class tab name
-  // Will be used to set the default room for user
-  const defaultTab = () => {
-    // If there is a default class then set to room
-    const defaultClass = document.querySelector(".nav-items li:first-child");
-    if (defaultClass.textContent !== null) {
-      const room = defaultClass.textContent;
-      //setRoom(defaultClass.textContent);
-      console.log("1st class: ", room);
-      socket.emit("join_room", room);
+  // Fetch and set classes
+  // Can alter later to also grab classID
+  const fetchClasses = async() => {
+    try {
+      const response = await axios.get("http://localhost:3000/classes");
+      // Assuming the response.data contains the array of class data
+      const formattedData = response.data.classData.map(item => ({
+        classInSchoolName: item.className,
+        classID: item.classID
+      }));
+      setClasses(formattedData);
+      // Set deafult room
+      if (formattedData.length > 0) {
+        let defaultRoom = formattedData[0].classInSchoolName;
+        socket.emit("join_room", defaultRoom);
+        console.log("Deafult room: ", defaultRoom);
+      } else {
+        console.log("No classes available");
+      }
+    } catch (error) {
+      console.log("Error fetching class info:", error);
     }
-    console.log("Deafult Room: ", defaultClass.textContent);
   };
 
-  // *** Not joining the new room ***
+
   // Join a room
   const joinRoom = (className) => {
     if (className !== null) {
@@ -91,13 +101,13 @@ function Navbar({ classes }) {
       socket.emit("join_room", room);
     }
   };
-
+  
   useEffect(() => {    
-
+    
     fetchUsername();
-    defaultTab();
+    fetchClasses();
 
-  }, []);
+  }, [socket]);
 
   return (
       <nav style={{ height: "100px" }}>
@@ -110,15 +120,18 @@ function Navbar({ classes }) {
             marginLeft: "10%",
             }}>
           {/* Added function to display class name of tab clicked */}
-            <ul className="nav-items my-auto">
-              {
-                classes.map((classInSchool, index) => (
-                  <li onClick={() => joinRoom(classInSchool.classInSchoolName)} key={index}>
-                    <label style={{ cursor: "pointer" }}>{classInSchool.classInSchoolName}</label>
-                  </li>
-                ))
-              }
-            </ul>            
+          {/* If classes is null, then do not display tabs */}
+            {classes && classes.length > 0 && (
+              <ul className="nav-items my-auto">
+                {
+                  classes.map((classInSchool, index) => (
+                    <li onClick={() => joinRoom(classInSchool.classInSchoolName)} key={index}>
+                      <label style={{ cursor: "pointer" }}>{classInSchool.classInSchoolName}</label>
+                    </li>
+                  ))
+                }
+              </ul>             
+            )}
           </div>
  
           {/* <Link to="#" > */}

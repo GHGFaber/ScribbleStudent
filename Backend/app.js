@@ -80,12 +80,12 @@ async function populateInactiveUsers() {
 const activeUsers = new Map();
 // List of inactive users
 const inactiveUsers = new Map();
+// Call the async function to populate inactive users map
+populateInactiveUsers();
 
 io.on("connection", (socket) => {
   
   console.log(`User Connected: ${socket.id}`);
-  // Call the async function to populate inactive users map
-  populateInactiveUsers();
   
   // Receive username from client
   socket.on('login', (username) => {
@@ -265,12 +265,13 @@ app.get("/username", async (req, res) => {
   }
 });
 
-// retrieve classes data based on class name
-app.post("/classes", async (req, res) => {
+// retrieve classes data based userID
+app.get("/classes", async (req, res) => {
   try {
-    const { className } = req.body;
+    const userID = req.session.userid;
     // Query the database to retrieve class data
-    const [classData] = await pool.query("Select * FROM classes WHERE classes.className = ?", [className]);
+    const [classData] = await pool.query
+    ("Select classes.classID, classes.className FROM classes INNER JOIN chatrooms ON classes.classID = chatrooms.classID INNER JOIN user ON user.userID = chatrooms.userID WHERE user.userID = ?", [userID]);
       
     // data stored in an array of objects
     // Ex: classData[0].classID grabs the classID from the first object
@@ -285,6 +286,26 @@ app.post("/classes", async (req, res) => {
   }
 });
 
+// // retrieve classes data based on class name
+// app.post("/classes", async (req, res) => {
+//   try {
+//     const { className } = req.body;
+//     // Query the database to retrieve class data
+//     const [classData] = await pool.query("Select * FROM classes WHERE classes.className = ?", [className]);
+      
+//     // data stored in an array of objects
+//     // Ex: classData[0].classID grabs the classID from the first object
+
+//     //send class data to Frontend as array of objects
+//     res.json({
+//       classData: classData
+//     });
+//   } catch (error) {
+//     console.error("Error fetching class information:", error);
+//     res.status(500).send("Internal server error");
+//   }
+// });
+
 // retrieve the messages from chatroom table
 app.post("/messages", async (req, res) => {
   try {
@@ -297,7 +318,7 @@ app.post("/messages", async (req, res) => {
     // data stored in an array of objects
     // Ex: userData[0].message grabs the message from the first object
 
-    //return data to frontend
+    // return data to frontend
     res.json({
       userData: userData       
     });
@@ -330,9 +351,9 @@ app.post("/insert-message", async (req, res) => {
   try {
     // grab chatroom data from frontend (send in same order from frontend)
     const { classID, timestamp, message } = req.body;
-    //userID (session)
+    // userID (session)
     const userID = req.session.userID;
-    //insert chatroom data
+    // nsert chatroom data
     await pool.query("INSERT INTO chatrooms (classID, timestamp, message, userID) VALUES (?, ?, ?, ?)", [classID, timestamp, message, userID]);
   } catch(error) {
     console.error("Error inserting message:", error);
@@ -372,7 +393,7 @@ app.post("/update-user-info", async (req, res) => {
         );
 
         // Check if the provided email or username matches 
-        //the existing email or username of the user
+        // the existing email or username of the user
         const [currentUser] = await pool.query(
           "SELECT userID FROM user WHERE userID = ? AND (username = ? OR email = ?)",
           [userId, username, email]
@@ -382,8 +403,8 @@ app.post("/update-user-info", async (req, res) => {
           return res.status(400).send("Username or email already exists. Please choose a different one.");
         }
         // Check if currentUser has any data, 
-        //indicating that the provided email or username 
-        //matches the existing email or username of the user
+        // indicating that the provided email or username 
+        // matches the existing email or username of the user
         if (currentUser.length > 0) {
           return res.status(400).send("You cannot update to your own existing email or username.");
         }   
@@ -583,6 +604,7 @@ app.use((err, req, res, next) => {
 // Use async/await with the promise-based query
 async function queryDatabase() {
   try {
+    // TESTING DATA
     // const [rows, fields] = await pool.query("SELECT * FROM user");
     // const classID = 1;
     // //const [rows, fields] = await pool.query
@@ -618,7 +640,13 @@ async function queryDatabase() {
     // const message = "Does anyone have the notes from today's class?";
     // await pool.query("INSERT INTO chatrooms (classID, timestamp, message, userID) VALUES (?, ?, ?, ?)", [classID, timestamp, message, userID]);
 
-    
+    // const userID = 11;
+
+    // const [classData] = await pool.query
+    // ("Select classes.classID, classes.className FROM classes INNER JOIN chatrooms ON classes.classID = chatrooms.classID INNER JOIN user ON user.userID = chatrooms.userID WHERE user.userID = ?", [userID]);
+
+    // console.log(classData);
+
 
   } catch (error) {
     console.error(error);

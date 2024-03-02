@@ -41,7 +41,7 @@ import socket from '../components/Socket.jsx';
 
       
     // Room State
-    var [room, setRoom] = useState(null);
+    // var [room, setRoom] = useState(null);
     // Message States
     const [message, setMessage] = useState(null);
 
@@ -70,14 +70,8 @@ import socket from '../components/Socket.jsx';
         // Stops page from refreshing on submission
         event.preventDefault(); 
         userMsg();
-        // Send username, message and room
+        // Send username and message 
         socket.emit("send_message", { username: storedData.username, message }); 
-        // socket.emit("send_message", { username: storedData.username, message, room }); 
-        // if (room !== null) {
-        // } else {
-        //   // No room then send broadcast
-        //   socket.emit("send_broadcast", { username: storedData.username, message }); 
-        // }
       }
     };
     
@@ -125,43 +119,37 @@ import socket from '../components/Socket.jsx';
     
     return (
       <>
-      {/* Testing separate chatrooms
-      <button>class</button>
-      <input onChange={(event) => {
-        setRoom(event.target.value);
-      }}></input> */}
-
-            <Navbar classes={classes}/>
-            <div className="container-fluid">
-                <div className="row no-gutters">
-                    <div className="col-2 column1">
-                        <Sidebar/>
-                    </div>
-                    <div className="col-8 column2">
-                        <div id="chat-window">
-                            {
-                              show_chats()
-                            }
-                        </div>
-                        <form className="the-chat-form">
-                            <div id="the-textarea" className="container-fluid">
-                              {/* Added functionality for submitting */}
-                                <textarea id="txt" onChange={(event) => {
-                                  setMessage(event.target.value);
-                                }} onKeyDown={handleKeyDown} required></textarea>
-                            </div>
-                            <div id="chat-text-btn" className="container-fluid">
-                                {/* Send the message after entering */}
-                                <button onClick={sendMessage} id="send-button">Send</button>
-                            </div>       
-                        </form>     
-                    </div>
-                    <div className="col-2 column3">
-                        <Userbar activeUsers={activeUsers} inactiveUsers={inactiveUsers}/>
-                    </div>
-                </div>
-            </div>
-        </>
+        <Navbar classes={classes}/>
+          <div className="container-fluid">
+              <div className="row no-gutters">
+                  <div className="col-2 column1">
+                      <Sidebar/>
+                  </div>
+                  <div className="col-8 column2">
+                      <div id="chat-window">
+                          {
+                            show_chats()
+                          }
+                      </div>
+                      <form className="the-chat-form">
+                          <div id="the-textarea" className="container-fluid">
+                            {/* Added functionality for submitting */}
+                              <textarea id="txt" onChange={(event) => {
+                                setMessage(event.target.value);
+                              }} onKeyDown={handleKeyDown} required></textarea>
+                          </div>
+                          <div id="chat-text-btn" className="container-fluid">
+                              {/* Send the message after entering */}
+                              <button onClick={sendMessage} id="send-button">Send</button>
+                          </div>       
+                      </form>     
+                  </div>
+                  <div className="col-2 column3">
+                      <Userbar activeUsers={activeUsers} inactiveUsers={inactiveUsers}/>
+                  </div>
+              </div>
+          </div>
+      </>
     );
   }
 
