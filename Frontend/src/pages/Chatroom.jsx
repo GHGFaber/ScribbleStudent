@@ -1,15 +1,15 @@
 import Navbar from "../components/Navbar.jsx";
 import Sidebar from "../components/Sidebar.jsx";
 import Userbar from "../components/Userbar.jsx";
+import axios from "axios";
 import { useEffect, useState } from "react";
 import socket from '../components/Socket.jsx';
 
    
-  function Chatroom({classes, activeUsers, inactiveUsers}) { 
+function Chatroom({ classes, setClasses, chats, setChats, username, setUsername, activeUsers, setActiveUsers, inactiveUsers, setInactiveUsers }) {
 
-    // Chat State
-    const [chats, setChats] = useState([]);
-
+  // Message State
+  const [message, setMessage] = useState(null);
     
     function get_time(timestamp) {
         const date = new Date(timestamp);
@@ -42,8 +42,6 @@ import socket from '../components/Socket.jsx';
       
     // Room State
     // var [room, setRoom] = useState(null);
-    // Message States
-    const [message, setMessage] = useState(null);
 
     function handleKeyDown(event) {
       if (event.key === 'Enter') {
@@ -58,22 +56,33 @@ import socket from '../components/Socket.jsx';
         text: message,
         timestamp: Date.now()
       };
-      setChats((prevChats) => [...prevChats, curChat]); //update chat
+      setChats((prevChats) => [...prevChats, curChat]); //update local chat
     }
     
-    const sendMessage = () => {
+    const sendMessage = async() => {
       // If message empty, do nothing (allows for whitespace)
-      if (message.trim() !== '' || message !== '') {
+      // if (message.trim() !== '' || message !== '') {
+      if (/\S/.test(message)) {
         // Clear the textarea value after submit
         document.getElementById('txt').value = '';
         setMessage('');
         // Stops page from refreshing on submission
-        event.preventDefault(); 
+        // event.preventDefault(); 
         userMsg();
         // Send username and message 
-        socket.emit("send_message", { username: storedData.username, message }); 
+        socket.emit("send_message", { username: storedData.username, message });
+        // Update chatroom for class
+        // Need the current classID (got it)
+        console.log("Current classID: ", chats[0].classID); 
+        const classID = chats[0].classID;
+        await axios.post("http://localhost:3000/insert-message", {
+          message: message,
+          timestamp: new Date(Date.now()).toISOString(),
+          classID: classID
+        });
       }
     };
+
     
     useEffect(() => {
       socket.on("receive_message", (data) => {
@@ -107,6 +116,8 @@ import socket from '../components/Socket.jsx';
         // };
         // setChats((prevChats) => [...prevChats, left]); 
       });
+
+      // console.log("classID: ", chats[0].classID);
       
       return () => {
         socket.off("receive_message");
@@ -115,11 +126,15 @@ import socket from '../components/Socket.jsx';
       };
 
     }, [socket, message])
-
+    
     
     return (
       <>
-        <Navbar classes={classes}/>
+        {/* Pass props to Navbar component */}
+        <Navbar 
+          classes={classes} setClasses={setClasses} chats={chats} setChats={setChats} 
+          username={username} setUsername={setUsername}
+        />
           <div className="container-fluid">
               <div className="row no-gutters">
                   <div className="col-2 column1">
@@ -131,21 +146,27 @@ import socket from '../components/Socket.jsx';
                             show_chats()
                           }
                       </div>
-                      <form className="the-chat-form">
-                          <div id="the-textarea" className="container-fluid">
-                            {/* Added functionality for submitting */}
-                              <textarea id="txt" onChange={(event) => {
-                                setMessage(event.target.value);
-                              }} onKeyDown={handleKeyDown} required></textarea>
-                          </div>
-                          <div id="chat-text-btn" className="container-fluid">
-                              {/* Send the message after entering */}
-                              <button onClick={sendMessage} id="send-button">Send</button>
-                          </div>       
-                      </form>     
+                      {/* Only display chatbox and submit if user belongs to a class */}
+                      {classes && classes.length > 0 && 
+                        <form className="the-chat-form">
+                            <div id="the-textarea" className="container-fluid">
+                              {/* Added functionality for submitting */}
+                                <textarea id="txt" onChange={(event) => {
+                                  setMessage(event.target.value);
+                                }} onKeyDown={handleKeyDown} style={{resize: "none"}} required></textarea>
+                            </div>
+                            <div id="chat-text-btn" className="container-fluid" style={{ width: "65%", marginLeft: "0px", marginTop: "-20px", position: "fixed" }}>
+                                {/* Send the message after entering */}
+                                <button onClick={sendMessage} id="send-button">Send</button>
+                            </div>       
+                        </form> 
+                      }               
+                          
                   </div>
                   <div className="col-2 column3">
-                      <Userbar activeUsers={activeUsers} inactiveUsers={inactiveUsers}/>
+                      <Userbar activeUsers={activeUsers} setActiveUsers={setActiveUsers}
+                        inactiveUsers={inactiveUsers} setInactiveUsers={setInactiveUsers}
+                      />
                   </div>
               </div>
           </div>

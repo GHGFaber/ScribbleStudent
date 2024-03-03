@@ -1,23 +1,11 @@
 import { useEffect, useState } from "react";
-
 import socket from '../components/Socket.jsx';
 
-function Userbar() {
+function Userbar({ activeUsers, setActiveUsers, inactiveUsers, setInactiveUsers }) {
   
   // Grab username object from session storage
   const storedData = JSON.parse(sessionStorage.getItem('userData'));
       
-      
-  // Load active users from session storage on component mount
-  const [activeUsers, setActiveUsers] = useState(() => {
-    const savedUsers = sessionStorage.getItem('activeUsers');
-    return savedUsers ? JSON.parse(savedUsers) : [];
-  });
-  // Load inactive users session storage on component mount
-  const [inactiveUsers, setInactiveUsers] = useState(() => {
-    const savedUsers = sessionStorage.getItem('inactiveUsers');
-    return savedUsers ? JSON.parse(savedUsers) : [];
-  });
   
   useEffect(() => {
     socket.connect();

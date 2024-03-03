@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import axios from "axios";
 import { useEffect, useState, useRef } from "react";
 import socket from '../components/Socket.jsx';
+import { connect } from 'socket.io-client';
 
 // Maintains current user sessionID
 // Need to use 'withCredentials: true' so cookies are 
@@ -11,12 +12,10 @@ import socket from '../components/Socket.jsx';
 axios.defaults.withCredentials = true
 
 
-function Navbar() {
+function Navbar({ chats, setChats, classes, setClasses, username, setUsername }) {
 
   const formData = useRef(null);
-  const [username, setUsername] = useState(null);
   const [room, setRoom] = useState(null);
-  const [classes, setClasses] = useState(null);
 
   // Destroy sessionID, clear sessionStorage and return to login page
   const logout = async (e) => {
@@ -63,12 +62,11 @@ function Navbar() {
       }
       
     } catch (error) {
-      console.log("Error fetching user info:", error);
+      // console.log("Error fetching user info:", error);
     }
   };
 
   // Fetch and set classes
-  // Can alter later to also grab classID
   const fetchClasses = async() => {
     try {
       const response = await axios.get("http://localhost:3000/classes");
@@ -80,25 +78,58 @@ function Navbar() {
       setClasses(formattedData);
       // Set deafult room
       if (formattedData.length > 0) {
-        let defaultRoom = formattedData[0].classInSchoolName;
+        // Get message data for default room
+        const classID = formattedData[0].classID;
+        const response = await axios.post("http://localhost:3000/messages", {
+          classID: classID
+        });
+        const messageData = response.data.userData.map(item => ({
+          // Grab message data
+          username: item.username,
+          text: item.message,
+          timestamp: item.timestamp,
+          classID: classID
+        }));
+        setChats(messageData);
+        const defaultRoom = formattedData[0].classInSchoolName;
         socket.emit("join_room", defaultRoom);
         console.log("Deafult room: ", defaultRoom);
+        console.log("Default classID: ", formattedData[0].classID);
       } else {
         console.log("No classes available");
       }
     } catch (error) {
-      console.log("Error fetching class info:", error);
+      // console.log("Error fetching class info:", error);
     }
   };
 
 
+  // When room is joined, send classID to retrieve messages for room
+  // Store retrieved messages in 'chats'  
+
   // Join a room
-  const joinRoom = (className) => {
-    if (className !== null) {
-      const room = className;
+  const joinRoom = async(classData) => {
+    if (classData !== null) {
+      // Get message data for room
+      const classID = classData.classID;
+      const response = await axios.post("http://localhost:3000/messages", {
+        classID: classID
+      });
+      const messageData = response.data.userData.map(item => ({
+        // Grab message data
+        username: item.username,
+        text: item.message,
+        timestamp: item.timestamp,
+        classID: classID
+      }));
+      const room = classData.classInSchoolName;
       console.log("class: ", room);
+      console.log("ClassID: ", classID);
       //setRoom(room);
       socket.emit("join_room", room);
+      // Clear chat
+      setChats([]);
+      setChats(messageData);
     }
   };
   
@@ -125,7 +156,7 @@ function Navbar() {
               <ul className="nav-items my-auto">
                 {
                   classes.map((classInSchool, index) => (
-                    <li onClick={() => joinRoom(classInSchool.classInSchoolName)} key={index}>
+                    <li onClick={() => joinRoom(classInSchool)} key={index}>
                       <label style={{ cursor: "pointer" }}>{classInSchool.classInSchoolName}</label>
                     </li>
                   ))

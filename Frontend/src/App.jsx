@@ -6,6 +6,7 @@ import Chatroom from './pages/Chatroom.jsx';
 import Notebook from './pages/Notebook.jsx';
 import UserUpdate from './pages/UserUpdate.jsx';
 import ResetPassword from './pages/ResetPassword.jsx';
+import Navbar from './components/Navbar.jsx';
 import {useEffect, useState} from 'react';
 import {BrowserRouter, Routes, Route} from "react-router-dom";
 import socket from './components/Socket.jsx';
@@ -13,7 +14,6 @@ import socket from './components/Socket.jsx';
 
 function App() {
   
-  // const [activeUsers, setActiveUsers] = useState([]);
       
   // const [chats, setChats] = useState([
   //   {
@@ -38,51 +38,72 @@ function App() {
   //   }
   // ]);
 
-  const [classes, setClasses] = useState([
-    {
-      classInSchoolName: "CHEM-225"
-    },
-    {
-      classInSchoolName: "COMP-300"
-    },
-    {
-      classInSchoolName: "COMP-345"
-    },
-    {
-      classInSchoolName: "ENGL-101"
-    }
-  ]);
-  const [activeUsers, setActiveUsers] = useState([
-    {
-      username: "tianapowell225"
-    },
-    {
-      username: "JLennon"
-    },
-    {
-      username: "Chubli_Deepnargle"
-    },
-    {
-      username: "Fleeko1999"
-    }
-  ]);
-  const [inactiveUsers, setInactiveUsers] = useState([
-    {
-      username: "Cecil [TA]"
-    },
-    {
-      username: "SitarKid"
-    },
-    {
-      username: "Ringo334"
-    },
-    {
-      username: "rolling_stone_1962"
-    },
-    {
-      username: "n46_iwantyou"
-    }
-  ]);
+
+  // const [classes, setClasses] = useState([
+  //   {
+  //     classInSchoolName: "CHEM-225"
+  //   },
+  //   {
+  //     classInSchoolName: "COMP-300"
+  //   },
+  //   {
+  //     classInSchoolName: "COMP-345"
+  //   },
+  //   {
+  //     classInSchoolName: "ENGL-101"
+  //   }
+  // ]);
+  // const [activeUsers, setActiveUsers] = useState([
+  //   {
+  //     username: "tianapowell225"
+  //   },
+  //   {
+  //     username: "JLennon"
+  //   },
+  //   {
+  //     username: "Chubli_Deepnargle"
+  //   },
+  //   {
+  //     username: "Fleeko1999"
+  //   }
+  // ]);
+  // const [inactiveUsers, setInactiveUsers] = useState([
+  //   {
+  //     username: "Cecil [TA]"
+  //   },
+  //   {
+  //     username: "SitarKid"
+  //   },
+  //   {
+  //     username: "Ringo334"
+  //   },
+  //   {
+  //     username: "rolling_stone_1962"
+  //   },
+  //   {
+  //     username: "n46_iwantyou"
+  //   }
+  // ]);
+
+  // Classes State
+  const [classes, setClasses] = useState([]);
+  // Chats State
+  const [chats, setChats] = useState([]);
+  // Username State
+  const [username, setUsername] = useState(null);
+
+  // Load active users from session storage on component mount
+  const [activeUsers, setActiveUsers] = useState(() => {
+    const savedUsers = sessionStorage.getItem('activeUsers');
+    return savedUsers ? JSON.parse(savedUsers) : [];
+  });
+
+  // Load inactive users session storage on component mount
+  const [inactiveUsers, setInactiveUsers] = useState(() => {
+    const savedUsers = sessionStorage.getItem('inactiveUsers');
+    return savedUsers ? JSON.parse(savedUsers) : [];
+  });
+
 
   return (
     <BrowserRouter>
@@ -91,9 +112,14 @@ function App() {
             <Route index element={<Home/>}/>
             <Route path="login-page" element={<LoginPage/>}/>
             <Route path="create-account" element={<CreateAccount/>}/>
-            <Route path="notebook" element={<Notebook classes={classes}/>}/>
+            <Route path="notebook" element={<Notebook username={username}/>}/>
             {/* <Route path="chatroom" element={<Chatroom chats={chats} classes={classes} activeUsers={activeUsers} inactiveUsers={inactiveUsers}/>}/>   */}
-            <Route path="chatroom" element={<Chatroom classes={classes} activeUsers={activeUsers} inactiveUsers={inactiveUsers}/>}/>  
+            <Route path="chatroom" element={<Chatroom 
+              classes={classes} setClasses={setClasses} chats={chats} 
+              setChats={setChats} username={username} setUsername={setUsername}
+              activeUsers={activeUsers} setActiveUsers={setActiveUsers}
+              inactiveUsers={inactiveUsers} setInactiveUsers={setInactiveUsers}
+            />}/>  
             <Route path="user-update" element={<UserUpdate/>}/>
             <Route path="reset-password" element={<ResetPassword/>}/>
 
