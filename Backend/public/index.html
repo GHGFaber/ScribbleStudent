@@ -70,7 +70,7 @@
     <div class="main-login">
         <div class="center-2 login-panel">
             <h1>Welcome back!</h1>
-            <form action="/login" method="post" onsubmit="return loginUser()">
+            <form action="/login" method="post">
                 <label for="username">Username</label>
                 <input type="text" id="username" name="username"/>
                 
@@ -83,16 +83,5 @@
             </form>
         </div>
     </div>
-
-    <script>
-        function loginUser() {
-            // Perform login authentication here
-
-            // Assuming login is successful, redirect to user_update.html
-            window.location.href = "user_update.html";
-            return false; // Prevent form submission
-        }
-    </script>
-
 </body>
 </html>

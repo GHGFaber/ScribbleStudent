@@ -1,4 +1,5 @@
 import {Outlet, Link} from "react-router-dom";
+// allows the user to login to the web application
 function Login() {
     return (
         <>

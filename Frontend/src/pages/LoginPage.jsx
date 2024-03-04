@@ -3,6 +3,7 @@ import { useState, useRef } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
+// page for logging in
 function LoginPage() {
   const navigate = useNavigate();
 
@@ -18,6 +19,7 @@ function LoginPage() {
       });
       if (response.data.success) {
         console.log(response.data.user);
+        console.log(response.data.userID);
         localStorage.setItem("id", response.data.user);
         console.log(response.data);
         // Redirect to the LoggedInComponent

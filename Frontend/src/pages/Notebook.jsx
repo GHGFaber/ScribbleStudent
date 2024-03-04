@@ -4,23 +4,19 @@ import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
+// page that contains the pages of the user's virtual notebook
 function Notebook(props, targetPage) {
   const [classes, setClasses] = useState([]);
-
+  const [value, setValue] = useState("");
   let notePages = props.notePages;
+  let temp = "";
 
   useEffect(() => {
     setClasses(JSON.parse(localStorage.getItem("classes")));
   }, []);
-  let temp = "";
+ 
   //const {state} = props.location.state;
   //console.log(targetPage.text);
-
-  /**
-   * Potential strategy: send the current page info as prop
-   * set the prop outside the parent callback function
-   */
-
   //const location = useLocation();
   //const data = location.state;
   //console.log("temp is " + data);
@@ -28,7 +24,7 @@ function Notebook(props, targetPage) {
   //let temp = state;
 
   // const [initData, setInitData] = useState('');
-  const [value, setValue] = useState("");
+
 
   console.log(classes);
 
@@ -36,6 +32,8 @@ function Notebook(props, targetPage) {
     setValue(targetPage.text);
   }
 
+  // uses react-quill to render a textarea where the user can input text on
+  // a page of notes
   var toolbarOptions = [
     [{ font: [] }],
     [{ size: ["small", false, "large", "huge"] }],
