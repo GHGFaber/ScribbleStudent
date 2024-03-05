@@ -3,7 +3,7 @@ import Sidebar from "../components/Sidebar.jsx";
 import ReactQuill from "react-quill";
 import 'react-quill/dist/quill.snow.css';
 import {useState} from "react";
-function Notebook({classes}) {
+function Notebook({classes, username}) {
     const [value, setValue] = useState('');
     var toolbarOptions = [
         [{ 'font': [] }],
@@ -23,7 +23,7 @@ function Notebook({classes}) {
     return (
         <>
          
-         <Navbar classes={classes}/>
+         <Navbar username={username}/>
          <div className="container-fluid">
             <div className="row no-gutters">
                 <div className="col-2 column1">

@@ -2,11 +2,8 @@
 // First is doing a pool query outside of an async function
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-//--------------------------------
-// TEST APP - by Spencer
-//--------------------------------
-
 import express from "express";
+import session from "express-session"; // create session token
 import { pool } from "./database.js"; // imported from our pool made and exportedin database.js
 import bodyParser from "body-parser";
 import path from "path";
@@ -14,35 +11,468 @@ import { fileURLToPath } from "url";
 import { dirname, join } from "path";
 import bcrypt from "bcrypt";
 import cors from "cors";
+import { Server } from "socket.io";
+
+//++++++++++++++++++++++++++++++++++++++++++++
+import http from "http";
+import sharedSession from "express-socket.io-session";
+import { time } from "console";
+//++++++++++++++++++++++++++++++++++++++++++++
+
+
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-const app = express(); // create application
+const app = express(); // Create application
 
-app.use(cors({ origin: "http://localhost:5173" }));
+
+
+// Set up session middleware
+app.set('trust proxy', 1) // Trust first proxy
+const sessionMiddleware = session({
+    secret: "your-secret-key", // Replace with a secret key for session encryption
+    resave: false,
+    saveUninitialized: true,
+    cookie: {
+      secure: false,
+      // maxAge: 60000 // 1 min
+    }
+  })
+app.use(sessionMiddleware);
+  
+app.use(cors({ origin: "http://localhost:5173", credentials: true }));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.json());
+  
 
-const folderPath = path.join(__dirname, "..\\Frontend");
-
-// Login
-app.get("/login", (req, res) => {
-  const htmlPath = path.join(__dirname, "src/LoginPage.jsx");
-  res.sendFile(htmlPath);
+const server =  app.listen(3000, () => {
+  console.log("App listening on port 3000");
 });
 
-// Account creation
-app.get("/create-account", (req, res) => {
-  const htmlPath = path.join(__dirname, "public/create-account.html");
-  res.sendFile(htmlPath);
+const io = new Server(server, {
+  cors: {
+    origin: "http://localhost:5173",
+    methods: ["GET", "POST"],
+  }
 });
 
-// Check login credentials
+  
+// Session context shared w/ socket.io
+io.engine.use(sessionMiddleware);
+
+
+// Call function inside socket
+// Async function to query database and populate inactive users map
+async function populateInactiveUsers() {
+  try {
+    const [results] = await pool.query('SELECT userID, username FROM user');
+    results.forEach((row) => {
+      const username = row.username;
+      inactiveUsers.set(username, {username});
+    });
+  } catch (error) {
+    console.error('Error fetching usernames:', error);
+  }
+}
+
+  
+// List of active users
+const activeUsers = new Map();
+// List of inactive users
+const inactiveUsers = new Map();
+// Call the async function to populate inactive users map
+populateInactiveUsers();
+
+io.on("connection", (socket) => {
+  
+  console.log(`User Connected: ${socket.id}`);
+  
+  // Receive username from client
+  socket.on('login', (username) => {
+    // Remove from inactive users if exists
+    if (inactiveUsers.has(username)) {
+      inactiveUsers.delete(username);
+    }
+    if (!activeUsers.has(username)) {
+      // Store username and socket ID
+      activeUsers.set(socket.id, { username });
+      // Broadcast updated list of active users
+      io.emit('activeUsers', Array.from(activeUsers.values()));
+      // Broadcast updated list of inactive active users
+      io.emit('inactiveUsers', Array.from(inactiveUsers.values()));
+      // Add user to default class room
+    }
+  });
+
+  // Receive username from logout
+  socket.on('logout', (username) => {
+    // Remove user from active users list
+    const user = activeUsers.get(socket.id);
+    if (user) {
+      activeUsers.delete(socket.id);
+      // Add to inactive users
+      inactiveUsers.set(username, user);
+    }
+    // Broadcast updated list of active users
+    io.emit('activeUsers', Array.from(activeUsers.values()));
+    // Broadcast updated list of inactive active users
+    io.emit('inactiveUsers', Array.from(inactiveUsers.values()));
+  });
+
+  // Remove user from activeUsers on disconnect
+  socket.on('disconnect', () => {
+    // Remove user from active users list
+    const user = activeUsers.get(socket.id);
+    if (user) {
+      // Retreive username from active users
+      const username = activeUsers.get(socket.id)?.username;
+      activeUsers.delete(socket.id);
+      // Add to inactive users
+      inactiveUsers.set(username, user);
+    }
+    // Broadcast the updated list of active users to all clients
+    io.emit('activeUsers', Array.from(activeUsers.values()));
+    // Broadcast updated list of inactive active users
+    io.emit('inactiveUsers', Array.from(inactiveUsers.values()));
+  });
+
+  // Join a room
+  socket.on("join_room", (data) => {
+    // Leave all rooms
+    socket.rooms.forEach(room => 
+      {if (room !== socket.id) {
+        socket.leave(room);
+        socket.to(room).emit('user left', socket.id);
+      }});
+    // Join new room
+    socket.room = data;
+    socket.join(socket.room);
+    socket.to(socket.room).emit('user joined', socket.id);
+    // console.log("New room: ", socket.rooms);
+  });
+
+  // Which room we are sending the message to
+  socket.on("send_message", (data) => {
+    // Include username along with message data
+    // const messageData = {
+    //   username: data.username,
+    //   message: data.message,
+    //   room: data.room
+    // };
+    // console.log("To room: ", socket.room);
+    const messageData = {
+      username: data.username,
+      message: data.message
+    };
+    socket.to(socket.room).emit("receive_message", messageData);
+  });
+
+  // // Broadcast message to users
+  // socket.on("send_broadcast", (data) => {
+  //   // Include username along with message data
+  //   const messageData = {
+  //     username: data.username,
+  //     message: data.message
+  //   };
+  //   socket.broadcast.emit("receive_message", messageData);
+  // });
+    
+});
+  
+  
+// // generate secret key
+// const crypto = require('crypto');
+
+// const generateSecretKey = () => {
+//   return crypto.randomBytes(64).toString('hex');
+// };
+
+// const folderPath = path.join(__dirname, "..\\Frontend");
+
+// // Login
+// app.get("/login", (req, res) => {
+//   const htmlPath = path.join(__dirname, "http://localhost:5173/src/pages/LoginPage.jsx");
+//   //res.sendFile(htmlPath);
+//   res.sendFile(htmlPath);
+// });
+
+// // Account creation
+// app.get("/create-account", (req, res) => {
+//   const htmlPath = path.join(__dirname, "public/create-account.html");
+//   res.sendFile(htmlPath);
+// });
+
+// app.get('/logout', function(req, res){
+//   req.session.destroy(function(){
+//      res.send({})
+//   });
+//   res.redirect('src/LoginPage.jsx');
+// });
+
+// Route to retrieve user information based on session data
+app.get("/user-info", async (req, res) => {
+  try {
+
+    if (req.session) {
+
+      const userid = req.session.userid;
+
+      const [userData] = await pool.query("SELECT * FROM user WHERE userID = ?", [userid]);
+      if (userData.length === 1) {
+
+        res.json(userData);
+      } else {
+
+        res.status(404).send("User not found");
+      }
+
+      console.log('Current Session ID:', req.sessionID);
+
+    } else {
+      res.status(401).send("Unauthorized. Please log in first.");
+      console.log("Unauthorized");
+    }
+  } catch (error) {
+    console.error("Error fetching user information:", error);
+    res.status(500).send("Internal server error");
+  }
+});
+
+// retrieve username of current user in session
+app.get("/username", async (req, res) => {
+  try {
+    if (req.session && req.session.userid) {
+
+      const userid = req.session.userid;
+
+      // Query the database to retrieve user information based on user ID
+      const [userData] = await pool.query("SELECT username FROM user WHERE userID = ?", [userid]);
+      
+      if (userData.length === 1) {
+        const username = userData[0].username;
+
+        res.json({username: username});
+      } else {
+        res.status(404).send("User not found");
+      }
+    } else {
+      res.status(401).send("Unauthorized. Please log in first.");
+      console.log("Unauthorized");
+    }
+  } catch (error) {
+    console.error("Error fetching user information:", error);
+    res.status(500).send("Internal server error");
+  }
+});
+
+// retrieve classes data based userID
+app.get("/classes", async (req, res) => {
+  try {
+    const userID = req.session.userid;
+    // Query the database to retrieve class data
+    const [classData] = await pool.query
+    ("SELECT DISTINCT classes.classID, classes.className FROM classes INNER JOIN classList ON classes.classID = classList.classID INNER JOIN user ON user.userID = classList.userID WHERE user.userID = ?", [userID]);
+    // ("SELECT DISTINCT classes.classID, classes.className FROM classes INNER JOIN chatrooms ON classes.classID = chatrooms.classID INNER JOIN user ON user.userID = chatrooms.userID WHERE user.userID = ?", [userID]);
+      
+    // data stored in an array of objects
+    // Ex: classData[0].classID grabs the classID from the first object
+
+    //send class data to Frontend as array of objects
+    res.json({
+      classData: classData
+    });
+  } catch (error) {
+    console.error("Error fetching class information:", error);
+    res.status(500).send("Internal server error");
+  }
+});
+
+// // retrieve classes data based on class name
+// app.post("/classes", async (req, res) => {
+//   try {
+//     const { className } = req.body;
+//     // Query the database to retrieve class data
+//     const [classData] = await pool.query("Select * FROM classes WHERE classes.className = ?", [className]);
+      
+//     // data stored in an array of objects
+//     // Ex: classData[0].classID grabs the classID from the first object
+
+//     //send class data to Frontend as array of objects
+//     res.json({
+//       classData: classData
+//     });
+//   } catch (error) {
+//     console.error("Error fetching class information:", error);
+//     res.status(500).send("Internal server error");
+//   }
+// });
+
+// retrieve the messages from chatroom table
+app.post("/messages", async (req, res) => {
+  try {
+    //grab classID from frontend
+    const { classID } = req.body;
+    //fetch chatroom messages
+    const [userData] = await pool.query
+    ("SELECT chatrooms.message, chatrooms.timestamp, user.username FROM chatrooms INNER JOIN user ON user.userID = chatrooms.userID INNER JOIN classes ON classes.classID = chatrooms.classID WHERE classes.classID = ? ORDER BY chatrooms.timestamp ASC LIMIT 10", [classID]);
+
+    // data stored in an array of objects
+    // Ex: userData[0].message grabs the message from the first object
+
+    // return data to frontend
+    res.json({
+      userData: userData       
+    });
+
+  } catch (error){
+    console.error("Error fetching chatroom messages:", error);
+    res.status(500).send("Internal server error");
+  }
+});
+
+// // update chatroom messages
+// app.post("/update-messages", async (req, res) => {
+//   try {
+//     const { message, timestamp, classID } = req.body;
+//     const userID = req.session.userID;
+
+//     // Update the message in the chatrooms table for the specified chatroom ID
+//     await pool.query("UPDATE chatrooms SET message = ?, timestamp = ? WHERE userID = ? AND classID = ?", [message, timestamp, userID, classID]);
+    
+//     res.json({ message: "Message updated successfully" });
+//   } catch (error) {
+//     console.error("Error updating message:", error);
+//     res.status(500).send("Internal server error");
+//   }
+// });
+
+// Insert message into chatroom
+app.post("/insert-message", async (req, res) => {
+  try {
+    // grab chatroom data from frontend (send in same order from frontend)
+    const { message, timestamp, classID } = req.body;
+    // userID (session)
+    const userID = req.session.userid;
+    // nsert chatroom data
+    await pool.query("INSERT INTO chatrooms (classID, timestamp, message, userID) VALUES (?, ?, ?, ?)", [classID, timestamp, message, userID]);
+  } catch(error) {
+    console.error("Error inserting message:", error);
+    res.status(500).send("Internal server error");
+  }
+});
+
+// Updates user accounts from the user update page
+app.post("/update-user-info", async (req, res) => {
+  const { name, username, email, croppedImg } = req.body;
+  try {
+    if (req.session) {
+      const userId = req.session.userid;
+
+      // Query the database to retrieve essential user information based on user ID
+      const [userData] = await pool.query("SELECT name, username, email, avatar FROM user WHERE userID = ?", [userId]);
+
+      if (userData.length === 1) {
+        
+        // Check if any new information is provided and not blank
+        const updates = {};
+        if (name) updates.name = name;
+        if (username) updates.username = username;
+        if (email) updates.email = email;
+        if (croppedImg) updates.avatar = croppedImg;
+
+        // Check if provided email is valid
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (updates.email && !emailRegex.test(updates.email)) {
+          return res.status(400).send("Invalid email format");
+        }
+
+        // Check if username or email already exists in the database
+        const [existingUser] = await pool.query(
+          "SELECT userID FROM user WHERE (username = ? OR email = ?) AND userID != ?",
+          [updates.username, updates.email, userId]
+        );
+
+        // Check if the provided email or username matches 
+        // the existing email or username of the user
+        const [currentUser] = await pool.query(
+          "SELECT userID FROM user WHERE userID = ? AND (username = ? OR email = ?)",
+          [userId, username, email]
+        );
+
+        if (existingUser.length > 0) {
+          return res.status(400).send("Username or email already exists. Please choose a different one.");
+        }
+        // Check if currentUser has any data, 
+        // indicating that the provided email or username 
+        // matches the existing email or username of the user
+        if (currentUser.length > 0) {
+          return res.status(400).send("You cannot update to your own existing email or username.");
+        }   
+
+        // Update the user information in the database
+        await pool.query("UPDATE user SET ? WHERE userID = ?", [updates, userId]);
+
+        res.json({ success: true });
+      } else {
+        res.status(404).send("User not found");
+      }
+    } else {
+      res.status(401).send("Unauthorized. Please log in first.");
+      console.log("Unauthorized");
+    }
+  } catch (error) {
+    console.error("Error updating user information:", error);
+    res.status(500).send("No Updates Made");
+  }
+});
+
+// Updates user password
+app.post("/reset-password", async (req, res) => {
+  const { oldPassword, newPassword } = req.body;
+  
+  try {
+
+    if (req.session) {
+      // User is authenticated, retrieve user ID from session
+      const userId = req.session.userid;
+
+      // Query the database to retrieve the user's password based on user ID
+      const [userData] = await pool.query("SELECT password FROM user WHERE userID = ?", [userId]);
+
+      if (userData.length === 1) {
+        
+        // Check if the old password matches the stored password hash
+        const passwordMatch = await bcrypt.compare(oldPassword, userData[0].password);
+        if (!passwordMatch) {
+          return res.status(401).send("Old password is incorrect");
+        }
+
+        // Hash the new password
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+        // Update the user's password hash in the database
+        await pool.query("UPDATE user SET password = ? WHERE userID = ?", [hashedPassword, userId]); 
+
+        res.json({ success: true });
+      } else {
+        return res.status(404).send("User not found");
+      }
+    } else {
+      res.status(401).send("Unauthorized. Please log in first.");
+      console.log("Unauthorized");
+    }
+  } catch (error) {
+    console.error("Error updating user information:", error);
+    res.status(500).send("Internal server error");
+  }
+});
+
+// Check login credentials (create user session)
 app.post("/login", async (req, res) => {
   let username = req.body.username;
   let password = req.body.password;
-  console.log(req.body.username);
+  console.log("Username:",req.body.username);
 
   try {
     // Fetch user data (including hashed password) from the database based on username
@@ -52,16 +482,39 @@ app.post("/login", async (req, res) => {
     );
 
     if (userData.length === 0) {
-      // Username not found
       res.send("Invalid username or password");
     } else {
+      // Grabbing user info from User table
       const hashedPassword = userData[0].password;
+      const userid = userData[0].userID; 
+      const username = userData[0].username; 
+      const email = userData[0].email; 
+      // (***) Grab the image data (***)
+      const img = userData[0].avatar;
 
       // Compare the entered password with the hashed password from the database
       const passwordMatch = await bcrypt.compare(password, hashedPassword);
 
       if (passwordMatch) {
-        res.send({ success: true });
+        // Store userid in the session
+        req.session.userid = userid; // Stores the userid in session
+        req.session.username = username;
+
+        console.log('Session ID:', req.sessionID);
+
+        // sends user info to the Frontend on submit
+        res.send({ 
+          success: true, 
+          username, 
+          email, 
+          userID: req.session.userid,
+          croppedImg: img,
+        }); 
+
+        // Print userid to stdout (Backend)
+        console.log("Userid:", userid);
+        
+        
       } else {
         res.send("Invalid username or password");
       }
@@ -72,43 +525,62 @@ app.post("/login", async (req, res) => {
   }
 });
 
+
+// Logout (destroy session)
+app.post("/logout", (req, res) => {
+  // Destroy session w/ error handling
+  console.log("Destroy Session: ", req.sessionID);
+  req.session.destroy((err) => {
+    if (err) {
+      console.error("Error destroying session:", err);
+      res.status(500).send("Error destroying session");
+    } else {
+      res.status(200).send("Session destroyed successfully");
+    }
+  });
+});
+
+
 // Account creation post
 app.post("/create-account", async (req, res) => {
   const { username, email, password } = req.body;
 
   try {
-    // Check if the username or email already exists in the database
+
     const [existingUser] = await pool.query(
       "SELECT * FROM user WHERE username = ? OR email = ?",
       [username, email]
     );
 
     if (existingUser.length > 0) {
-      // Username or email already exists, respond accordingly
       res.send(
         "Username or email already exists. Please choose a different one."
       );
     } else {
-      // Hash the password before storing it
-      const hashedPassword = await bcrypt.hash(password, 10); // 10 is the number of salt rounds
-
-      // Insert new user data (including the hashed password) into the database
-      await pool.query(
-        "INSERT INTO user (username, email, password) VALUES (?, ?, ?)",
-        [username, email, hashedPassword]
-      );
-
-      // Check if the account was successfully created by querying the database again
-      const [newUser] = await pool.query(
-        "SELECT * FROM user WHERE username = ?",
-        [username]
-      );
-
-      if (newUser.length > 0) {
-        // res.send("Account created successfully!");
-        res.send({ success: true });
+      // Check if the password meets the minimum length requirement
+      if (password.length < 8) {
+        res.send('Password must be at least 8 characters long.');
       } else {
-        res.send("Failed to create an account. Please try again.");
+        // Hash the password before storing it
+        const hashedPassword = await bcrypt.hash(password, 10); // 10 is the number of salt rounds
+
+        // Insert new user data (including the hashed password) into the database
+        await pool.query(
+          "INSERT INTO user (username, email, password) VALUES (?, ?, ?)",
+          [username, email, hashedPassword]
+        );
+
+        // Check if the account was successfully created by querying the database again
+        const [newUser] = await pool.query(
+          "SELECT * FROM user WHERE username = ?",
+          [username]
+        );
+
+        if (newUser.length > 0) {
+          res.send({ success: true });
+        } else {
+          res.send("Failed to create an account. Please try again.");
+        }
       }
     }
   } catch (error) {
@@ -129,16 +601,77 @@ app.use((err, req, res, next) => {
   res.status(500).send("No worky ):");
 });
 
-app.use(express.json());
 
 // Use async/await with the promise-based query
 async function queryDatabase() {
   try {
-    const [rows, fields] = await pool.query("SELECT * FROM user");
-    console.log(rows); // rows contains rows returned by the server
-    //console.log(fields); // fields contains extra meta data about results, if available
+    // TESTING DATA
+    // const [rows, fields] = await pool.query("SELECT * FROM user");
+    // const classID = 1;
+    // //const [rows, fields] = await pool.query
+    // const [userData] = await pool.query
+    // ("SELECT chatrooms.* FROM chatrooms INNER JOIN user ON user.userID = chatrooms.userID INNER JOIN classes ON classes.classID = chatrooms.classID WHERE classes.classID = ?", [classID]);
+
+    //const className = 'Biology';
+
+    // const [userData] = await pool.query("Select * FROM classes");
+    // console.log(userData);
+    // const classID = 1;
+    // const [userData] = await pool.query
+    // ("SELECT chatrooms.message, chatrooms.timestamp, user.username FROM chatrooms INNER JOIN user ON user.userID = chatrooms.userID INNER JOIN classes ON classes.classID = chatrooms.classID WHERE classes.classID = ? ORDER BY chatrooms.timestamp DESC", [classID]);
+    // const [userData] = await pool.query
+    // ("SELECT * FROM classes INNER JOIN chatrooms WHERE classes.classID = chatrooms.classID");
+    // const classID = 3;
+    // const userID = 11;
+    // const message = "What page are we on?";
+    // const timestamp = '2024-03-03T11:46:00.000Z';
+
+    // await pool.query("INSERT INTO chatrooms (classID, userID, message, timestamp) VALUES (?, ?, ?, ?)", [classID, userID, message, timestamp]);
+
+    // await pool.query("DELETE chatrooms.userID FROM chatrooms WHERE userID = 2");
+
+    // const [userData] = await pool.query("Select DISTINCT classes.classID, classes.className FROM classes INNER JOIN chatrooms ON classes.classID = chatrooms.classID INNER JOIN user ON user.userID = chatrooms.userID WHERE user.userID = ?", [2]);
+
+
+    // console.log(userData);
+    
+    
+    // const [userData] = await pool.query
+    // ("SELECT * FROM user WHERE user.userID = 25");
+    // console.log(userData[0].avatar);
+    
+    //console.log(rows); // rows contains rows returned by the server
+    // console.log(fields); // fields contains extra meta data about results, if available
     // good for wanting to see what the table will ask for (id, name, password, etc.) and their
     // type.
+    // const userID = 1;
+    // const chatID = 3;
+    // const newMessage = "Hello everyone, How's it going?";
+    // await pool.query("UPDATE chatrooms SET message = ? WHERE userID = ? AND chatID = ?", [newMessage, userID, chatID]);
+
+    // const classID = 1;
+    // const userID = 11;
+    // const timestamp = '2024-02-21T12:56:00.000Z';
+    // const message = "Does anyone have the notes from today's class?";
+    // await pool.query("INSERT INTO chatrooms (classID, timestamp, message, userID) VALUES (?, ?, ?, ?)", [classID, timestamp, message, userID]);
+
+    // const userID = 11;
+
+    // const [classData] = await pool.query
+    // ("Select classes.classID, classes.className FROM classes INNER JOIN chatrooms ON classes.classID = chatrooms.classID INNER JOIN user ON user.userID = chatrooms.userID WHERE user.userID = ?", [userID]);
+
+    // console.log(classData);
+
+    // const userID = 11;
+
+    // const [classData] = await pool.query
+    // ("SELECT DISTINCT classes.classID, classes.className FROM classes INNER JOIN classList ON classes.classID = classList.classID INNER JOIN user ON user.userID = classList.userID WHERE user.userID = ?", [userID]);
+     
+    // console.log(classData);
+
+
+
+
   } catch (error) {
     console.error(error);
   }
@@ -146,7 +679,7 @@ async function queryDatabase() {
 
 queryDatabase(); // Call the function to query the database
 
-app.listen(3000, () => {
-  console.log("App listening on port 3000");
-  //console.log("Server is running on 3000");
-});
+// app.listen(3000, () => {
+//   console.log("App listening on port 3000");
+//   //console.log("Server is running on 3000");
+// });
