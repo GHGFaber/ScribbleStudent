@@ -36,14 +36,6 @@ function App() {
   let newInactiveUsers = "";
   let newUserNotes = "";
 
-  /*
-  get_chat_from_server();
-  get_users_classes_from_server();
-  get_active_users_from_server();
-  get_inactive_users_from_server();
-  get_users_notes_from_server();
-  */
-
   useEffect(() => {
     // localStorage.setItem("messages", null);
     console.log("useEffect has ran");
@@ -52,63 +44,13 @@ function App() {
     get_active_users_from_server();
     get_inactive_users_from_server();
     get_users_notes_from_server();
-    /*
-    newChats = [...chats];
-    console.log(newChats);
-    newClasses = [...classes];
-    console.log(newClasses);
-    newActiveUsers = [...activeUsers];
-    newInactiveUsers = [...inactiveUsers];
-    newUserNotes = [...userNotes];
-    */
-
-    //foo();
     setIsFirstTime(false);
   }, []);
 
-  // call get function on second use Effect
+  useEffect(() => {
 
-  // useEffect(() => {
-  //   localStorage.setItem("chats", JSON.stringify(chats));
-  //   localStorage.setItem("classes", JSON.stringify(classes));
-  //   localStorage.setItem("active", JSON.stringify(activeUsers));
+  }, [])
 
-  //   localStorage.setItem("notes", JSON.stringify(userNotes));
-  // }, [chats, classes, activeUsers, inactiveUsers, userNotes]);
-
-  // function get_chat_from_server() {
-  //   axios
-  //     .get("http://localhost:3000/chat_data")
-  //     .then((res) => {
-  //       // setChats(res.data);
-  //       if (JSON.parse(localStorage.getItem("messages")).length != 0) {
-  //         console.log(
-  //           "Your session storage: " + localStorage.getItem("messages")
-  //         );
-  //         console.log(
-  //           "Chicago is rainy: " + localStorage.getItem("messages").length
-  //         );
-  //         setChats(JSON.parse(localStorage.getItem("messages")));
-  //         // localStorage.setItem("messages", JSON.stringify(res.data));
-  //         // console.log("the data is : " + localStorage.getItem("messages"));
-  //       } else {
-  //         console.log("Res.data is: " + JSON.stringify(res.data));
-  //         console.log("Chicago is windy");
-  //         setChats(res.data);
-  //         console.log("Chats set to: " + chats);
-  //         localStorage.setItem("messages", JSON.stringify(res.data));
-  //         console.log(
-  //           "Your session storage: " + localStorage.getItem("messages")
-  //         );
-  //         console.log(JSON.stringify(chats));
-  //       }
-  //       console.log("connected");
-  //     })
-  //     .catch((error) => {
-  //       console.error("Error fetching data from the API:", error);
-  //       console.log("not connected");
-  //     });
-  // }
   function get_chat_from_server() {
     axios
       .get("http://localhost:3000/chat_data")
@@ -164,29 +106,7 @@ function App() {
   }
 
   function foo() {
-    if (!isRendered) {
-      /*
-      // if there is nothing in session storage/if it is populated with a value
-      setStringChats(JSON.stringify(chats));
-      console.log("string chats are: " + chats);
-      //localStorage.setItem("messages", JSON.stringify(chats));
-      console.log("ss is " + localStorage.getItem("messages"));
-      const temp = localStorage.getItem("messages");
-      console.log("temp is "+ localStorage.getItem("messages"));
-      setRenderedChats(temp);
-      //console.log(renderedChats);
-      */
-      /*
-      setChats(localStorage.getItem("messages"));
-      setClasses(localStorage.getItem("classes"));
-      setActiveUsers(localStorage.getItem("activeUsers"));
-      setInactiveUsers(localStorage.getItem("inactiveUsers"));
-      setUserNotes(localStorage.getItem("userNotes"));
-      isRendered = true;
-      */
-    }
-    //console.log("stringChats are: " + stringChats);
-    //console.log('session is ' + localStorage.getItem("messages"));
+    if (!isRendered) {}
   }
 
   function count_refresh() {

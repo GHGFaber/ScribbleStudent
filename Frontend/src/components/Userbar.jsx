@@ -1,3 +1,5 @@
+// renders the bar to the right of the screen
+// displays active and inactive users
 function Userbar({ activeUsers, inactiveUsers }) {
   return (
     <>

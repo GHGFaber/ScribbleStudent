@@ -3,6 +3,7 @@ import pyramid from "../images/scrib_pyramid.png";
 import chat_ex from "../images/chat_ex.png";
 import note_ex from "../images/notes_ex.png";
 import { Link } from "react-router-dom";
+// landing page for the application
 function Home() {
   return (
     <>
