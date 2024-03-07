@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import socket from '../components/Socket.jsx';
 
 
+// page for logging in
 function LoginPage() {
   const navigate = useNavigate();
   const formData = useRef(null);
@@ -54,11 +55,11 @@ function LoginPage() {
             <label id="ps-text">Password</label>
             <br />
             <input name="password" type="password" id="password" />
-          
-          <div className="spacer-0"></div>
-          <button id="log-page-button" onClick={handleLogin}>
-            Log In
-          </button>
+
+            <div className="spacer-0"></div>
+            <button id="log-page-button" onClick={handleLogin}>
+              Log In
+            </button>
           </form>
           <div className="spacer-0"></div>
           <Link to="/create-account">No account? Create one!</Link>

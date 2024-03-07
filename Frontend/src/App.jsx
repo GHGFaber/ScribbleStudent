@@ -1,128 +1,146 @@
-import './App.css';
-import Home from './pages/Home.jsx';
-import LoginPage from './pages/LoginPage.jsx';
-import CreateAccount from './pages/CreateAccount.jsx';
-import Chatroom from './pages/Chatroom.jsx';
-import Notebook from './pages/Notebook.jsx';
-import UserUpdate from './pages/UserUpdate.jsx';
-import ResetPassword from './pages/ResetPassword.jsx';
-import Navbar from './components/Navbar.jsx';
-import {useEffect, useState} from 'react';
-import {BrowserRouter, Routes, Route} from "react-router-dom";
-import socket from './components/Socket.jsx';
-
+import "./App.css";
+import Home from "./pages/Home.jsx";
+import LoginPage from "./pages/LoginPage.jsx";
+import CreateAccount from "./pages/CreateAccount.jsx";
+import Chatroom from "./pages/Chatroom.jsx";
+import Notebook from "./pages/Notebook.jsx";
+import { createRef, useState, useEffect } from "react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import axios from "axios";
+import "./App.css";
+import UserUpdate from "./pages/UserUpdate.jsx";
+import ResetPassword from "./pages/ResetPassword.jsx";
 
 function App() {
-  
-      
-  // const [chats, setChats] = useState([
-  //   {
-  //     username: "tianapowell225",
-  //     text: "It's gonna take a lotta love...",
-  //     timestamp: 1704479956000
-  //   },
-  //   {
-  //     username: "JLennon",
-  //     text: "$a0!!!!!!!!!!",
-  //     timestamp: 1704480316000
-  //   },
-  //   {
-  //     username: "Chubli_Deepnargle",
-  //     text: "Dernoy! Dernoy bluse!",
-  //     timestamp: 1704480445000
-  //   },
-  //   {
-  //     username: "Fleeko1999",
-  //     text: "Zombo!",
-  //     timestamp: 1704482118000
-  //   }
-  // ]);
+  console.log("Initiating app...");
 
+  const [initial, setInitial] = useState("");
 
-  // const [classes, setClasses] = useState([
-  //   {
-  //     classInSchoolName: "CHEM-225"
-  //   },
-  //   {
-  //     classInSchoolName: "COMP-300"
-  //   },
-  //   {
-  //     classInSchoolName: "COMP-345"
-  //   },
-  //   {
-  //     classInSchoolName: "ENGL-101"
-  //   }
-  // ]);
-  // const [activeUsers, setActiveUsers] = useState([
-  //   {
-  //     username: "tianapowell225"
-  //   },
-  //   {
-  //     username: "JLennon"
-  //   },
-  //   {
-  //     username: "Chubli_Deepnargle"
-  //   },
-  //   {
-  //     username: "Fleeko1999"
-  //   }
-  // ]);
-  // const [inactiveUsers, setInactiveUsers] = useState([
-  //   {
-  //     username: "Cecil [TA]"
-  //   },
-  //   {
-  //     username: "SitarKid"
-  //   },
-  //   {
-  //     username: "Ringo334"
-  //   },
-  //   {
-  //     username: "rolling_stone_1962"
-  //   },
-  //   {
-  //     username: "n46_iwantyou"
-  //   }
-  // ]);
+  let isRendered = false;
 
-  // Classes State
-  const [classes, setClasses] = useState([]);
-  // Chats State
+  const [isFirstTime, setIsFirstTime] = useState(true);
+  const user = localStorage.getItem("id");
   const [chats, setChats] = useState([]);
-  // Username State
-  const [username, setUsername] = useState(null);
+  const [classes, setClasses] = useState([]);
+  const [activeUsers, setActiveUsers] = useState([]);
+  const [inactiveUsers, setInactiveUsers] = useState([]);
+  const [userNotes, setUserNotes] = useState([]);
+  const [renderedChats, setRenderedChats] = useState("");
+  //try to push
+  const [stringChats, setStringChats] = useState("");
+  let count = 0;
 
-  // Load active users from session storage on component mount
-  const [activeUsers, setActiveUsers] = useState(() => {
-    const savedUsers = sessionStorage.getItem('activeUsers');
-    return savedUsers ? JSON.parse(savedUsers) : [];
-  });
+  let newChats = "";
+  let newClasses = "";
+  let newActiveUsers = "";
+  let newInactiveUsers = "";
+  let newUserNotes = "";
 
-  // Load inactive users session storage on component mount
-  const [inactiveUsers, setInactiveUsers] = useState(() => {
-    const savedUsers = sessionStorage.getItem('inactiveUsers');
-    return savedUsers ? JSON.parse(savedUsers) : [];
-  });
+  useEffect(() => {
+    // localStorage.setItem("messages", null);
+    console.log("useEffect has ran");
+    get_chat_from_server();
+    // get_users_classes_from_server();
+    get_active_users_from_server();
+    get_inactive_users_from_server();
+    get_users_notes_from_server();
+    setIsFirstTime(false);
+  }, []);
 
+  useEffect(() => {
+
+  }, [])
+
+  function get_chat_from_server() {
+    axios
+      .get("http://localhost:3000/chat_data")
+      .then((res) => {
+        setChats(res.data);
+
+        localStorage.setItem("chats", JSON.stringify(res.data));
+      })
+      .catch((error) => {
+        console.error("Error fetching data from the API:", error);
+        console.log("not connected");
+      });
+  }
+
+  function get_active_users_from_server() {
+    axios
+      .get("http://localhost:3000/active_data")
+      .then((res) => {
+        setActiveUsers(res.data);
+        localStorage.setItem("active", JSON.stringify(res.data));
+      })
+      .catch((error) => {
+        console.error("Error fetching data from the API:", error);
+        console.log("not connected");
+      });
+  }
+
+  function get_inactive_users_from_server() {
+    axios
+      .get("http://localhost:3000/inactive_data")
+      .then((res) => {
+        setInactiveUsers(res.data);
+        localStorage.setItem("inactive", JSON.stringify(res.data));
+      })
+      .catch((error) => {
+        console.error("Error fetching data from the API:", error);
+        console.log("not connected");
+      });
+  }
+
+  function get_users_notes_from_server() {
+    axios
+      .get("http://localhost:3000/notes_data")
+      .then((res) => {
+        setUserNotes(res.data);
+
+        localStorage.setItem("notes", JSON.stringify(res.data));
+      })
+      .catch((error) => {
+        console.error("Error fetching data from the API:", error);
+        console.log("not connected");
+      });
+  }
+
+  function foo() {
+    if (!isRendered) {}
+  }
+
+  function count_refresh() {
+    console.log("The count is: " + count);
+    ++count;
+  }
 
   return (
     <BrowserRouter>
+      {foo()}
       <div className="App">
         <Routes>
-            <Route index element={<Home/>}/>
-            <Route path="login-page" element={<LoginPage/>}/>
-            <Route path="create-account" element={<CreateAccount/>}/>
-            <Route path="notebook" element={<Notebook username={username}/>}/>
-            {/* <Route path="chatroom" element={<Chatroom chats={chats} classes={classes} activeUsers={activeUsers} inactiveUsers={inactiveUsers}/>}/>   */}
-            <Route path="chatroom" element={<Chatroom 
-              classes={classes} setClasses={setClasses} chats={chats} 
-              setChats={setChats} username={username} setUsername={setUsername}
-              activeUsers={activeUsers} setActiveUsers={setActiveUsers}
-              inactiveUsers={inactiveUsers} setInactiveUsers={setInactiveUsers}
-            />}/>  
-            <Route path="user-update" element={<UserUpdate/>}/>
-            <Route path="reset-password" element={<ResetPassword/>}/>
+          <Route index element={<Home />} />
+          <Route path="login-page" element={<LoginPage />} />
+          <Route path="create-account" element={<CreateAccount />} />
+          <Route
+            path="notebook"
+            element={<Notebook classes={classes} notePages={userNotes} />}
+          />
 
+          <Route
+            path="chatroom"
+            element={
+              <Chatroom
+                chats={chats}
+                //classes={classes}
+                activeUsers={activeUsers}
+                inactiveUsers={inactiveUsers}
+                notePages={userNotes}
+              />
+            }
+          />
+          <Route path="user-update" element={<UserUpdate />} />
+          <Route path="reset-password" element={<ResetPassword />} />
         </Routes>
       </div>
     </BrowserRouter>
