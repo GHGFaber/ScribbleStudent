@@ -91,7 +91,13 @@ app.get("/user-info", async (req, res) => {
 
       // Query the database to retrieve user information based on user ID
       const [userData] = await pool.query(
-        "SELECT * FROM user WHERE userID = ?",
+        `select user.username, 
+                user.email, 
+                JSON_ARRAYAGG(classes.className) as classes
+                 from user 
+                 LEFT JOIN classList ON user.userID = classList.userID
+                LEFT JOIN classes ON classList.classID = classes.classID 
+                where user.userID = ?;`,
         [userid]
       );
       if (userData.length === 1) {
@@ -166,7 +172,10 @@ app.get("/class_data", async (req, res) => {
   console.log("id: " + userID);
   try {
     const [userClassData] = await pool.query(
-      "SELECT * FROM classes WHERE ownerID = ?",
+      `SELECT classes.className
+       from classes
+      INNER JOIN classList ON classes.classID = classList.classID 
+      where classList.userID = ?`,
       [userID]
     );
 
@@ -462,8 +471,10 @@ app.post("/messages", async (req, res) => {
     const { classID } = req.body;
     console.log("messages: id is " + req.body.classID);
     //fetch chatroom messages
-    const [userData] = await pool.query
-    ("SELECT chatrooms.message, chatrooms.timestamp, user.username FROM chatrooms INNER JOIN user ON user.userID = chatrooms.userID INNER JOIN classes ON classes.classID = chatrooms.classID WHERE classes.classID = ?", [classID]);
+    const [userData] = await pool.query(
+      "SELECT chatrooms.message, chatrooms.timestamp, user.username FROM chatrooms INNER JOIN user ON user.userID = chatrooms.userID INNER JOIN classes ON classes.classID = chatrooms.classID WHERE classes.classID = ?",
+      [classID]
+    );
 
     // data stored in an array of objects
     // Ex: userData[0].message grabs the message from the first object
@@ -471,10 +482,9 @@ app.post("/messages", async (req, res) => {
     //return data to frontend
     //returns message, timestamp, and username
     res.json({
-      userData: userData     
+      userData: userData,
     });
-
-  } catch (error){
+  } catch (error) {
     console.error("Error fetching chatroom messages:", error);
     res.status(500).send("Internal server error");
   }
@@ -488,8 +498,11 @@ app.post("/insert-message", async (req, res) => {
     //userID (session)
     const userID = req.session.userID;
     //insert chatroom data
-    await pool.query("INSERT INTO chatrooms (classID, timestamp, message, userID) VALUES (?, ?, ?, ?)", [classID, timestamp, message, userID]);
-  } catch(error) {
+    await pool.query(
+      "INSERT INTO chatrooms (classID, timestamp, message, userID) VALUES (?, ?, ?, ?)",
+      [classID, timestamp, message, userID]
+    );
+  } catch (error) {
     console.error("Error inserting message:", error);
     res.status(500).send("Internal server error");
   }
@@ -503,8 +516,11 @@ app.post("/update-messages", async (req, res) => {
     const { newMessage } = req.body; // Extract the new message content from the request body
 
     // Update the message in the chatrooms table for the specified chatroom ID
-    await pool.query("UPDATE chatrooms SET message = ? WHERE userID = ? AND chatID = ?", [newMessage, userID, chatID]);
-    
+    await pool.query(
+      "UPDATE chatrooms SET message = ? WHERE userID = ? AND chatID = ?",
+      [newMessage, userID, chatID]
+    );
+
     res.json({ message: "Message updated successfully" });
   } catch (error) {
     console.error("Error updating message:", error);
@@ -517,14 +533,17 @@ app.post("/classes", async (req, res) => {
   try {
     const { className } = req.body;
     // Query the database to retrieve class data
-    const [classData] = await pool.query("Select * FROM classes WHERE classes.className = ?", [className]);
-      
+    const [classData] = await pool.query(
+      "Select * FROM classes WHERE classes.className = ?",
+      [className]
+    );
+
     // data stored in an array of objects
     // Ex: classData[0].classID grabs the classID from the first object
 
     //send class data to Frontend as array of objects
     res.json({
-      classData: classData
+      classData: classData,
     });
   } catch (error) {
     console.error("Error fetching class information:", error);
