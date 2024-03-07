@@ -69,6 +69,11 @@ const io = new Server(server, {
 // Session context shared w/ socket.io
 io.engine.use(sessionMiddleware);
 
+//retreive static notes
+app.get("/notes_data", (req, res) => {
+  res.json(user_notes);
+});
+
 // Call function inside socket
 // Async function to query database and populate inactive users map
 async function populateInactiveUsers() {

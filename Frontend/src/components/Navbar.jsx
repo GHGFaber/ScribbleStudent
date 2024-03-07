@@ -29,7 +29,6 @@ function Navbar({
   };
 
   const [userProfileIsOn, setUserProfileIsOn] = useState(false);
-  const [username, setUsername] = useState(null);
   const [userData, setUserData] = useState([]);
   const testClosureString = "This originates from Navbar.jsx";
   const formData = useRef(null);
@@ -219,17 +218,10 @@ function Navbar({
   // };
 
   return (
-    <nav style={{ height: "100px" }}>
+    <nav>
       <div className="the-nav">
         <img className="scrib-emblem" src={logo} alt="Scribble-emblem" />
-        <div
-          className="class-buttons"
-          style={{
-            position: "absolute",
-            marginTop: "35px",
-            marginLeft: "10%",
-          }}
-        >
+        <div className="class-buttons">
           {/* Added function to display class name of tab clicked */}
           {/* If classes is null, then do not display tabs */}
           {classes && classes.length > 0 && (
@@ -247,7 +239,9 @@ function Navbar({
 
         <Popup
           className="signout-button-popup"
-          trigger={<button className="profile-button my-auto">Profile</button>}
+          trigger={
+            <button className="profile-button my-auto">{username}</button>
+          }
           position="bottom right"
         >
           <div className="whats-inside-the-popup">

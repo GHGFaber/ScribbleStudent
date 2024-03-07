@@ -14,128 +14,47 @@ import ResetPassword from "./pages/ResetPassword.jsx";
 function App() {
   console.log("Initiating app...");
 
-  const [initial, setInitial] = useState("");
-
-  let isRendered = false;
-
-  const [isFirstTime, setIsFirstTime] = useState(true);
-  const user = localStorage.getItem("id");
-  const [chats, setChats] = useState([]);
   const [classes, setClasses] = useState([]);
-  const [activeUsers, setActiveUsers] = useState([]);
-  const [inactiveUsers, setInactiveUsers] = useState([]);
-  const [userNotes, setUserNotes] = useState([]);
-  const [renderedChats, setRenderedChats] = useState("");
-  //try to push
-  const [stringChats, setStringChats] = useState("");
-  let count = 0;
+  // Chats State
+  const [chats, setChats] = useState([]);
+  // Username State
+  const [username, setUsername] = useState(null);
 
-  let newChats = "";
-  let newClasses = "";
-  let newActiveUsers = "";
-  let newInactiveUsers = "";
-  let newUserNotes = "";
+  // Load active users from session storage on component mount
+  const [activeUsers, setActiveUsers] = useState(() => {
+    const savedUsers = sessionStorage.getItem("activeUsers");
+    return savedUsers ? JSON.parse(savedUsers) : [];
+  });
 
-  useEffect(() => {
-    // localStorage.setItem("messages", null);
-    console.log("useEffect has ran");
-    get_chat_from_server();
-    // get_users_classes_from_server();
-    get_active_users_from_server();
-    get_inactive_users_from_server();
-    get_users_notes_from_server();
-    setIsFirstTime(false);
-  }, []);
-
-  useEffect(() => {
-
-  }, [])
-
-  function get_chat_from_server() {
-    axios
-      .get("http://localhost:3000/chat_data")
-      .then((res) => {
-        setChats(res.data);
-
-        localStorage.setItem("chats", JSON.stringify(res.data));
-      })
-      .catch((error) => {
-        console.error("Error fetching data from the API:", error);
-        console.log("not connected");
-      });
-  }
-
-  function get_active_users_from_server() {
-    axios
-      .get("http://localhost:3000/active_data")
-      .then((res) => {
-        setActiveUsers(res.data);
-        localStorage.setItem("active", JSON.stringify(res.data));
-      })
-      .catch((error) => {
-        console.error("Error fetching data from the API:", error);
-        console.log("not connected");
-      });
-  }
-
-  function get_inactive_users_from_server() {
-    axios
-      .get("http://localhost:3000/inactive_data")
-      .then((res) => {
-        setInactiveUsers(res.data);
-        localStorage.setItem("inactive", JSON.stringify(res.data));
-      })
-      .catch((error) => {
-        console.error("Error fetching data from the API:", error);
-        console.log("not connected");
-      });
-  }
-
-  function get_users_notes_from_server() {
-    axios
-      .get("http://localhost:3000/notes_data")
-      .then((res) => {
-        setUserNotes(res.data);
-
-        localStorage.setItem("notes", JSON.stringify(res.data));
-      })
-      .catch((error) => {
-        console.error("Error fetching data from the API:", error);
-        console.log("not connected");
-      });
-  }
-
-  function foo() {
-    if (!isRendered) {}
-  }
-
-  function count_refresh() {
-    console.log("The count is: " + count);
-    ++count;
-  }
+  // Load inactive users session storage on component mount
+  const [inactiveUsers, setInactiveUsers] = useState(() => {
+    const savedUsers = sessionStorage.getItem("inactiveUsers");
+    return savedUsers ? JSON.parse(savedUsers) : [];
+  });
 
   return (
     <BrowserRouter>
-      {foo()}
       <div className="App">
         <Routes>
           <Route index element={<Home />} />
           <Route path="login-page" element={<LoginPage />} />
           <Route path="create-account" element={<CreateAccount />} />
-          <Route
-            path="notebook"
-            element={<Notebook classes={classes} notePages={userNotes} />}
-          />
-
+          <Route path="notebook" element={<Notebook username={username} />} />
+          {/* <Route path="chatroom" element={<Chatroom chats={chats} classes={classes} activeUsers={activeUsers} inactiveUsers={inactiveUsers}/>}/>   */}
           <Route
             path="chatroom"
             element={
               <Chatroom
+                classes={classes}
+                setClasses={setClasses}
                 chats={chats}
-                //classes={classes}
+                setChats={setChats}
+                username={username}
+                setUsername={setUsername}
                 activeUsers={activeUsers}
+                setActiveUsers={setActiveUsers}
                 inactiveUsers={inactiveUsers}
-                notePages={userNotes}
+                setInactiveUsers={setInactiveUsers}
               />
             }
           />

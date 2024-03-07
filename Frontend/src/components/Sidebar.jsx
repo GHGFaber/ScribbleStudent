@@ -8,6 +8,8 @@ function Sidebar({ parentCallback, notePages }) {
   let targetFile = "";
   let temp = "";
 
+  console.log(notePages);
+
   console.log(localStorage.getItem("notes"));
 
   // takes a filename string and returns the corresponding set of notes
