@@ -25,8 +25,10 @@ function Chatroom() {
     get_active_users_from_server();
     get_inactive_users_from_server();
     get_users_notes_from_server();
-    console.log("Chatroom: current class data is " + sessionStorage.getItem("currentClassData"));
-  
+    console.log(
+      "Chatroom: current class data is " +
+        sessionStorage.getItem("currentClassData")
+    );
   }, []);
 
   // if curClass changes then the data for the current class the user is viewing is reset
@@ -34,11 +36,18 @@ function Chatroom() {
     console.log("Chatroom: the second useEffect has ran.");
     setCurrentClass(sessionStorage.getItem("currentClass"));
     console.log("Chatroom: the current class is now " + curClass);
-    console.log("The current chats now are " + sessionStorage.getItem("currentClassData"));
-    
+    console.log(
+      "The current chats now are " + sessionStorage.getItem("currentClassData")
+    );
+
     if (JSON.parse(sessionStorage.getItem("currentClassData"))) {
-      console.log("useEffect: The new class data is " + sessionStorage.getItem("currentClassData"));
-      const curClassData = JSON.parse(sessionStorage.getItem("currentClassData"));
+      console.log(
+        "useEffect: The new class data is " +
+          sessionStorage.getItem("currentClassData")
+      );
+      const curClassData = JSON.parse(
+        sessionStorage.getItem("currentClassData")
+      );
       setChats(curClassData);
     }
   }, [curClass]);
@@ -59,20 +68,27 @@ function Chatroom() {
     try {
       const response = await axios.post("http://localhost:3000/classes", {
         className: className,
-      })
-      sessionStorage.setItem("currentClass", JSON.stringify(response.data.classData));
-      console.log("set_first_class: class is " + sessionStorage.getItem("currentClass"));
+      });
+      sessionStorage.setItem(
+        "currentClass",
+        JSON.stringify(response.data.classData)
+      );
+      console.log(
+        "set_first_class: class is " + sessionStorage.getItem("currentClass")
+      );
       get_chat_from_server();
       //setChats(JSON.parse(localStorage.getItem("chats")));
-      
+
       //console.log("set_first_class: chats are now set to " + JSON.parse(localStorage.getItem("chats")));
       //handleClassChange();
     } catch (error) {
-      console.error("set_first_class: error fetching class from the API:", error);
-    };
+      console.error(
+        "set_first_class: error fetching class from the API:",
+        error
+      );
+    }
+  };
 
-  }
-  
   // contacts backend to retrieve the user's classes from the database
   async function get_users_classes_from_server() {
     const id = localStorage.getItem("id");
@@ -81,9 +97,13 @@ function Chatroom() {
       const response = await axios.get("http://localhost:3000/class_data", {
         params: { id: id },
       });
+      console.log(response.data);
       if (response.data) {
         localStorage.setItem("classes", JSON.stringify(response.data.class[0]));
-        sessionStorage.setItem("currentClass", JSON.stringify(response.data.class[0][0]));
+        sessionStorage.setItem(
+          "currentClass",
+          JSON.stringify(response.data.class[0][0])
+        );
         console.log(response.data.class[0][0]);
         const parsedClasses = JSON.parse(localStorage.getItem("classes"));
         console.log(JSON.stringify(parsedClasses));
@@ -100,17 +120,22 @@ function Chatroom() {
   // contacts backend to retrieve the chatroom messages for a particular class
   function get_chat_from_server() {
     console.log("Start loading chat messages");
-    console.log("Chatroom/get_chat_from_server: class data is " + sessionStorage.getItem("currentClass"));
+    console.log(
+      "Chatroom/get_chat_from_server: class data is " +
+        sessionStorage.getItem("currentClass")
+    );
     const theClass = JSON.parse(sessionStorage.getItem("currentClass"));
-    console.log("get_chat_from_server: theClass is " + JSON.stringify(theClass[0]));
+    console.log(
+      "get_chat_from_server: theClass is " + JSON.stringify(theClass[0])
+    );
     const theID = theClass[0].classID;
     console.log("get_chat_from_server: class id is " + theID);
     axios
       .post("http://localhost:3000/messages", {
-        classID: theID
+        classID: theID,
       })
       .then((res) => {
-        if (res.data.length === 0) { 
+        if (res.data.length === 0) {
           isItEmpty = true;
           console.log("the chat is empty...");
         } else {
@@ -119,9 +144,13 @@ function Chatroom() {
         }
         localStorage.setItem("chats", JSON.stringify(res.data));
         sessionStorage.setItem("currentClassData", JSON.stringify(res.data));
-        console.log("get_chat_from_server: session storage is " + sessionStorage.getItem("currentClassData"));
-        setChats(JSON.parse(sessionStorage.getItem("currentClassData"))['userData']);
-        
+        console.log(
+          "get_chat_from_server: session storage is " +
+            sessionStorage.getItem("currentClassData")
+        );
+        setChats(
+          JSON.parse(sessionStorage.getItem("currentClassData"))["userData"]
+        );
       })
       .catch((error) => {
         console.error("Error fetching data from the API:", error);
@@ -244,13 +273,16 @@ function Chatroom() {
               </form>
             </div>
             <div className="col-2 column3">
-              <Userbar activeUsers={activeUsers} inactiveUsers={inactiveUsers} />
+              <Userbar
+                activeUsers={activeUsers}
+                inactiveUsers={inactiveUsers}
+              />
             </div>
           </div>
         </div>
       </>
     );
-  } else {
+  } else if (chats && chats == "") {
     console.log("Chatroom: no messages for a class.");
     return (
       <>
@@ -264,10 +296,10 @@ function Chatroom() {
               <div id="chat-window-empty">
                 <div className="empty-text-wrapper">
                   <img
-                   className="the-empty-picture"
-                   src={emptyPic}
-                   alt="empty-text-graphic"
-                   />
+                    className="the-empty-picture"
+                    src={emptyPic}
+                    alt="empty-text-graphic"
+                  />
                   <h2>Seems like there is no one here...</h2>
                   <p>Start the conversation - post something now!</p>
                 </div>
@@ -282,7 +314,51 @@ function Chatroom() {
               </form>
             </div>
             <div className="col-2 column3">
-              <Userbar activeUsers={activeUsers} inactiveUsers={inactiveUsers} />
+              <Userbar
+                activeUsers={activeUsers}
+                inactiveUsers={inactiveUsers}
+              />
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  } else if (classes == 0) {
+    console.log("Classes: no classes found");
+    return (
+      <>
+        <Navbar classes={classes} handleClassChange={change_that_class} />
+        <div className="container-fluid">
+          <div className="row no-gutters">
+            <div className="col-2 column1">
+              <Sidebar parentCallback={dummyCallback} notePages={notePages} />
+            </div>
+            <div className="col-8 column2">
+              <div id="chat-window-empty">
+                <div className="empty-text-wrapper">
+                  <img
+                    className="the-empty-picture"
+                    src={emptyPic}
+                    alt="empty-text-graphic"
+                  />
+                  <h2>Seems like there is no one here...</h2>
+                  <p>Start the conversation - post something now!</p>
+                </div>
+              </div>
+              <form className="the-chat-form">
+                <div id="the-textarea" className="container-fluid">
+                  <textarea id="txt"></textarea>
+                </div>
+                <div id="chat-text-btn" className="container-fluid">
+                  <button id="send-button">Send</button>
+                </div>
+              </form>
+            </div>
+            <div className="col-2 column3">
+              <Userbar
+                activeUsers={activeUsers}
+                inactiveUsers={inactiveUsers}
+              />
             </div>
           </div>
         </div>
