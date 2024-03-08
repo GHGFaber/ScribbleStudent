@@ -269,10 +269,16 @@ app.post("/messages", async (req, res) => {
     //grab classID from frontend
     const { classID } = req.body;
     //fetch chatroom messages
+    // const [userData] = await pool.query(
+    //   "SELECT chatrooms.message, chatrooms.timestamp, user.username FROM chatrooms INNER JOIN user ON user.userID = chatrooms.userID INNER JOIN classes ON classes.classID = chatrooms.classID WHERE classes.classID = ? ORDER BY chatrooms.timestamp ASC ",
+    //   [classID]
+    // );
+    // Loads the last 10 messages for the chatroom ordered by timestamp
     const [userData] = await pool.query(
-      "SELECT chatrooms.message, chatrooms.timestamp, user.username FROM chatrooms INNER JOIN user ON user.userID = chatrooms.userID INNER JOIN classes ON classes.classID = chatrooms.classID WHERE classes.classID = ? ORDER BY chatrooms.timestamp ASC",
+      "SELECT * FROM (SELECT chatrooms.message, chatrooms.timestamp, user.username FROM chatrooms INNER JOIN user ON user.userID = chatrooms.userID INNER JOIN classes ON classes.classID = chatrooms.classID WHERE classes.classID = ? ORDER BY chatrooms.timestamp DESC LIMIT 10) AS last_messages ORDER BY last_messages.timestamp ASC",
       [classID]
     );
+  
 
     // data stored in an array of objects
     // Ex: userData[0].message grabs the message from the first object
