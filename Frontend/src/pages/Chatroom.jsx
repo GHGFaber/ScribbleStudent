@@ -2,7 +2,7 @@ import Navbar from "../components/Navbar.jsx";
 import Sidebar from "../components/Sidebar.jsx";
 import Userbar from "../components/Userbar.jsx";
 import axios from "axios";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import socket from "../components/Socket.jsx";
 import emptyPic from "../images/huh_what.png";
 
@@ -29,20 +29,35 @@ function Chatroom({
     const timeString = returnedDate.concat(" ", returnedTime);
     return timeString;
   }
+  
+  // Reference for chat container
+  const chatContainerRef = useRef(null);
 
   function show_chats() {
-    return chats.map((chat, index) => (
-      <div key={index} className="chat-panel">
-        <div className="container-fluid the-chat-div rounded-0">
-          <div className="container-body">
-            <p className="full-datetime">{get_time(chat.timestamp)}</p>
-            <p className="user-text">{chat.username}</p>
-            <p className="text-content">{chat.text}</p>
+    return (
+      <div ref={chatContainerRef} className="chat-container">
+        {chats.map((chat, index) => (
+          <div key={index} className="chat-panel">
+            <div className="container-fluid the-chat-div rounded-0">
+              <div className="container-body">
+                <p className="full-datetime">{get_time(chat.timestamp)}</p>
+                <p className="user-text">{chat.username}</p>
+                <p className="text-content">{chat.text}</p>
+              </div>
+            </div>
           </div>
-        </div>
+        ))}
       </div>
-    ));
+    );
   }
+
+  // Function to scroll to the bottom of the chat container
+  function scrollToBottom() {
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    }
+  }
+  
 
   let dummyCallback = (data) => {
     return data;
@@ -110,7 +125,8 @@ function Chatroom({
 
   useEffect(() => {
     get_users_notes_from_server();
-  }, []);
+    scrollToBottom();
+  }, [chats]);
 
   useEffect(() => {
     socket.on(
