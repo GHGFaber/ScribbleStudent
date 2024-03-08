@@ -258,7 +258,7 @@ function Navbar({
                 <button
                   type="button"
                   className="sign-out-button"
-                  onClick={logout()}
+                  onClick={logout}
                 >
                   Sign Out
                 </button>

@@ -270,12 +270,13 @@ app.post("/messages", async (req, res) => {
     const { classID } = req.body;
     //fetch chatroom messages
     const [userData] = await pool.query(
-      "SELECT chatrooms.message, chatrooms.timestamp, user.username FROM chatrooms INNER JOIN user ON user.userID = chatrooms.userID INNER JOIN classes ON classes.classID = chatrooms.classID WHERE classes.classID = ? ORDER BY chatrooms.timestamp ASC LIMIT 10",
+      "SELECT chatrooms.message, chatrooms.timestamp, user.username FROM chatrooms INNER JOIN user ON user.userID = chatrooms.userID INNER JOIN classes ON classes.classID = chatrooms.classID WHERE classes.classID = ? ORDER BY chatrooms.timestamp ASC",
       [classID]
     );
 
     // data stored in an array of objects
     // Ex: userData[0].message grabs the message from the first object
+    console.log("Message")
 
     // return data to frontend
     res.json({
@@ -310,7 +311,7 @@ app.post("/insert-message", async (req, res) => {
     const { message, timestamp, classID } = req.body;
     // userID (session)
     const userID = req.session.userid;
-    // nsert chatroom data
+    // insert chatroom data
     await pool.query(
       "INSERT INTO chatrooms (classID, timestamp, message, userID) VALUES (?, ?, ?, ?)",
       [classID, timestamp, message, userID]
