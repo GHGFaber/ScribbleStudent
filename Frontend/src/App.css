@@ -258,11 +258,13 @@ body,
   overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: rgba(114, 118, 125, 0.5) transparent; 
+  border-radius: 8px;
 }
 
 /* For WebKit (Chrome, Safari) */
 .chat-container::-webkit-scrollbar {
   width: 6px; /* Scrollbar width */
+  border-radius: 8px;
 }
 
 .chat-container::-webkit-scrollbar-track {
@@ -271,7 +273,7 @@ body,
 
 .chat-container::-webkit-scrollbar-thumb {
   background-color: rgba(114, 118, 125, 0.5);
-  border-radius: 4px;
+  border-radius: 8px;
 }
 
 .chat-container::-webkit-scrollbar-thumb:hover {
@@ -288,6 +290,58 @@ body,
 .chat-panel {
   border-bottom: 1px solid #9090ff;
 }
+
+/* Typing */
+.typing-container {
+  display: flex;
+  align-items: center;
+}
+
+.typing {
+  position: relative;
+  display: inline-block;
+}
+
+p {
+  margin-left: 50px;
+}
+
+.typing span {
+  content: '';
+  animation: blink 1.5s infinite;
+  animation-fill-mode: both;
+  height: 10px;
+  width: 10px;
+  background: #3b5998;
+  position: absolute;
+  left: 0;
+  top: 0;
+  border-radius: 50%;
+}
+
+.typing span:nth-child(2) {
+  animation-delay: 0.2s;
+  margin-left: 15px;
+}
+
+.typing span:nth-child(3) {
+  animation-delay: 0.4s;
+  margin-left: 30px;
+}
+
+@keyframes blink {
+  0% {
+    opacity: 0.1;
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.1;
+  }
+}
+
+
 .nav-items {
   list-style-type: none;
   padding: 20px 0px 0px 90px;
@@ -377,6 +431,7 @@ body,
   background-color: #ffff90;
   border: none;
   border-radius: 30px;
+  margin-top: 10px; /* Added */
 }
 
 /*

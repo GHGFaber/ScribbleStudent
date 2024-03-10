@@ -15,6 +15,8 @@ import { connect } from "socket.io-client";
 axios.defaults.withCredentials = true;
 
 function Navbar({
+  room,
+  setRoom,
   chats,
   setChats,
   classes,
@@ -22,7 +24,7 @@ function Navbar({
   username,
   setUsername,
 }) {
-  const [room, setRoom] = useState(null);
+  // const [room, setRoom] = useState(null);
   const center_offset = {
     left: window.innerWidth / 2,
     top: window.innerHeight / 2,
@@ -119,6 +121,7 @@ function Navbar({
         }));
         setChats(messageData);
         const defaultRoom = formattedData[0].classInSchoolName;
+        setRoom(defaultRoom);//set current room info
         socket.emit("join_room", defaultRoom);
         console.log("Deafult room: ", defaultRoom);
         console.log("Default classID: ", formattedData[0].classID);
@@ -166,6 +169,7 @@ function Navbar({
         classID: classID,
       }));
       const room = classData.classInSchoolName;
+      setRoom(room);//set current room info
       console.log("class: ", room);
       console.log("ClassID: ", classID);
       //setRoom(room);

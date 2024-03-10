@@ -12,13 +12,15 @@ import UserUpdate from "./pages/UserUpdate.jsx";
 import ResetPassword from "./pages/ResetPassword.jsx";
 
 function App() {
-  console.log("Initiating app...");
-
+  // console.log("Initiating app...");
+  // Classes State
   const [classes, setClasses] = useState([]);
   // Chats State
   const [chats, setChats] = useState([]);
   // Username State
   const [username, setUsername] = useState(null);
+  // Room State
+  const [room, setRoom] = useState(null);
 
   // Load active users from session storage on component mount
   const [activeUsers, setActiveUsers] = useState(() => {
@@ -45,6 +47,8 @@ function App() {
             path="chatroom"
             element={
               <Chatroom
+                room={room}
+                setRoom={setRoom}
                 classes={classes}
                 setClasses={setClasses}
                 chats={chats}

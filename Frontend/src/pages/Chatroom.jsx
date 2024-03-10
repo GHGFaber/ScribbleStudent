@@ -7,6 +7,8 @@ import socket from "../components/Socket.jsx";
 import emptyPic from "../images/huh_what.png";
 
 function Chatroom({
+  room,
+  setRoom,
   classes,
   setClasses,
   chats,
@@ -21,6 +23,7 @@ function Chatroom({
   // Message State
   const [message, setMessage] = useState(null);
   const [notePages, setNotes] = useState([]);
+  const [typing, setTyping] = useState([]);
 
   function get_time(timestamp) {
     const date = new Date(timestamp);
@@ -123,6 +126,12 @@ function Chatroom({
     }
   };
 
+  // Typing
+  function userTyping() {
+    // emit username
+    socket.emit("typing", username);
+  };
+
   useEffect(() => {
     get_users_notes_from_server();
     scrollToBottom();
@@ -141,7 +150,20 @@ function Chatroom({
         setChats((prevChats) => [...prevChats, newChat]);
       },
       []
-    );
+      );
+      
+
+    // Users typing in chatroom
+    socket.on("is_typing", (data) => {
+      // Update typing users array based on previous state
+      // (Trouble showing multiple users typing at once)
+      // setTyping((prevTyping) => Array.from(new Set([...prevTyping, ...data])));
+      setTyping(data);
+    });
+
+    socket.on("clear_typing", (data) => {
+      setTyping([]);
+    });
 
     // User joined
     // *** Display message + username when user joins a room ***
@@ -171,6 +193,7 @@ function Chatroom({
       socket.off("receive_message");
       socket.off("user joined");
       socket.off("user left");
+      socket.off("is_typing");
     };
   }, [socket, message]);
 
@@ -178,6 +201,8 @@ function Chatroom({
     <>
       {/* Pass props to Navbar component */}
       <Navbar
+        room={room}
+        setRoom={setRoom}
         classes={classes}
         setClasses={setClasses}
         chats={chats}
@@ -202,9 +227,28 @@ function Chatroom({
                     id="txt"
                     onChange={(event) => {
                       setMessage(event.target.value);
+                      userTyping(); 
                     }}
                     onKeyDown={handleKeyDown}
-                    style={{ resize: "none" }}
+                    style={{ 
+                      resize: "none", 
+                      height: "45px", 
+                      borderRadius: "8px",
+                      outline: "none",
+                      boxShadow: "0 0 0 transparent",
+                      padding: "8px",
+                      overflow: "hidden"
+                    }}
+                    // Colored outline and shadow when textarea clicked
+                    onFocus={(event) => {
+                      event.target.style.outline = "2px purple";
+                      event.target.style.boxShadow = "0 0 5px rgb(65, 65, 102)";
+                    }}
+                    onBlur={(event) => {
+                      event.target.style.outline = "none";
+                      event.target.style.boxShadow = "0 0 0 transparent";
+                    }}
+                    placeholder={"Message in " + room}
                     required
                   ></textarea>
                 </div>
@@ -214,7 +258,7 @@ function Chatroom({
                   style={{
                     width: "65%",
                     marginLeft: "0px",
-                    marginTop: "-20px",
+                    marginTop: "-55px",
                     position: "fixed",
                   }}
                 >
@@ -222,6 +266,16 @@ function Chatroom({
                   <button onClick={sendMessage} id="send-button">
                     Send
                   </button>
+                  {typing && typing.length > 0 && (
+                    <div className="typing-container" style={{ marginTop: "-12px" }}>
+                      <div className="typing" >
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                      </div>
+                      <p style={{ marginTop: "20px" }}><b>{typing}</b> is typing...</p>
+                    </div>
+                  )}
                 </div>
               </form>
             )}

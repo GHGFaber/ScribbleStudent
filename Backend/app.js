@@ -179,6 +179,24 @@ io.on("connection", (socket) => {
     socket.to(socket.room).emit("receive_message", messageData);
   });
 
+  // Users typing in chatroom
+  socket.on("typing", (data) => {
+    const username = data;
+    socket.to(socket.room).emit("is_typing", username);
+
+    // Clear typing state after a delay
+    clearTimeout(socket.typingTimer);
+    socket.typingTimer = setTimeout(() => {
+      socket.to(socket.room).emit("clear_typing", username);
+    }, 3000); // Adjust the delay as needed
+  });
+
+  // // Users typing in chatroom
+  // socket.on("typing", (data) => {
+  //   const username = data;
+  //   socket.to(socket.room).emit("is_typing", username);
+  // });
+
   // // Broadcast message to users
   // socket.on("send_broadcast", (data) => {
   //   // Include username along with message data
@@ -810,6 +828,9 @@ async function queryDatabase() {
     // const [classData] = await pool.query
     // ("SELECT DISTINCT classes.classID, classes.className FROM classes INNER JOIN classList ON classes.classID = classList.classID INNER JOIN user ON user.userID = classList.userID WHERE user.userID = ?", [userID]);
     // console.log(classData);
+    // const [data] = await pool.query("select username, avatar FROM user WHERE userID = 20");
+
+    // console.log(data);
   } catch (error) {
     console.error(error);
   }
