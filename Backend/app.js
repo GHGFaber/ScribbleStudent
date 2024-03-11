@@ -278,11 +278,10 @@ app.post("/messages", async (req, res) => {
       "SELECT * FROM (SELECT chatrooms.message, chatrooms.timestamp, user.username FROM chatrooms INNER JOIN user ON user.userID = chatrooms.userID INNER JOIN classes ON classes.classID = chatrooms.classID WHERE classes.classID = ? ORDER BY chatrooms.timestamp DESC LIMIT 10) AS last_messages ORDER BY last_messages.timestamp ASC",
       [classID]
     );
-  
 
     // data stored in an array of objects
     // Ex: userData[0].message grabs the message from the first object
-    console.log("Message")
+    console.log("Message");
 
     // return data to frontend
     res.json({
@@ -618,6 +617,7 @@ app.post("/logout", (req, res) => {
 // Account creation post
 app.post("/create-account", upload.single("Image"), async (req, res) => {
   const { username, email, password, croppedimg } = req.body;
+
   try {
     const [existingUser] = await pool.query(
       "SELECT * FROM user WHERE username = ? OR email = ?",
