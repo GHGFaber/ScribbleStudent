@@ -252,6 +252,32 @@ body,
   position: relative;
 }
 
+/* For Firefox */
+.chat-container {
+  max-height: 680px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(114, 118, 125, 0.5) transparent; 
+}
+
+/* For WebKit (Chrome, Safari) */
+.chat-container::-webkit-scrollbar {
+  width: 6px; /* Scrollbar width */
+}
+
+.chat-container::-webkit-scrollbar-track {
+  background-color: transparent; /* Set scrollbar track color */
+}
+
+.chat-container::-webkit-scrollbar-thumb {
+  background-color: rgba(114, 118, 125, 0.5);
+  border-radius: 4px;
+}
+
+.chat-container::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(114, 118, 125, 0.8);
+}
+
 .the-chat-div {
   padding: 0px 0px 0px 0px;
   width: 100% !important;
