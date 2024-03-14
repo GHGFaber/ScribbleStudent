@@ -78,10 +78,15 @@ app.get("/notes_data", (req, res) => {
 // Async function to query database and populate inactive users map
 async function populateInactiveUsers() {
   try {
-    const [results] = await pool.query("SELECT userID, username FROM user");
+    const [results] = await pool.query("SELECT userID, username, avatar FROM user");
+    // console.log("results avatar is: " + results[17].avatar.toString());
     results.forEach((row) => {
       const username = row.username;
-      inactiveUsers.set(username, { username });
+      let avatar = "";
+      if (row.avatar === null)
+        avatar = "";
+      else avatar = row.avatar.toString();
+      inactiveUsers.set(username, { username, avatar });
     });
   } catch (error) {
     console.error("Error fetching usernames:", error);
@@ -99,14 +104,17 @@ io.on("connection", (socket) => {
   console.log(`User Connected: ${socket.id}`);
 
   // Receive username from client
-  socket.on("login", (username) => {
+  socket.on("login", (username, avatar) => {
     // Remove from inactive users if exists
-    if (inactiveUsers.has(username)) {
-      inactiveUsers.delete(username);
+    let convertedAvatar = "";
+    if (avatar && avatar !== null) convertedAvatar = avatar.toString();
+
+    if (inactiveUsers.has({ username, convertedAvatar })) {
+      inactiveUsers.delete({ username, convertedAvatar });
     }
-    if (!activeUsers.has(username)) {
+    if (!activeUsers.has(username, convertedAvatar)) {
       // Store username and socket ID
-      activeUsers.set(socket.id, { username });
+      activeUsers.set(socket.id, { username , convertedAvatar });
       // Broadcast updated list of active users
       io.emit("activeUsers", Array.from(activeUsers.values()));
       // Broadcast updated list of inactive active users
@@ -270,7 +278,7 @@ app.post("/messages", async (req, res) => {
     const { classID } = req.body;
     // fetch chatroom messages
     const [userData] = await pool.query(
-      "SELECT chatrooms.message, chatrooms.timestamp, user.username FROM chatrooms INNER JOIN user ON user.userID = chatrooms.userID INNER JOIN classes ON classes.classID = chatrooms.classID WHERE classes.classID = ? ORDER BY chatrooms.timestamp ASC ",
+      "SELECT chatrooms.message, chatrooms.timestamp, user.username, user.avatar FROM chatrooms INNER JOIN user ON user.userID = chatrooms.userID INNER JOIN classes ON classes.classID = chatrooms.classID WHERE classes.classID = ? ORDER BY chatrooms.timestamp ASC LIMIT 10",
       [classID]
     );
     // // Loads the last 10 messages for the chatroom ordered by timestamp
@@ -278,6 +286,8 @@ app.post("/messages", async (req, res) => {
     //   "SELECT * FROM (SELECT chatrooms.message, chatrooms.timestamp, user.username FROM chatrooms INNER JOIN user ON user.userID = chatrooms.userID INNER JOIN classes ON classes.classID = chatrooms.classID WHERE classes.classID = ? ORDER BY chatrooms.timestamp DESC LIMIT 10) AS last_messages ORDER BY last_messages.timestamp ASC",
     //   [classID]
     // );
+
+    console.log("the username is " + userData[0].username);
 
     // data stored in an array of objects
     // Ex: userData[0].message grabs the message from the first object
@@ -370,7 +380,8 @@ app.get("/user-info", async (req, res) => {
       // Query the database to retrieve user information based on user ID
       const [userData] = await pool.query(
         `select user.username, 
-                user.email, 
+                user.email,
+                user.avatar, 
                 JSON_ARRAYAGG(classes.className) as classes
                  from user 
                  LEFT JOIN classList ON user.userID = classList.userID
@@ -663,6 +674,7 @@ app.post("/create-account", upload.single("Image"), async (req, res) => {
 });
 
 // retrieve the messages from chatroom table
+/*
 app.post("/messages", async (req, res) => {
   try {
     //grab classID from frontend
@@ -687,6 +699,7 @@ app.post("/messages", async (req, res) => {
     res.status(500).send("Internal server error");
   }
 });
+*/
 
 // Insert message into chatroom
 app.post("/insert-message", async (req, res) => {

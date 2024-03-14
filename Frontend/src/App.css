@@ -319,6 +319,10 @@ body,
   margin: 2px;
 }
 
+.container-body {
+  width: 862px;
+}
+
 .user-text {
   font-weight: bold;
 }
@@ -669,6 +673,10 @@ input[type="file"] {
   padding: 5px 5px 5px 5px;
 }
 
+#chat-window {
+  overflow: scroll;
+}
+
 #chat-window-empty {
   text-align: center;
 }
@@ -678,4 +686,33 @@ input[type="file"] {
   left: 23%;
   position: absolute;
   text-align: center;
+}
+
+.flexed-container {
+  display: flex;
+}
+
+.avatar-body {
+  align-items: center;
+}
+
+.avatar-picture {
+  padding: 6px 6px 3px 0px;
+  top: 50%;
+  left: 50%;
+  height: 55px;
+  width: auto;
+  border-radius: 50%;
+}
+
+.the-user-container {
+  display: flex;
+}
+
+.the-user-container li {
+  padding: 16px 0px 0px 0px;
+}
+
+.the-user-column {
+  overflow: scroll;
 }
