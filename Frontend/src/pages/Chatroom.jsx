@@ -19,10 +19,14 @@ function Chatroom({
   setActiveUsers,
   inactiveUsers,
   setInactiveUsers,
+  notePages,
+  setNotes,
+  selectedNote,
+  setSelectedNote
 }) {
   // Message State
   const [message, setMessage] = useState(null);
-  const [notePages, setNotes] = useState([]);
+  // const [notePages, setNotes] = useState([]);
   const [typing, setTyping] = useState([]);
 
   function get_time(timestamp) {
@@ -44,7 +48,10 @@ function Chatroom({
             <div className="container-fluid the-chat-div rounded-0">
               <div className="container-body">
                 <p className="full-datetime">{get_time(chat.timestamp)}</p>
-                <p className="user-text">{chat.username}</p>
+                <p className="user-text">
+                  {/* clickable username */}
+                  <a href="#" className="username-link">{chat.username}</a>
+                </p>
                 <p className="text-content">{chat.text}</p>
               </div>
             </div>
@@ -69,9 +76,6 @@ function Chatroom({
   // Grab username from session storage (data disappears when browser is closed)
   const storedData = JSON.parse(sessionStorage.getItem("userData")); // Grab object
 
-  // Room State
-  // var [room, setRoom] = useState(null);
-
   function handleKeyDown(event) {
     if (event.key === "Enter") {
       sendMessage();
@@ -86,20 +90,6 @@ function Chatroom({
       timestamp: Date.now(),
     };
     setChats((prevChats) => [...prevChats, curChat]); //update local chat
-  }
-
-  // contacts backend to fetch the user's notes
-  function get_users_notes_from_server() {
-    axios
-      .get("http://localhost:3000/notes_data")
-      .then((res) => {
-        setNotes(res.data);
-        localStorage.setItem("notes", JSON.stringify(res.data));
-      })
-      .catch((error) => {
-        console.error("Error fetching data from the API:", error);
-        console.log("not connected");
-      });
   }
 
   const sendMessage = async () => {
@@ -132,9 +122,17 @@ function Chatroom({
     socket.emit("typing", username);
   };
 
+  // Clear textarea when switching tabs
+  function clearText() {
+    const textarea = document.getElementById('txt');
+    if (textarea) {
+      textarea.value = ''; // Clear value of textarea
+    }
+  }
+
   useEffect(() => {
-    get_users_notes_from_server();
     scrollToBottom();
+    clearText();
   }, [chats]);
 
   useEffect(() => {
@@ -156,8 +154,6 @@ function Chatroom({
     // Users typing in chatroom
     socket.on("is_typing", (data) => {
       // Update typing users array based on previous state
-      // (Trouble showing multiple users typing at once)
-      // setTyping((prevTyping) => Array.from(new Set([...prevTyping, ...data])));
       setTyping(data);
     });
 
@@ -201,20 +197,19 @@ function Chatroom({
     <>
       {/* Pass props to Navbar component */}
       <Navbar
-        room={room}
-        setRoom={setRoom}
-        classes={classes}
-        setClasses={setClasses}
-        chats={chats}
-        setChats={setChats}
-        username={username}
-        setUsername={setUsername}
-        notePages={notePages}
+        room={room} setRoom={setRoom}
+        classes={classes} setClasses={setClasses}
+        chats={chats} setChats={setChats}
+        username={username} setUsername={setUsername}
       />
-      <div className="container-fluid">
+      <div className="container-fluid" >
         <div className="row no-gutters">
           <div className="col-2 column1">
-            <Sidebar parentCallback={dummyCallback} notePages={notePages} />
+            <Sidebar 
+              parentCallback={dummyCallback} 
+              notePages={notePages} setNotes={setNotes} 
+              selectedNote={selectedNote} setSelectedNote={setSelectedNote}
+            />
           </div>
           <div className="col-8 column2">
             <div id="chat-window">{show_chats()}</div>
@@ -282,10 +277,8 @@ function Chatroom({
           </div>
           <div className="col-2 column3">
             <Userbar
-              activeUsers={activeUsers}
-              setActiveUsers={setActiveUsers}
-              inactiveUsers={inactiveUsers}
-              setInactiveUsers={setInactiveUsers}
+              activeUsers={activeUsers} setActiveUsers={setActiveUsers}
+              inactiveUsers={inactiveUsers} setInactiveUsers={setInactiveUsers}
             />
           </div>
         </div>

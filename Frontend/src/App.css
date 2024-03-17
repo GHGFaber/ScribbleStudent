@@ -432,6 +432,7 @@ p {
   border: none;
   border-radius: 30px;
   margin-top: 10px; /* Added */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Added */
 }
 
 /*
@@ -547,6 +548,12 @@ p {
   box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
 }
 
+.username-link {
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+}
+
 .active-users,
 .inactive-users {
   list-style: none;
@@ -577,7 +584,8 @@ p {
   padding: 10px 0;
 }
 
-.side-selection h5 {
+.side-selection h5,
+.side-selection h6 {
   padding-left: 12px;
   color: #ffff90;
 }
@@ -588,6 +596,7 @@ p {
 
 .side-list {
   padding: 0px 0px 0px 0px !important;
+  list-style-type: none;
 }
 
 .the-link:link {
@@ -600,6 +609,7 @@ p {
 
 .the-link:hover {
   text-decoration: none;
+  cursor: pointer;
 }
 
 .the-link:active {

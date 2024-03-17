@@ -41,13 +41,19 @@ function Userbar({ activeUsers, setActiveUsers, inactiveUsers, setInactiveUsers 
           <ul className="active-users">
             <h5>Online - {activeUsers.length}</h5>
             {activeUsers.map((aUser, index) => (
-              <li key={index}>{aUser.username}</li>
+              <li key={index}>
+                {/* clickable usernames */}
+                <a href="#" className="username-link">{aUser.username}</a>
+              </li>
             ))}
           </ul>
           <ul className="inactive-users">
             <h5>Offline - {inactiveUsers.length}</h5>
             {inactiveUsers.map((iUser, index) => (
-              <li key={index}>{iUser.username}</li>
+              <li key={index}>
+                {/* clickable usernames */}
+                <a href="#" className="username-link">{iUser.username}</a>
+              </li>
             ))}
           </ul>
         </div>

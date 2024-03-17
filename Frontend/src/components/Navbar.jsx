@@ -24,6 +24,8 @@ function Navbar({
   username,
   setUsername,
 }) {
+
+  // console.log("username:", username);
   // const [room, setRoom] = useState(null);
   const center_offset = {
     left: window.innerWidth / 2,
@@ -37,7 +39,7 @@ function Navbar({
 
   // Destroy sessionID, clear sessionStorage and return to login page
   const logout = async (e) => {
-    e.preventDefault();
+    // e.preventDefault();
     try {
       await axios.post("http://localhost:3000/logout"); // Destroy session ID
       // Grab username from session storage (seemed to solve problem with not displaying in private mode)
@@ -88,7 +90,7 @@ function Navbar({
       const response = await axios.get("http://localhost:3000/user-info");
 
       // if empty username, set username "Anonymous"
-      console.log(response.data);
+      console.log("userdata:",response.data);
       setUserData(response.data);
     } catch (error) {
       console.log("Error fetching user info:", error);
