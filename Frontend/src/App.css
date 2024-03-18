@@ -582,6 +582,7 @@ p {
 .side-selection {
   width: 100%;
   padding: 10px 0;
+  user-select: none;
 }
 
 .side-selection h5,
@@ -673,6 +674,7 @@ input[type="file"] {
   border-radius: 30px;
   padding: 5px 10px 5px 10px;
   border: none;
+  margin: 3px;
 }
 
 #the-user-profile h4 {

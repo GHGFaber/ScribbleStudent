@@ -28,6 +28,8 @@ function Chatroom({
   const [message, setMessage] = useState(null);
   // const [notePages, setNotes] = useState([]);
   const [typing, setTyping] = useState([]);
+  // Refresh State
+  const [refresh, setRefresh] = useState(0);
 
   function get_time(timestamp) {
     const date = new Date(timestamp);
@@ -146,9 +148,7 @@ function Chatroom({
         };
         // Update chats
         setChats((prevChats) => [...prevChats, newChat]);
-      },
-      []
-      );
+      }, []);
       
 
     // Users typing in chatroom
@@ -183,8 +183,6 @@ function Chatroom({
       // setChats((prevChats) => [...prevChats, left]);
     });
 
-    // console.log("classID: ", chats[0].classID);
-
     return () => {
       socket.off("receive_message");
       socket.off("user joined");
@@ -209,6 +207,7 @@ function Chatroom({
               parentCallback={dummyCallback} 
               notePages={notePages} setNotes={setNotes} 
               selectedNote={selectedNote} setSelectedNote={setSelectedNote}
+              classes={classes}
             />
           </div>
           <div className="col-8 column2">

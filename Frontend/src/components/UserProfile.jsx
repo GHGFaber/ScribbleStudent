@@ -71,8 +71,8 @@ function UserProfile({ userData, isActive, callback }) {
                 {/* <h4>
                   {userData[0].firstName} {userData[0].lastName}
                 </h4> */}
-                <h5>{userData[0].username}</h5>
-                <h5>{userData[0].email}</h5>
+                <b>Username</b><h5>{userData[0].username}</h5>
+                <b>Email</b><h5>{userData[0].email}</h5>
                 {/* <p>Member since {get_member_since(userData[0].memberSince)}</p>
                 <p>
                   {userData[0].userType} at {userData[0].schoolName}

@@ -48,6 +48,7 @@ function App() {
           <Route path="notebook" element={<Notebook 
             classes={classes} setClasses={setClasses} username={username} setUsername={setUsername} 
             notePages={notePages} setNotes={setNotes} selectedNote={selectedNote} setSelectedNote={setSelectedNote} 
+            room={room} setRoom={setRoom}
           />} />
           <Route
             path="chatroom"

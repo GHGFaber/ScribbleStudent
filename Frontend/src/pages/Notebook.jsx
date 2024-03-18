@@ -8,7 +8,7 @@ import { useLocation } from "react-router-dom";
 // page that contains the pages of the user's virtual notebook
 // function Notebook(props, targetPage, username) {
 function Notebook(props) {
-  const { notePages, setNotes, classes, setClasses, username, setUsername, selectedNote, setSelectedNote } = props;
+  const { notePages, setNotes, classes, setClasses, username, setUsername, selectedNote, setSelectedNote, room, setRoom } = props;
 
   const [value, setValue] = useState("");
 
@@ -91,7 +91,11 @@ function Notebook(props) {
       {
         // set_init_value()
       }
-      <Navbar classes={classes} setClasses={setClasses} username={username} setUsername={setUsername} />
+      <Navbar 
+        classes={classes} setClasses={setClasses} 
+        username={username} setUsername={setUsername}
+        room={room} setRoom={setRoom} 
+      />
       <div className="container-fluid">
         <div className="row no-gutters">
           <div className="col-2 column1">
@@ -99,6 +103,7 @@ function Notebook(props) {
             <Sidebar 
               parentCallback={handleNoteSelection} notePages={notePages} setNotes={setNotes} 
               selectedNote={selectedNote} setSelectedNote={setSelectedNote}
+              room={room} setRoom={setRoom} 
             />
           </div>
           <div className="col-10 column2 the-note-section">

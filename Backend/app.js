@@ -249,7 +249,8 @@ app.get("/classes", async (req, res) => {
 });
 
 // Available classes for user to join
-app.get('available_classes', async (req, res) => {
+app.get('/available-classes', async (req, res) => {
+  const userID = req.session.userid;
   try {
     // Retrieve the classes that the user is not in
     const [classData] = await pool.query(
@@ -263,6 +264,22 @@ app.get('available_classes', async (req, res) => {
 
   } catch (error) {
     console.error("Error fetching class information", error);
+    res.status(500).send("Internal server error");
+  }
+});
+
+// Add user to a class
+app.post('/add-class', async (req, res) => {
+  const { classID } = req.body;
+  const userID = req.session.userid;
+  try {
+    await pool.query(
+      "INSERT INTO classList (userID, classID) VALUES (?, ?)",
+      [userID, classID]
+    );
+    res.status(200).send("Class added successfully");
+  } catch (error) {
+    console.error("Error inserting user", error);
     res.status(500).send("Internal server error");
   }
 });
