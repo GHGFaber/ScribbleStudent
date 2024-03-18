@@ -78,13 +78,14 @@ app.get("/notes_data", (req, res) => {
 // Async function to query database and populate inactive users map
 async function populateInactiveUsers() {
   try {
-    const [results] = await pool.query("SELECT userID, username, avatar FROM user");
+    const [results] = await pool.query(
+      "SELECT userID, username, avatar FROM user"
+    );
     // console.log("results avatar is: " + results[17].avatar.toString());
     results.forEach((row) => {
       const username = row.username;
       let avatar = "";
-      if (row.avatar === null)
-        avatar = "";
+      if (row.avatar === null) avatar = "";
       else avatar = row.avatar.toString();
       inactiveUsers.set(username, { username, avatar });
     });
@@ -95,6 +96,7 @@ async function populateInactiveUsers() {
 
 // List of active users
 const activeUsers = new Map();
+
 // List of inactive users
 const inactiveUsers = new Map();
 // Call the async function to populate inactive users map
@@ -107,14 +109,18 @@ io.on("connection", (socket) => {
   socket.on("login", (username, avatar) => {
     // Remove from inactive users if exists
     let convertedAvatar = "";
-    if (avatar && avatar !== null) convertedAvatar = avatar.toString();
 
-    if (inactiveUsers.has({ username, convertedAvatar })) {
-      inactiveUsers.delete({ username, convertedAvatar });
+    if (avatar && avatar !== null) convertedAvatar = avatar;
+
+    if (inactiveUsers.has(username)) {
+      inactiveUsers.delete(username);
+      console.log("match");
     }
     if (!activeUsers.has(username, convertedAvatar)) {
       // Store username and socket ID
-      activeUsers.set(socket.id, { username , convertedAvatar });
+      console.log("setting");
+      //MOISES set avatar to convertedAvatar to make sure it matches frontend nomencalture
+      activeUsers.set(socket.id, { username, avatar: convertedAvatar });
       // Broadcast updated list of active users
       io.emit("activeUsers", Array.from(activeUsers.values()));
       // Broadcast updated list of inactive active users
@@ -292,6 +298,7 @@ app.post("/messages", async (req, res) => {
     // data stored in an array of objects
     // Ex: userData[0].message grabs the message from the first object
     console.log("Message");
+    console.log(userData);
 
     // return data to frontend
     res.json({
@@ -585,6 +592,7 @@ app.post("/login", async (req, res) => {
         console.log("Session ID:", req.sessionID);
 
         // sends user info to the Frontend on submit
+        //MOISES added new field to send on login
         res.send({
           user: userData[0].userID,
           success: true,
@@ -592,6 +600,10 @@ app.post("/login", async (req, res) => {
           email,
           Userid: req.session.userid,
           hashedPassword,
+          avatar:
+            userData[0].avatar !== null
+              ? userData[0].avatar.toString()
+              : userData[0].avatar,
         });
 
         // Print userid to stdout (Backend)

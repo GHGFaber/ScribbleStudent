@@ -37,7 +37,7 @@ function App() {
     const savedNotes = localStorage.getItem("notes");
     return savedNotes ? JSON.parse(savedNotes) : [];
   });
-  
+
   useEffect(() => {
     console.log("app.jsx: notes are: " + JSON.stringify(userNotePages));
   }, [userNotePages]);
@@ -49,7 +49,10 @@ function App() {
           <Route index element={<Home />} />
           <Route path="login-page" element={<LoginPage />} />
           <Route path="create-account" element={<CreateAccount />} />
-          <Route path="notebook" element={<Notebook username={username} notePages={userNotePages} />} />
+          <Route
+            path="notebook"
+            element={<Notebook username={username} notePages={userNotePages} />}
+          />
           {/* <Route path="chatroom" element={<Chatroom chats={chats} classes={classes} activeUsers={activeUsers} inactiveUsers={inactiveUsers}/>}/>   */}
           <Route
             path="chatroom"

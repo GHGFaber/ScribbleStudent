@@ -257,7 +257,7 @@ body,
   max-height: 680px;
   overflow-y: auto;
   scrollbar-width: thin;
-  scrollbar-color: rgba(114, 118, 125, 0.5) transparent; 
+  scrollbar-color: rgba(114, 118, 125, 0.5) transparent;
 }
 
 /* For WebKit (Chrome, Safari) */
@@ -700,8 +700,8 @@ input[type="file"] {
   padding: 6px 6px 3px 0px;
   top: 50%;
   left: 50%;
-  height: 55px;
-  width: auto;
+  height: 60px;
+  width: 60px;
   border-radius: 50%;
 }
 
