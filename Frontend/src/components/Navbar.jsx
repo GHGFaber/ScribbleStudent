@@ -115,8 +115,10 @@ function Navbar({
           username: item.username,
           text: item.message,
           timestamp: item.timestamp,
+          profilePic: item.avatar,
           classID: classID,
         }));
+        console.log("fetchClasses: message data avatar is " + messageData.profilePic);
         setChats(messageData);
         const defaultRoom = formattedData[0].classInSchoolName;
         socket.emit("join_room", defaultRoom);

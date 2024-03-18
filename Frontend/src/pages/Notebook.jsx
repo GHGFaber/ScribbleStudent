@@ -8,11 +8,13 @@ import { useLocation } from "react-router-dom";
 function Notebook(props, targetPage) {
   const [classes, setClasses] = useState([]);
   const [value, setValue] = useState("");
-  let notePages = props.notePages;
+  let notePages = "";
   let temp = "";
 
   useEffect(() => {
     setClasses(JSON.parse(localStorage.getItem("classes")));
+    get_users_notes_from_server();
+    console.log("Notebook: useEffect has ran.");
   }, []);
  
   //const {state} = props.location.state;
@@ -27,6 +29,23 @@ function Notebook(props, targetPage) {
 
 
   console.log(classes);
+
+  // contacts backend to fetch the user's notes
+  function get_users_notes_from_server() {
+    axios
+      .get("http://localhost:3000/notes_data")
+      .then((res) => {
+        setNotes(res.data);
+        localStorage.setItem("notes", JSON.stringify(res.data));
+        console.log(res.data);
+        notePages = JSON.parse(localStorage.getItem("notes"));
+        console.log("notepages is: " + JSON.stringify(notePages));
+      })
+      .catch((error) => {
+        console.error("Error fetching data from the API:", error);
+        console.log("not connected");
+      });
+  }
 
   function set_init_value() {
     setValue(targetPage.text);
