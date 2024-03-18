@@ -1,28 +1,16 @@
 import { Link } from "react-router-dom";
 import { initValueContext } from "../components/InitValue.jsx";
-import { useState, useContext, useEffect } from "react";
+import { useContext } from "react";
 
 // renders the bar that appears to the left of the screen
 // contains menu selections for the chatroom and individual note pages
 function Sidebar({ parentCallback, notePages }) {
   let targetFile = "";
   let temp = "";
-  const [userNotes, setUserNotes] = useState(localStorage.getItem("notes"));
 
-  useEffect(() => {
-    setUserNotes(localStorage.getItem("notes"));
-    notePages = userNotes;
-    localStorage.setItem("notes", JSON.stringify(notePages));
-  }, []);
+  console.log(notePages);
 
-  useEffect(() => {
-    setUserNotes(localStorage.getItem("notes"));
-    notePages = JSON.parse(userNotes);
-    console.log(localStorage.getItem("notes"));
-    console.log("the pages are: " + userNotes);
-  }, [userNotes]);
-
-  
+  console.log(localStorage.getItem("notes"));
 
   // takes a filename string and returns the corresponding set of notes
   function get_that_file(setOfNotes, filename) {
@@ -34,11 +22,9 @@ function Sidebar({ parentCallback, notePages }) {
     targetFile = get_that_file(setOfNotes, filename);
     console.log("target is " + targetFile.filename);
     console.log("This was clicked");
-    console.log("sidebar note pages in fcn are: " + JSON.stringify(notePages));
     temp = parentCallback(targetFile);
   }
 
-  
   return (
     <div>
       <div className="the-column">
@@ -50,7 +36,6 @@ function Sidebar({ parentCallback, notePages }) {
               </div>
             </Link>
           </li>
-          {/*console.log("sidebar note pages are: " + JSON.stringify(notePages))*/}
           {notePages.map((page) => (
             <li className="side-list">
               <Link
