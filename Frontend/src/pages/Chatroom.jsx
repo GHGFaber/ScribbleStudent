@@ -107,7 +107,7 @@ function Chatroom({
   // contacts backend to fetch the user's notes
   function get_users_notes_from_server() {
     axios
-      .get("http://localhost:3000/notes_data")
+      .get("http://64.23.164.87/notes_data")
       .then((res) => {
         setNotes(res.data);
         localStorage.setItem("notes", JSON.stringify(res.data));
@@ -141,7 +141,7 @@ function Chatroom({
       // Need the current classID (got it)
       console.log("Current classID: ", chats[0].classID);
       const classID = chats[0].classID;
-      await axios.post("http://localhost:3000/insert-message", {
+      await axios.post("http://64.23.164.87/api/insert-message", {
         message: message,
         timestamp: new Date(Date.now()).toISOString(),
         classID: classID,
