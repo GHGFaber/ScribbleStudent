@@ -6,8 +6,6 @@ job_pull:
   stage: pull
   script:
     - echo "Pulling latest"
-    - git fetch origin cq
-    - git checkout cq
     - git pull
 
 job_deploy:
