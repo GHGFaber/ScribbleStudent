@@ -1,14 +1,26 @@
 import { Link } from "react-router-dom";
 import { initValueContext } from "../components/InitValue.jsx";
-import { useContext } from "react";
+import { useContext, useState, useEffect } from "react";
 
 // renders the bar that appears to the left of the screen
 // contains menu selections for the chatroom and individual note pages
 function Sidebar({ parentCallback, notePages }) {
   let targetFile = "";
   let temp = "";
-
+  const [userNotes, setUserNotes] = useState(localStorage.getItem("notes"));
   console.log(notePages);
+  useEffect(() => {
+    setUserNotes(localStorage.getItem("notes"));
+    notePages = userNotes;
+    localStorage.setItem("notes", JSON.stringify(notePages));
+  }, []);
+
+  useEffect(() => {
+    setUserNotes(localStorage.getItem("notes"));
+    notePages = JSON.parse(userNotes);
+    console.log(localStorage.getItem("notes"));
+    console.log("the pages are: " + userNotes);
+  }, [userNotes]);
 
   console.log(localStorage.getItem("notes"));
 

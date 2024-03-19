@@ -252,10 +252,9 @@ body,
   position: relative;
 }
 
-/* For Firefox */
 .chat-container {
   max-height: 680px;
-  overflow-y: auto;
+  overflow-y: scroll;
   scrollbar-width: thin;
   scrollbar-color: rgba(114, 118, 125, 0.5) transparent; 
 }
@@ -678,4 +677,34 @@ input[type="file"] {
   left: 23%;
   position: absolute;
   text-align: center;
+}
+
+.flexed-container {
+  display: flex;
+}
+
+.avatar-body {
+  align-items: center;
+}
+
+.avatar-picture {
+  padding: 6px 6px 3px 0px;
+  top: 50%;
+  left: 50%;
+  height: 60px;
+  width: 60px;
+  border-radius: 50%;
+}
+
+.the-user-container {
+  display: flex;
+}
+
+.the-user-container li {
+  padding: 16px 0px 0px 0px;
+}
+
+.the-user-column {
+  overflow-y: scroll;
+  max-height: 800px;
 }

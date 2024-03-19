@@ -14,7 +14,7 @@ function Notebook(props, targetPage) {
   useEffect(() => {
     setClasses(JSON.parse(localStorage.getItem("classes")));
   }, []);
- 
+
   //const {state} = props.location.state;
   //console.log(targetPage.text);
   //const location = useLocation();
@@ -24,7 +24,6 @@ function Notebook(props, targetPage) {
   //let temp = state;
 
   // const [initData, setInitData] = useState('');
-
 
   console.log(classes);
 

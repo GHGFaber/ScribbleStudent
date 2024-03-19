@@ -1,29 +1,33 @@
 import { useEffect, useState } from "react";
 import socket from '../components/Socket.jsx';
 
-function Userbar({ activeUsers, setActiveUsers, inactiveUsers, setInactiveUsers }) {
-  
+function Userbar({
+  activeUsers,
+  setActiveUsers,
+  inactiveUsers,
+  setInactiveUsers,
+}) {
   // Grab username object from session storage
-  const storedData = JSON.parse(sessionStorage.getItem('userData'));
-      
-  
+
   useEffect(() => {
     socket.connect();
     // Send the username to socket.io ('username')
-    socket.emit('login', storedData.username);
-    
+    const storedData = JSON.parse(sessionStorage.getItem("userData"));
+    socket.emit("login", storedData.username, storedData.avatar);
+
     // Receive updated list of active users
     socket.on('activeUsers', (users) => {
       setActiveUsers(users);
       // Save active and inactive users to session storage
-      sessionStorage.setItem('activeUsers', JSON.stringify(users));
+      sessionStorage.setItem("activeUsers", JSON.stringify(users));
+      console.log("users", users);
     });
 
     // Receive updated list of inactive users
     socket.on('inactiveUsers', (users) => {
       setInactiveUsers(users);
       // Save inactive users to session storage
-      sessionStorage.setItem('inactiveUsers', JSON.stringify(users));
+      sessionStorage.setItem("inactiveUsers", JSON.stringify(users));
     });
     
     // Clean up the socket listener
@@ -31,8 +35,7 @@ function Userbar({ activeUsers, setActiveUsers, inactiveUsers, setInactiveUsers 
       socket.off("activeUsers");
       socket.off("inactiveUsers");
     };
-    
-  }, [socket])
+  }, []);
 
   
   return (
