@@ -1,7 +1,6 @@
 stages:
   - pull
   - deploy
-  - start
 
 job_pull:
   stage: pull
@@ -23,11 +22,6 @@ job_deploy:
     - cd ..
     - cd Frontend
     - npm run build
-
-job_start:
-  stage: start
-  script:
-    - echo "Starting Server"
     - cd ~
     - cd scribble/builds/NLfz4GjxX/0/gitlab/scribble/scribble/Backend
     - pm2 start app.js
