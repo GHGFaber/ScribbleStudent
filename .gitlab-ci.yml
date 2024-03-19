@@ -29,5 +29,5 @@ job_start:
   script:
     - echo "Starting Server"
     - cd ~
-    - cd /builds/NLfz4GjxX/0/gitlab/scribble/scribble/Backend
+    - cd scribble/builds/NLfz4GjxX/0/gitlab/scribble/scribble/Backend
     - pm2 start app.js
