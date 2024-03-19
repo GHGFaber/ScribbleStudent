@@ -28,8 +28,8 @@ function LoginPage() {
           avatar: response.data.avatar,
         };
         sessionStorage.setItem("userData", JSON.stringify(dataToStore));
+
         // Send the username to socket.io ('username')
-        //MOISES send avatar to socket.io ('avatar')
         socket.emit("login", response.data.username, response.data.avatar);
 
         // Redirect to the chatroom

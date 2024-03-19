@@ -16,7 +16,7 @@ function Notebook(props, targetPage) {
     get_users_notes_from_server();
     console.log("Notebook: useEffect has ran.");
   }, []);
- 
+
   //const {state} = props.location.state;
   //console.log(targetPage.text);
   //const location = useLocation();
@@ -26,7 +26,6 @@ function Notebook(props, targetPage) {
   //let temp = state;
 
   // const [initData, setInitData] = useState('');
-
 
   console.log(classes);
 

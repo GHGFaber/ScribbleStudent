@@ -81,9 +81,9 @@ async function populateInactiveUsers() {
     const [results] = await pool.query(
       "SELECT userID, username, avatar FROM user"
     );
-    // console.log("results avatar is: " + results[17].avatar.toString());
     results.forEach((row) => {
       const username = row.username;
+      inactiveUsers.set(username, { username });
       let avatar = "";
       if (row.avatar === null) avatar = "";
       else avatar = row.avatar.toString();
@@ -96,7 +96,6 @@ async function populateInactiveUsers() {
 
 // List of active users
 const activeUsers = new Map();
-
 // List of inactive users
 const inactiveUsers = new Map();
 // Call the async function to populate inactive users map
@@ -119,7 +118,6 @@ io.on("connection", (socket) => {
     if (!activeUsers.has(username, convertedAvatar)) {
       // Store username and socket ID
       console.log("setting");
-      //MOISES set avatar to convertedAvatar to make sure it matches frontend nomencalture
       activeUsers.set(socket.id, { username, avatar: convertedAvatar });
       // Broadcast updated list of active users
       io.emit("activeUsers", Array.from(activeUsers.values()));
@@ -186,9 +184,11 @@ io.on("connection", (socket) => {
     //   room: data.room
     // };
     // console.log("To room: ", socket.room);
+    console.log("sent\n###########################", data.avatar);
     const messageData = {
       username: data.username,
       message: data.message,
+      avatar: data.avatar,
     };
     socket.to(socket.room).emit("receive_message", messageData);
   });
@@ -284,23 +284,28 @@ app.post("/messages", async (req, res) => {
     const { classID } = req.body;
     // fetch chatroom messages
     const [userData] = await pool.query(
-      "SELECT chatrooms.message, chatrooms.timestamp, user.username, user.avatar FROM chatrooms INNER JOIN user ON user.userID = chatrooms.userID INNER JOIN classes ON classes.classID = chatrooms.classID WHERE classes.classID = ? ORDER BY chatrooms.timestamp ASC LIMIT 10",
+      "SELECT chatrooms.message, chatrooms.timestamp, user.username, user.avatar FROM chatrooms INNER JOIN user ON user.userID = chatrooms.userID INNER JOIN classes ON classes.classID = chatrooms.classID WHERE classes.classID = ? ORDER BY chatrooms.timestamp ASC ",
       [classID]
     );
+
+    userData.forEach((data) => {
+      if (data.avatar !== null) {
+        data.avatar = data.avatar.toString();
+      }
+    });
     // // Loads the last 10 messages for the chatroom ordered by timestamp
     // const [userData] = await pool.query(
     //   "SELECT * FROM (SELECT chatrooms.message, chatrooms.timestamp, user.username FROM chatrooms INNER JOIN user ON user.userID = chatrooms.userID INNER JOIN classes ON classes.classID = chatrooms.classID WHERE classes.classID = ? ORDER BY chatrooms.timestamp DESC LIMIT 10) AS last_messages ORDER BY last_messages.timestamp ASC",
     //   [classID]
     // );
 
-    console.log("the username is " + userData[0].username);
-
     // data stored in an array of objects
     // Ex: userData[0].message grabs the message from the first object
     console.log("Message");
-    console.log(userData);
 
     // return data to frontend
+    console.log("the username is " + userData[0].username);
+
     res.json({
       userData: userData,
     });
@@ -387,7 +392,7 @@ app.get("/user-info", async (req, res) => {
       // Query the database to retrieve user information based on user ID
       const [userData] = await pool.query(
         `select user.username, 
-                user.email,
+                user.email, 
                 user.avatar, 
                 JSON_ARRAYAGG(classes.className) as classes
                  from user 
@@ -686,32 +691,31 @@ app.post("/create-account", upload.single("Image"), async (req, res) => {
 });
 
 // retrieve the messages from chatroom table
-/*
-app.post("/messages", async (req, res) => {
-  try {
-    //grab classID from frontend
-    const { classID } = req.body;
-    console.log("messages: id is " + req.body.classID);
-    //fetch chatroom messages
-    const [userData] = await pool.query(
-      "SELECT chatrooms.message, chatrooms.timestamp, user.username FROM chatrooms INNER JOIN user ON user.userID = chatrooms.userID INNER JOIN classes ON classes.classID = chatrooms.classID WHERE classes.classID = ?",
-      [classID]
-    );
 
-    // data stored in an array of objects
-    // Ex: userData[0].message grabs the message from the first object
+// app.post("/messages", async (req, res) => {
+//   try {
+//     //grab classID from frontend
+//     const { classID } = req.body;
+//     console.log("messages: id is " + req.body.classID);
+//     //fetch chatroom messages
+//     const [userData] = await pool.query(
+//       "SELECT chatrooms.message, chatrooms.timestamp, user.username FROM chatrooms INNER JOIN user ON user.userID = chatrooms.userID INNER JOIN classes ON classes.classID = chatrooms.classID WHERE classes.classID = ?",
+//       [classID]
+//     );
 
-    //return data to frontend
-    //returns message, timestamp, and username
-    res.json({
-      userData: userData,
-    });
-  } catch (error) {
-    console.error("Error fetching chatroom messages:", error);
-    res.status(500).send("Internal server error");
-  }
-});
-*/
+//     // data stored in an array of objects
+//     // Ex: userData[0].message grabs the message from the first object
+
+//     //return data to frontend
+//     //returns message, timestamp, and username
+//     res.json({
+//       userData: userData,
+//     });
+//   } catch (error) {
+//     console.error("Error fetching chatroom messages:", error);
+//     res.status(500).send("Internal server error");
+//   }
+// });
 
 // Insert message into chatroom
 app.post("/insert-message", async (req, res) => {

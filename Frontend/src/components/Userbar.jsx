@@ -2,8 +2,6 @@ import { useEffect, useState } from "react";
 import socket from "../components/Socket.jsx";
 import avatarPic from "../images/default_pic.png";
 
-// renders the bar to the right of the screen
-// displays active and inactive users
 function Userbar({
   activeUsers,
   setActiveUsers,
@@ -11,11 +9,11 @@ function Userbar({
   setInactiveUsers,
 }) {
   // Grab username object from session storage
-  const storedData = JSON.parse(sessionStorage.getItem("userData"));
 
   useEffect(() => {
     socket.connect();
     // Send the username to socket.io ('username')
+    const storedData = JSON.parse(sessionStorage.getItem("userData"));
     socket.emit("login", storedData.username, storedData.avatar);
 
     // Receive updated list of active users
@@ -24,10 +22,6 @@ function Userbar({
       // Save active and inactive users to session storage
       sessionStorage.setItem("activeUsers", JSON.stringify(users));
       console.log("users", users);
-      //console.log("active users are: " + sessionStorage.getItem('activeUsers'));
-
-      //const avatar = toString(JSON.parse(sessionStorage.getItem('activeUsers')).avatar);
-      //console.log("active avatar is: " + avatar);
     });
 
     // Receive updated list of inactive users
@@ -35,8 +29,6 @@ function Userbar({
       setInactiveUsers(users);
       // Save inactive users to session storage
       sessionStorage.setItem("inactiveUsers", JSON.stringify(users));
-      //console.log("inactive users are: " + sessionStorage.getItem('inactiveUsers'));
-      //console.log("inactive avatar is: " + JSON.stringify(JSON.parse(sessionStorage.getItem('inactiveUsers'))[13].avatar));
     });
 
     // Clean up the socket listener
@@ -44,7 +36,7 @@ function Userbar({
       socket.off("activeUsers");
       socket.off("inactiveUsers");
     };
-  }, [socket]);
+  }, []);
 
   return (
     <>

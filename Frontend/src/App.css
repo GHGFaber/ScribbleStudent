@@ -252,12 +252,11 @@ body,
   position: relative;
 }
 
-/* For Firefox */
 .chat-container {
   max-height: 680px;
-  overflow-y: auto;
+  overflow-y: scroll;
   scrollbar-width: thin;
-  scrollbar-color: rgba(114, 118, 125, 0.5) transparent;
+  scrollbar-color: rgba(114, 118, 125, 0.5) hidden;
 }
 
 /* For WebKit (Chrome, Safari) */
@@ -673,14 +672,6 @@ input[type="file"] {
   padding: 5px 5px 5px 5px;
 }
 
-#chat-window {
-  overflow: scroll;
-}
-
-#chat-window-empty {
-  text-align: center;
-}
-
 .empty-text-wrapper {
   top: 10%;
   left: 23%;
@@ -714,5 +705,6 @@ input[type="file"] {
 }
 
 .the-user-column {
-  overflow: scroll;
+  overflow-y: scroll;
+  max-height: 800px;
 }

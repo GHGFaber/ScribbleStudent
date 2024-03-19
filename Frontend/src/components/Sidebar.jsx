@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { initValueContext } from "../components/InitValue.jsx";
-import { useState, useContext, useEffect } from "react";
+import { useContext, useState, useEffect } from "react";
 
 // renders the bar that appears to the left of the screen
 // contains menu selections for the chatroom and individual note pages
@@ -8,7 +8,7 @@ function Sidebar({ parentCallback, notePages }) {
   let targetFile = "";
   let temp = "";
   const [userNotes, setUserNotes] = useState(localStorage.getItem("notes"));
-
+  console.log(notePages);
   useEffect(() => {
     setUserNotes(localStorage.getItem("notes"));
     notePages = userNotes;
@@ -22,7 +22,7 @@ function Sidebar({ parentCallback, notePages }) {
     console.log("the pages are: " + userNotes);
   }, [userNotes]);
 
-  
+  console.log(localStorage.getItem("notes"));
 
   // takes a filename string and returns the corresponding set of notes
   function get_that_file(setOfNotes, filename) {
@@ -38,7 +38,6 @@ function Sidebar({ parentCallback, notePages }) {
     temp = parentCallback(targetFile);
   }
 
-  
   return (
     <div>
       <div className="the-column">
@@ -50,7 +49,6 @@ function Sidebar({ parentCallback, notePages }) {
               </div>
             </Link>
           </li>
-          {/*console.log("sidebar note pages are: " + JSON.stringify(notePages))*/}
           {notePages.map((page) => (
             <li className="side-list">
               <Link
