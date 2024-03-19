@@ -107,7 +107,7 @@ function Chatroom({
   // contacts backend to fetch the user's notes
   function get_users_notes_from_server() {
     axios
-      .get("http://64.23.164.87/notes_data")
+      .get("http://64.23.164.87/api/notes_data")
       .then((res) => {
         setNotes(res.data);
         localStorage.setItem("notes", JSON.stringify(res.data));
