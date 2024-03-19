@@ -51,7 +51,7 @@ const sessionMiddleware = session({
 });
 app.use(sessionMiddleware);
 
-app.use(cors({ origin: "http://localhost:5173", credentials: true }));
+app.use(cors({ origin: "http://64.23.164.87/", credentials: false }));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.json());
 
@@ -60,8 +60,9 @@ const server = app.listen(3000, () => {
 });
 
 const io = new Server(server, {
+  path: "/socket.io",
   cors: {
-    origin: "http://localhost:5173",
+    origin: "http://64.23.164.87/",
     methods: ["GET", "POST"],
   },
 });
