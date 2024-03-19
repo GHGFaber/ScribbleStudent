@@ -1,13 +1,15 @@
 stages:
-  - build
-  - test
+  - pull
+  - deploy
 
-job_build:
-  stage: build
+job_pull:
+  stage: pull
   script:
-    - echo "Building the project"
+    - echo "Pulling latest"
+    - git checkout cq
+    - git pull
 
-job_test:
-  stage: test
+job_deploy:
+  stage: deploy
   script:
     - echo "Running tests"
