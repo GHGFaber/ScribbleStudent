@@ -115,7 +115,6 @@ function Navbar({
           username: item.username,
           text: item.message,
           timestamp: item.timestamp,
-          profilePic: item.avatar,
           classID: classID,
         }));
 

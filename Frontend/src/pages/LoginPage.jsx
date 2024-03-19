@@ -2,7 +2,8 @@ import { Link } from "react-router-dom";
 import { useState, useRef } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import socket from "../components/Socket.jsx";
+import socket from '../components/Socket.jsx';
+
 
 // page for logging in
 function LoginPage() {
@@ -69,12 +70,8 @@ function LoginPage() {
           <div className="spacer-0"></div>
           <p className="err-msg-1">The account doesn't exist!</p>
           <p className="err-msg-2">Incorrect password!</p>
-          {loginFail && (
-            <p className="err-msg-3show">
-              Incorrect username
-              <br />
-              or password.
-            </p>
+          {loginFail &&  (
+            <p className="err-msg-3show">Incorrect username<br/>or password.</p>
           )}
           <div className="spacer-0"></div>
         </div>

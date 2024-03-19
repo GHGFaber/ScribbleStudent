@@ -5,7 +5,6 @@ import axios from "axios";
 import { useEffect, useState, useRef } from "react";
 import socket from "../components/Socket.jsx";
 import emptyPic from "../images/huh_what.png";
-import avatarPic from "../images/default_pic.png";
 
 function Chatroom({
   classes,
@@ -112,7 +111,6 @@ function Chatroom({
       .then((res) => {
         setNotes(res.data);
         localStorage.setItem("notes", JSON.stringify(res.data));
-        console.log("notes are: " + localStorage.getItem("notes"));
       })
       .catch((error) => {
         console.error("Error fetching data from the API:", error);

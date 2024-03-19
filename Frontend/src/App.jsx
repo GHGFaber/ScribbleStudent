@@ -32,16 +32,6 @@ function App() {
     return savedUsers ? JSON.parse(savedUsers) : [];
   });
 
-  // Load user's note pages from session storage on component mount
-  const [userNotePages, setUserNotePages] = useState(() => {
-    const savedNotes = localStorage.getItem("notes");
-    return savedNotes ? JSON.parse(savedNotes) : [];
-  });
-
-  useEffect(() => {
-    console.log("app.jsx: notes are: " + JSON.stringify(userNotePages));
-  }, [userNotePages]);
-
   return (
     <BrowserRouter>
       <div className="App">
@@ -49,10 +39,7 @@ function App() {
           <Route index element={<Home />} />
           <Route path="login-page" element={<LoginPage />} />
           <Route path="create-account" element={<CreateAccount />} />
-          <Route
-            path="notebook"
-            element={<Notebook username={username} notePages={userNotePages} />}
-          />
+          <Route path="notebook" element={<Notebook username={username} />} />
           {/* <Route path="chatroom" element={<Chatroom chats={chats} classes={classes} activeUsers={activeUsers} inactiveUsers={inactiveUsers}/>}/>   */}
           <Route
             path="chatroom"

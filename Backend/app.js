@@ -105,17 +105,12 @@ io.on("connection", (socket) => {
   console.log(`User Connected: ${socket.id}`);
 
   // Receive username from client
-  socket.on("login", (username, avatar) => {
+  socket.on("login", (username) => {
     // Remove from inactive users if exists
-    let convertedAvatar = "";
-
-    if (avatar && avatar !== null) convertedAvatar = avatar;
-
     if (inactiveUsers.has(username)) {
       inactiveUsers.delete(username);
-      console.log("match");
     }
-    if (!activeUsers.has(username, convertedAvatar)) {
+    if (!activeUsers.has(username)) {
       // Store username and socket ID
       console.log("setting");
       activeUsers.set(socket.id, { username, avatar: convertedAvatar });
@@ -597,7 +592,6 @@ app.post("/login", async (req, res) => {
         console.log("Session ID:", req.sessionID);
 
         // sends user info to the Frontend on submit
-        //MOISES added new field to send on login
         res.send({
           user: userData[0].userID,
           success: true,
@@ -605,10 +599,6 @@ app.post("/login", async (req, res) => {
           email,
           Userid: req.session.userid,
           hashedPassword,
-          avatar:
-            userData[0].avatar !== null
-              ? userData[0].avatar.toString()
-              : userData[0].avatar,
         });
 
         // Print userid to stdout (Backend)

@@ -34,7 +34,6 @@ function Sidebar({ parentCallback, notePages }) {
     targetFile = get_that_file(setOfNotes, filename);
     console.log("target is " + targetFile.filename);
     console.log("This was clicked");
-    console.log("sidebar note pages in fcn are: " + JSON.stringify(notePages));
     temp = parentCallback(targetFile);
   }
 
