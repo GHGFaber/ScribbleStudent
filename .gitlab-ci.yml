@@ -14,3 +14,10 @@ job_deploy:
   stage: deploy
   script:
     - echo "Running tests"
+    - cd Frontend
+    - npm i
+    - cd ..
+    - cd Backend
+    - npm i
+    - cd Frontend
+    - npm run build
