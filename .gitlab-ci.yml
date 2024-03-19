@@ -19,5 +19,6 @@ job_deploy:
     - cd ..
     - cd Backend
     - npm i
+    - cd ..
     - cd Frontend
     - npm run build
