@@ -78,14 +78,31 @@ function AddClass({ onClose, classes }) {
               <Select
                 value={selectedClass}
                 onChange={handleClassChange}
-                style={{ width: "60%", height: "50px", marginBottom: "20px", marginRight: "15%", outline: "none"}}
+                sx={{ 
+                  width: "60%", 
+                  height: "50px", 
+                  marginBottom: "20px", 
+                  marginRight: "15%", 
+                  outline: "none",
+                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                    borderColor: '#ffff90', // Change the border color when focused
+                  },
+                  '&:hover .MuiOutlinedInput-notchedOutline': {
+                    borderColor: '#ffff90', // Change the border color on hover
+                  },
+                  '.MuiOutlinedInput-notchedOutline': {
+                    borderColor: '#ffff90', // Change the default border color
+                  },
+                }}
               >
               <MenuItem value="">
-                  <em>None</em>
+                  <em>--</em>
                 </MenuItem>
                 {classList.map((classInSchool) => (
-                  <MenuItem key={classInSchool.classID} value={classInSchool.classID}>
-                    {classInSchool.className}
+                  <MenuItem key={classInSchool.classID} value={classInSchool.classID} >
+                    <div add-class-selection>
+                      {classInSchool.className}
+                    </div>
                   </MenuItem>
                 ))}
               </Select>

@@ -344,13 +344,14 @@ p {
 
 .nav-items {
   list-style-type: none;
-  padding: 20px 0px 0px 90px;
+  padding: 16px 0px 0px 90px;
   display: inline-block;
 }
 
 .the-nav {
   background-color: #9090ff;
   height: 50px;
+  /* border-bottom: 1px solid gray; */
 }
 .nav-items li {
   display: inline;

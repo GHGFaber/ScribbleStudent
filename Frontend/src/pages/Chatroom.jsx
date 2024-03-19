@@ -2,6 +2,7 @@ import Navbar from "../components/Navbar.jsx";
 import Sidebar from "../components/Sidebar.jsx";
 import Userbar from "../components/Userbar.jsx";
 import axios from "axios";
+import moment from 'moment'; // For timestamp
 import { useEffect, useState, useRef } from "react";
 import socket from "../components/Socket.jsx";
 import emptyPic from "../images/huh_what.png";
@@ -112,7 +113,7 @@ function Chatroom({
       const classID = chats[0].classID;
       await axios.post("http://localhost:3000/insert-message", {
         message: message,
-        timestamp: new Date(Date.now()).toISOString(),
+        timestamp: moment().format('YYYY-MM-DD HH:mm:ss'),
         classID: classID,
       });
     }
