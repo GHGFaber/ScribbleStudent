@@ -23,4 +23,3 @@ job_deploy:
     - npm run build
     - cd ~
     - cd scribble/builds/NLfz4GjxX/0/gitlab/scribble/scribble/Backend
-    - pm2 start app.js
