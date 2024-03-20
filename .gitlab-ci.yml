@@ -21,5 +21,4 @@ job_deploy:
     - cd ..
     - cd Frontend
     - npm run build
-    - cd ~
-    - cd scribble/builds/NLfz4GjxX/0/gitlab/scribble/scribble/Backend
+    - cd ~/scribble
