@@ -6,8 +6,7 @@ import io from "socket.io-client";
 // });
 const socket = io("http://64.23.164.87", {
   path: "/api/socket.io",
-  transports: ["websocket"],
-  secure: true,
+  transports: ["polling"],
 });
 
 export default socket;
