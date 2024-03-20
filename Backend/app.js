@@ -604,6 +604,10 @@ app.post("/login", async (req, res) => {
           email,
           Userid: req.session.userid,
           hashedPassword,
+          avatar:
+            userData[0].avatar !== null
+              ? userData[0].avatar.toString()
+              : userData[0].avatar,
         });
 
         // Print userid to stdout (Backend)
