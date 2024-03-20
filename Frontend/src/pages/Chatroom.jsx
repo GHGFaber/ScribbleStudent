@@ -5,6 +5,7 @@ import axios from "axios";
 import { useEffect, useState, useRef } from "react";
 import socket from "../components/Socket.jsx";
 import emptyPic from "../images/huh_what.png";
+import avatarPic from "../images/default_pic.png";
 
 function Chatroom({
   classes,
