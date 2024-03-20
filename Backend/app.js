@@ -106,12 +106,16 @@ io.on("connection", (socket) => {
   console.log(`User Connected: ${socket.id}`);
 
   // Receive username from client
-  socket.on("login", (username) => {
+  socket.on("login", (username, avatar) => {
     // Remove from inactive users if exists
+    let convertedAvatar = "";
+
+    if (avatar && avatar !== null) convertedAvatar = avatar;
+
     if (inactiveUsers.has(username)) {
       inactiveUsers.delete(username);
     }
-    if (!activeUsers.has(username)) {
+    if (!activeUsers.has(username, convertedAvatar)) {
       // Store username and socket ID
       console.log("setting");
       activeUsers.set(socket.id, { username, avatar: convertedAvatar });
