@@ -2,11 +2,10 @@ import Navbar from "../components/Navbar.jsx";
 import Sidebar from "../components/Sidebar.jsx";
 import Userbar from "../components/Userbar.jsx";
 import axios from "axios";
-import moment from "moment"; // For timestamp
+import moment from 'moment'; // For timestamp
 import { useEffect, useState, useRef } from "react";
 import socket from "../components/Socket.jsx";
 import emptyPic from "../images/huh_what.png";
-import avatarPic from "../images/default_pic.png";
 
 function Chatroom({
   room,
@@ -24,7 +23,7 @@ function Chatroom({
   notePages,
   setNotes,
   selectedNote,
-  setSelectedNote,
+  setSelectedNote
 }) {
   // Message State
   const [message, setMessage] = useState(null);
@@ -33,6 +32,9 @@ function Chatroom({
   // Refresh State
   const [refresh, setRefresh] = useState(0);
 
+  // Testing room state
+  console.log("Room state after refresh:", room);
+
   function get_time(timestamp) {
     const date = new Date(timestamp);
     const returnedDate = date.toLocaleDateString("en-US");
@@ -40,35 +42,23 @@ function Chatroom({
     const timeString = returnedDate.concat(" ", returnedTime);
     return timeString;
   }
-
+  
   // Reference for chat container
   const chatContainerRef = useRef(null);
 
   function show_chats() {
-    console.log(chats.length);
-
     return (
       <div ref={chatContainerRef} className="chat-container">
         {chats.map((chat, index) => (
           <div key={index} className="chat-panel">
             <div className="container-fluid the-chat-div rounded-0">
-              <div className="flexed-container">
-                <div className="avatar-body">
-                  <img
-                    className="avatar-picture"
-                    src={
-                      chat.profilePic && chat.profilePic !== ""
-                        ? `data:image/png;base64,${chat.profilePic}`
-                        : avatarPic
-                    }
-                    alt="avatar-picture"
-                  />
-                </div>
-                <div className="container-body">
-                  <p className="full-datetime">{get_time(chat.timestamp)}</p>
-                  <p className="user-text">{chat.username}</p>
-                  <p className="text-content">{chat.text}</p>
-                </div>
+              <div className="container-body">
+                <p className="full-datetime">{get_time(chat.timestamp)}</p>
+                <p className="user-text">
+                  {/* clickable username */}
+                  <a href="#" className="username-link">{chat.username}</a>
+                </p>
+                <p className="text-content">{chat.text}</p>
               </div>
             </div>
           </div>
@@ -80,10 +70,10 @@ function Chatroom({
   // Function to scroll to the bottom of the chat container
   function scrollToBottom() {
     if (chatContainerRef.current) {
-      chatContainerRef.current.scrollTop =
-        chatContainerRef.current.scrollHeight;
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
     }
   }
+  
 
   let dummyCallback = (data) => {
     return data;
@@ -104,10 +94,6 @@ function Chatroom({
       username: "(Me) " + storedData.username,
       text: message,
       timestamp: Date.now(),
-      profilePic:
-        storedData.avatar !== null
-          ? storedData.avatar.toString()
-          : storedData.avatar,
     };
     setChats((prevChats) => [...prevChats, curChat]); //update local chat
   }
@@ -123,21 +109,14 @@ function Chatroom({
       // event.preventDefault();
       userMsg();
       // Send username and message
-      socket.emit("send_message", {
-        username: storedData.username,
-        message,
-        avatar:
-          storedData.avatar !== null
-            ? storedData.avatar.toString()
-            : storedData.avatar, // Include avatar in the message data
-      });
+      socket.emit("send_message", { username: storedData.username, message });
       // Update chatroom for class
       // Need the current classID (got it)
       console.log("Current classID: ", chats[0].classID);
       const classID = chats[0].classID;
-      await axios.post("http://64.23.164.87/api/insert-message", {
+      await axios.post("http://localhost:3000/insert-message", {
         message: message,
-        timestamp: moment().format("YYYY-MM-DD HH:mm:ss"),
+        timestamp: moment().format('YYYY-MM-DD HH:mm:ss'),
         classID: classID,
       });
     }
@@ -147,13 +126,13 @@ function Chatroom({
   function userTyping() {
     // emit username
     socket.emit("typing", username);
-  }
+  };
 
   // Clear textarea when switching tabs
   function clearText() {
-    const textarea = document.getElementById("txt");
+    const textarea = document.getElementById('txt');
     if (textarea) {
-      textarea.value = ""; // Clear value of textarea
+      textarea.value = ''; // Clear value of textarea
     }
   }
 
@@ -166,18 +145,15 @@ function Chatroom({
     socket.on(
       "receive_message",
       (data) => {
-        console.log("LETSGOOO", data);
         const newChat = {
           username: data.username,
           text: data.message,
           timestamp: Date.now(),
-          profilePic: data.avatar,
         };
         // Update chats
         setChats((prevChats) => [...prevChats, newChat]);
-      },
-      []
-    );
+      }, []);
+      
 
     // Users typing in chatroom
     socket.on("is_typing", (data) => {
@@ -223,24 +199,18 @@ function Chatroom({
     <>
       {/* Pass props to Navbar component */}
       <Navbar
-        room={room}
-        setRoom={setRoom}
-        classes={classes}
-        setClasses={setClasses}
-        chats={chats}
-        setChats={setChats}
-        username={username}
-        setUsername={setUsername}
+        room={room} setRoom={setRoom}
+        classes={classes} setClasses={setClasses}
+        chats={chats} setChats={setChats}
+        username={username} setUsername={setUsername}
       />
-      <div className="container-fluid">
+      <div className="container-fluid" >
         <div className="row no-gutters">
           <div className="col-2 column1">
-            <Sidebar
-              parentCallback={dummyCallback}
-              notePages={notePages}
-              setNotes={setNotes}
-              selectedNote={selectedNote}
-              setSelectedNote={setSelectedNote}
+            <Sidebar 
+              parentCallback={dummyCallback} 
+              notePages={notePages} setNotes={setNotes} 
+              selectedNote={selectedNote} setSelectedNote={setSelectedNote}
               classes={classes}
             />
           </div>
@@ -255,17 +225,17 @@ function Chatroom({
                     id="txt"
                     onChange={(event) => {
                       setMessage(event.target.value);
-                      userTyping();
+                      userTyping(); 
                     }}
                     onKeyDown={handleKeyDown}
-                    style={{
-                      resize: "none",
-                      height: "45px",
+                    style={{ 
+                      resize: "none", 
+                      height: "45px", 
                       borderRadius: "8px",
                       outline: "none",
                       boxShadow: "0 0 0 transparent",
                       padding: "8px",
-                      overflow: "hidden",
+                      overflow: "hidden"
                     }}
                     // Colored outline and shadow when textarea clicked
                     onFocus={(event) => {
@@ -295,18 +265,13 @@ function Chatroom({
                     Send
                   </button>
                   {typing && typing.length > 0 && (
-                    <div
-                      className="typing-container"
-                      style={{ marginTop: "-12px" }}
-                    >
-                      <div className="typing">
+                    <div className="typing-container" style={{ marginTop: "-12px" }}>
+                      <div className="typing" >
                         <span></span>
                         <span></span>
                         <span></span>
                       </div>
-                      <p style={{ marginTop: "20px" }}>
-                        <b>{typing}</b> is typing...
-                      </p>
+                      <p style={{ marginTop: "20px" }}><b>{typing}</b> is typing...</p>
                     </div>
                   )}
                 </div>
@@ -315,10 +280,8 @@ function Chatroom({
           </div>
           <div className="col-2 column3">
             <Userbar
-              activeUsers={activeUsers}
-              setActiveUsers={setActiveUsers}
-              inactiveUsers={inactiveUsers}
-              setInactiveUsers={setInactiveUsers}
+              activeUsers={activeUsers} setActiveUsers={setActiveUsers}
+              inactiveUsers={inactiveUsers} setInactiveUsers={setInactiveUsers}
             />
           </div>
         </div>
@@ -365,7 +328,7 @@ export default Chatroom;
 //   const className = theClasses[0].className;
 //   console.log("Chatroom: first class is " + className);
 //   try {
-//     const response = await axios.post("http://64.23.164.87/api/classes", {
+//     const response = await axios.post("http://localhost:3000/classes", {
 //       className: className,
 //     });
 //     sessionStorage.setItem(
@@ -393,7 +356,7 @@ export default Chatroom;
 //   const id = localStorage.getItem("id");
 //   console.log(id);
 //   try {
-//     const response = await axios.get("http://64.23.164.87/api/class_data", {
+//     const response = await axios.get("http://localhost:3000/class_data", {
 //       params: { id: id },
 //     });
 //     console.log(response.data);
@@ -430,7 +393,7 @@ export default Chatroom;
 //   const theID = theClass[0].classID;
 //   console.log("get_chat_from_server: class id is " + theID);
 //   axios
-//     .post("http://64.23.164.87/api/messages", {
+//     .post("http://localhost:3000/messages", {
 //       classID: theID,
 //     })
 //     .then((res) => {

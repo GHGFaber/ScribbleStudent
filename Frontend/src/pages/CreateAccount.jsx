@@ -18,22 +18,30 @@ function CreateAccount() {
 
   const formData = {
     cropper: useRef(null),
-    croppedimg: useRef(null),
-    username: useRef(null),
-    password: useRef(null),
-    email: useRef(null),
   };
   const handleAccount = async (event) => {
     event.preventDefault();
     console.log("hi");
     try {
+      console.log(formData.current[3].value);
+      const username = formData.current.username.value;
+      const password = formData.current.password.value;
+      const email = formData.current.email.value;
+      const croppedimg = formData.current.croppedimg.value;
+
       const response = await axios.post(
-        "http://64.23.164.87/api/create-account",
+        "http://localhost:3000/create-account",
         {
-          username: formData.username.current.value,
-          password: formData.password.current.value,
-          email: formData.email.current.value,
-          croppedimg: formData.croppedimg.current.value,
+          /*
+          username: formData.current[3].value,
+          password: formData.current[4].value,
+          email: formData.current[5].value,
+          croppedimg: formData.current[2].value,
+          */
+          username,
+          password,
+          email,
+          croppedimg
         }
       );
       console.log(response.data);
@@ -90,9 +98,10 @@ function CreateAccount() {
 
   useEffect(() => {
     console.log(imgData);
-    extractBase(imgData);
+    // extractBase(imgData);
+    // console.log(profileData);
   }, [imgData]);
-
+  
   return (
     <>
       <div className="main-login">
@@ -100,7 +109,12 @@ function CreateAccount() {
           <div className="spacer-0"></div>
           <h3 id="welcome-create-text">Welcome to Scribble!</h3>
           <div className="spacer-0"></div>
-          <form id="create-form" method="POST" encType="multipart/form-data">
+          <form
+            id="create-form"
+            ref={formData}
+            method="POST"
+            encType="multipart/form-data"
+          >
             {!image && !imgData && (
               <label
                 htmlFor="file"
@@ -172,12 +186,7 @@ function CreateAccount() {
                 </div>
               )}
             </div>
-            <input
-              type="hidden"
-              value={profileData}
-              ref={formData.croppedimg}
-              name="croppedimg"
-            />
+            <input type="hidden" value={profileData} name="croppedimg" />
             <br />
             <p id="uname-create-text">Create Username</p>
             <input
@@ -185,7 +194,6 @@ function CreateAccount() {
               className="cr-in"
               id="username"
               name="username"
-              ref={formData.username}
             />
             <div className="spacer-0"></div>
             <p id="ps-create-text">Create Password</p>
@@ -194,17 +202,10 @@ function CreateAccount() {
               className="cr-in"
               id="password"
               name="password"
-              ref={formData.password}
             />
             <div className="spacer-0"></div>
             <p id="ps-create-text">Email</p>
-            <input
-              type="text"
-              className="cr-in"
-              id="email"
-              name="email"
-              ref={formData.email}
-            />
+            <input type="text" className="cr-in" id="email" name="email" />
             {/* <div className="spacer-0"></div>
             <p id="ps-confirm-text">Confirm Password</p>
             <input type="password" className="cr-in" id="ps-confirm-input" /> */}

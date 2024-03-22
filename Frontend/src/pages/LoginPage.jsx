@@ -2,7 +2,8 @@ import { Link } from "react-router-dom";
 import { useState, useRef } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import socket from "../components/Socket.jsx";
+import socket from '../components/Socket.jsx';
+
 
 // page for logging in
 function LoginPage() {
@@ -14,7 +15,7 @@ function LoginPage() {
     event.preventDefault();
     console.log("hi");
     try {
-      const response = await axios.post("http://64.23.164.87/api/login", {
+      const response = await axios.post("http://localhost:3000/login", {
         username: formData.current.username.value,
         password: formData.current.password.value,
         withCredentials: true,
@@ -23,15 +24,11 @@ function LoginPage() {
         console.log(response.data);
         // Store username in sessionStorage
         // Using username returned from database
-        const dataToStore = {
-          username: response.data.username,
-          avatar: response.data.avatar,
-        };
-        sessionStorage.setItem("userData", JSON.stringify(dataToStore));
-
+        const dataToStore = { username: response.data.username };
+        sessionStorage.setItem('userData', JSON.stringify(dataToStore));
         // Send the username to socket.io ('username')
-        socket.emit("login", response.data.username, response.data.avatar);
-
+        socket.emit('login', response.data.username);
+        
         // Redirect to the chatroom
         navigate("/chatroom");
       } else {
@@ -69,12 +66,8 @@ function LoginPage() {
           <div className="spacer-0"></div>
           <p className="err-msg-1">The account doesn't exist!</p>
           <p className="err-msg-2">Incorrect password!</p>
-          {loginFail && (
-            <p className="err-msg-3show">
-              Incorrect username
-              <br />
-              or password.
-            </p>
+          {loginFail &&  (
+            <p className="err-msg-3show">Incorrect username<br/>or password.</p>
           )}
           <div className="spacer-0"></div>
         </div>

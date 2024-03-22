@@ -23,8 +23,16 @@ function App() {
   const [room, setRoom] = useState(null);
   // Note Pages State
   const [notePages, setNotes] = useState([]);
-  // State to store selected note
-  const [selectedNote, setSelectedNote] = useState([]);
+  // State to store selected note (trying different storing method)
+  const [selectedNote, setSelectedNote] = useState(null);
+  // // State to store selected note
+  // const [selectedNote, setSelectedNote] = useState([]);
+
+  // // Selected Note State
+  // const [selectedNote, setSelectedNote] = useState(() => {
+  //   const savedSelectedNote = sessionStorage.getItem("selectedNote");
+  //   return savedSelectedNote ? JSON.parse(savedSelectedNote) : null;
+  // });
 
   // Load active users from session storage on component mount
   const [activeUsers, setActiveUsers] = useState(() => {
@@ -46,30 +54,24 @@ function App() {
           <Route path="login-page" element={<LoginPage />} />
           <Route path="create-account" element={<CreateAccount />} />
           <Route path="notebook" element={<Notebook 
-            classes={classes} setClasses={setClasses} username={username} setUsername={setUsername} 
-            notePages={notePages} setNotes={setNotes} selectedNote={selectedNote} setSelectedNote={setSelectedNote} 
+            classes={classes} setClasses={setClasses} 
+            username={username} setUsername={setUsername} 
+            notePages={notePages} setNotes={setNotes} 
+            selectedNote={selectedNote} setSelectedNote={setSelectedNote} 
             room={room} setRoom={setRoom}
           />} />
           <Route
             path="chatroom"
             element={
               <Chatroom
-                room={room}
-                setRoom={setRoom}
-                classes={classes}
-                setClasses={setClasses}
-                chats={chats}
-                setChats={setChats}
-                username={username}
-                setUsername={setUsername}
-                activeUsers={activeUsers}
-                setActiveUsers={setActiveUsers}
-                inactiveUsers={inactiveUsers}
-                setInactiveUsers={setInactiveUsers}
-                notePages={notePages}
-                setNotes={setNotes}
-                selectedNote={selectedNote}
-                setSelectedNote={setSelectedNote}
+                room={room} setRoom={setRoom}
+                classes={classes} setClasses={setClasses}
+                chats={chats} setChats={setChats}
+                username={username} setUsername={setUsername}
+                activeUsers={activeUsers} setActiveUsers={setActiveUsers}
+                inactiveUsers={inactiveUsers} setInactiveUsers={setInactiveUsers}
+                notePages={notePages} setNotes={setNotes}
+                selectedNote={selectedNote} setSelectedNote={setSelectedNote}
               />
             }
           />
