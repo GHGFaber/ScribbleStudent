@@ -10,3 +10,4 @@ test:
     - cd ../Frontend
     - npm i
     - npm run build
+    - cd ~/scribble
