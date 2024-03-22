@@ -146,8 +146,13 @@ function Navbar({
           username: item.username,
           text: item.message,
           timestamp: item.timestamp,
+          profilePic: item.avatar,
           classID: classID,
         }));
+
+        console.log(
+          "fetchClasses: message data avatar is " + messageData.profilePic
+        );
         setChats(messageData);
         const defaultRoom = formattedData[0].classInSchoolName;
         setRoom(defaultRoom);//set current room info
@@ -197,6 +202,7 @@ function Navbar({
         text: item.message,
         timestamp: item.timestamp,
         classID: classID,
+        profilePic: item.avatar,
       }));
       const room = classData.classInSchoolName;
       setRoom(room);//set current room info

@@ -6,6 +6,7 @@ import moment from 'moment'; // For timestamp
 import { useEffect, useState, useRef } from "react";
 import socket from "../components/Socket.jsx";
 import emptyPic from "../images/huh_what.png";
+import avatarPic from "../images/default_pic.png";
 
 function Chatroom({
   room,
@@ -39,23 +40,35 @@ function Chatroom({
     const timeString = returnedDate.concat(" ", returnedTime);
     return timeString;
   }
-  
+
   // Reference for chat container
   const chatContainerRef = useRef(null);
 
   function show_chats() {
+    console.log(chats.length);
+
     return (
       <div ref={chatContainerRef} className="chat-container">
         {chats.map((chat, index) => (
           <div key={index} className="chat-panel">
             <div className="container-fluid the-chat-div rounded-0">
-              <div className="container-body">
-                <p className="full-datetime">{get_time(chat.timestamp)}</p>
-                <p className="user-text">
-                  {/* clickable username */}
-                  <a href="#" className="username-link">{chat.username}</a>
-                </p>
-                <p className="text-content">{chat.text}</p>
+              <div className="flexed-container">
+                <div className="avatar-body">
+                  <img
+                    className="avatar-picture"
+                    src={
+                      chat.profilePic && chat.profilePic !== ""
+                        ? `data:image/png;base64,${chat.profilePic}`
+                        : avatarPic
+                    }
+                    alt="avatar-picture"
+                  />
+                </div>
+                <div className="container-body">
+                  <p className="full-datetime">{get_time(chat.timestamp)}</p>
+                  <p className="user-text">{chat.username}</p>
+                  <p className="text-content">{chat.text}</p>
+                </div>
               </div>
             </div>
           </div>
@@ -67,10 +80,10 @@ function Chatroom({
   // Function to scroll to the bottom of the chat container
   function scrollToBottom() {
     if (chatContainerRef.current) {
-      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+      chatContainerRef.current.scrollTop =
+        chatContainerRef.current.scrollHeight;
     }
   }
-  
 
   let dummyCallback = (data) => {
     return data;
@@ -91,6 +104,10 @@ function Chatroom({
       username: "(Me) " + storedData.username,
       text: message,
       timestamp: Date.now(),
+      profilePic:
+        storedData.avatar !== null
+          ? storedData.avatar.toString()
+          : storedData.avatar,
     };
     setChats((prevChats) => [...prevChats, curChat]); //update local chat
   }
@@ -106,7 +123,14 @@ function Chatroom({
       // event.preventDefault();
       userMsg();
       // Send username and message
-      socket.emit("send_message", { username: storedData.username, message });
+      socket.emit("send_message", {
+        username: storedData.username,
+        message,
+        avatar:
+          storedData.avatar !== null
+            ? storedData.avatar.toString()
+            : storedData.avatar, // Include avatar in the message data
+      });
       // Update chatroom for class
       // Need the current classID (got it)
       console.log("Current classID: ", chats[0].classID);
@@ -142,10 +166,12 @@ function Chatroom({
     socket.on(
       "receive_message",
       (data) => {
+        console.log("LETSGOOO", data);
         const newChat = {
           username: data.username,
           text: data.message,
           timestamp: Date.now(),
+          profilePic: data.avatar,
         };
         // Update chats
         setChats((prevChats) => [...prevChats, newChat]);

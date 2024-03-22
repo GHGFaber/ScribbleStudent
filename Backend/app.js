@@ -78,10 +78,16 @@ app.get("/notes_data", (req, res) => {
 // Async function to query database and populate inactive users map
 async function populateInactiveUsers() {
   try {
-    const [results] = await pool.query("SELECT userID, username FROM user");
+    const [results] = await pool.query(
+      "SELECT userID, username, avatar FROM user"
+    );
     results.forEach((row) => {
       const username = row.username;
       inactiveUsers.set(username, { username });
+      let avatar = "";
+      if (row.avatar === null) avatar = "";
+      else avatar = row.avatar.toString();
+      inactiveUsers.set(username, { username, avatar });
     });
   } catch (error) {
     console.error("Error fetching usernames:", error);
@@ -99,14 +105,20 @@ io.on("connection", (socket) => {
   console.log(`User Connected: ${socket.id}`);
 
   // Receive username from client
-  socket.on("login", (username) => {
+  socket.on("login", (username, avatar) => {
     // Remove from inactive users if exists
+    let convertedAvatar = "";
+
+    if (avatar && avatar !== null) convertedAvatar = avatar;
+
     if (inactiveUsers.has(username)) {
       inactiveUsers.delete(username);
+      console.log("match");
     }
-    if (!activeUsers.has(username)) {
+    if (!activeUsers.has(username, convertedAvatar)) {
       // Store username and socket ID
-      activeUsers.set(socket.id, { username });
+      console.log("setting");
+      activeUsers.set(socket.id, { username, avatar: convertedAvatar });
       // Broadcast updated list of active users
       io.emit("activeUsers", Array.from(activeUsers.values()));
       // Broadcast updated list of inactive active users
@@ -168,6 +180,7 @@ io.on("connection", (socket) => {
     const messageData = {
       username: data.username,
       message: data.message,
+      avatar: data.avatar,
     };
     socket.to(socket.room).emit("receive_message", messageData);
   });
@@ -291,20 +304,27 @@ app.post("/messages", async (req, res) => {
     const { classID } = req.body;
     // fetch chatroom messages
     const [userData] = await pool.query(
-      "SELECT chatrooms.message, chatrooms.timestamp, user.username FROM chatrooms INNER JOIN user ON user.userID = chatrooms.userID INNER JOIN classes ON classes.classID = chatrooms.classID WHERE classes.classID = ? ORDER BY chatrooms.timestamp ASC ",
+      "SELECT chatrooms.message, chatrooms.timestamp, user.username, user.avatar FROM chatrooms INNER JOIN user ON user.userID = chatrooms.userID INNER JOIN classes ON classes.classID = chatrooms.classID WHERE classes.classID = ? ORDER BY chatrooms.timestamp ASC ",
       [classID]
     );
+
+    userData.forEach((data) => {
+      if (data.avatar !== null) {
+        data.avatar = data.avatar.toString();
+      }
+    });
     // // Loads the last 10 messages for the chatroom ordered by timestamp
     // const [userData] = await pool.query(
     //   "SELECT * FROM (SELECT chatrooms.message, chatrooms.timestamp, user.username FROM chatrooms INNER JOIN user ON user.userID = chatrooms.userID INNER JOIN classes ON classes.classID = chatrooms.classID WHERE classes.classID = ? ORDER BY chatrooms.timestamp DESC LIMIT 10) AS last_messages ORDER BY last_messages.timestamp ASC",
     //   [classID]
     // );
-  
 
     // data stored in an array of objects
     // Ex: userData[0].message grabs the message from the first object
 
     // return data to frontend
+    console.log("the username is " + userData[0].username);
+
     res.json({
       userData: userData,
     });
@@ -376,6 +396,7 @@ app.get("/user-info", async (req, res) => {
       const [userData] = await pool.query(
         `select user.username, 
                 user.email, 
+                user.avatar, 
                 JSON_ARRAYAGG(classes.className) as classes
                  from user 
                  LEFT JOIN classList ON user.userID = classList.userID
@@ -577,6 +598,7 @@ app.post("/login", async (req, res) => {
         console.log("Session ID:", req.sessionID);
 
         // sends user info to the Frontend on submit
+        //MOISES added new field to send on login
         res.send({
           user: userData[0].userID,
           success: true,
@@ -584,6 +606,10 @@ app.post("/login", async (req, res) => {
           email,
           Userid: req.session.userid,
           hashedPassword,
+          avatar:
+            userData[0].avatar !== null
+              ? userData[0].avatar.toString()
+              : userData[0].avatar,
         });
 
         // Print userid to stdout (Backend)
@@ -615,6 +641,7 @@ app.post("/logout", (req, res) => {
 // Account creation post
 app.post("/create-account", upload.single("Image"), async (req, res) => {
   const { username, email, password, croppedimg } = req.body;
+
   try {
     const [existingUser] = await pool.query(
       "SELECT * FROM user WHERE username = ? OR email = ?",

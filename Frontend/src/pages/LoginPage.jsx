@@ -24,11 +24,15 @@ function LoginPage() {
         console.log(response.data);
         // Store username in sessionStorage
         // Using username returned from database
-        const dataToStore = { username: response.data.username };
-        sessionStorage.setItem('userData', JSON.stringify(dataToStore));
+        const dataToStore = {
+          username: response.data.username,
+          avatar: response.data.avatar,
+        };
+        sessionStorage.setItem("userData", JSON.stringify(dataToStore));
+
         // Send the username to socket.io ('username')
-        socket.emit('login', response.data.username);
-        
+        socket.emit("login", response.data.username, response.data.avatar);
+
         // Redirect to the chatroom
         navigate("/chatroom");
       } else {
