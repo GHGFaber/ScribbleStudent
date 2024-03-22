@@ -262,7 +262,7 @@ app.get("/classes", async (req, res) => {
 });
 
 // Available classes for user to join
-app.get('/available-classes', async (req, res) => {
+app.get("/available-classes", async (req, res) => {
   const userID = req.session.userid;
   try {
     // Retrieve the classes that the user is not in
@@ -272,9 +272,8 @@ app.get('/available-classes', async (req, res) => {
     );
     // Send class data to frontend as array of objects
     res.json({
-      classData: classData
+      classData: classData,
     });
-
   } catch (error) {
     console.error("Error fetching class information", error);
     res.status(500).send("Internal server error");
@@ -282,14 +281,14 @@ app.get('/available-classes', async (req, res) => {
 });
 
 // Add user to a class
-app.post('/add-class', async (req, res) => {
+app.post("/add-class", async (req, res) => {
   const { classID } = req.body;
   const userID = req.session.userid;
   try {
-    await pool.query(
-      "INSERT INTO classList (userID, classID) VALUES (?, ?)",
-      [userID, classID]
-    );
+    await pool.query("INSERT INTO classList (userID, classID) VALUES (?, ?)", [
+      userID,
+      classID,
+    ]);
     res.status(200).send("Class added successfully");
   } catch (error) {
     console.error("Error inserting user", error);
@@ -324,7 +323,7 @@ app.post("/messages", async (req, res) => {
 
     // return data to frontend
     console.log("the username is " + userData[0].username);
-
+    console.log(userData.length);
     res.json({
       userData: userData,
     });
@@ -800,17 +799,12 @@ async function queryDatabase() {
       [userID]
     );
     const [classData] = await pool.query(
-      "SELECT DISTINCT classes.classID, classes.className FROM classes INNER JOIN classList ON classes.classID = classList.classID INNER JOIN user ON user.userID = classList.userID");
+      "SELECT DISTINCT classes.classID, classes.className FROM classes INNER JOIN classList ON classes.classID = classList.classID INNER JOIN user ON user.userID = classList.userID"
+    );
 
     console.log(`\nClasslist:`, classData);
     console.log(`\nUser ${userID} classlist:\n`, userData);
     console.log(`\nUser ${userID} available classlist:\n`, userData2);
-
-
-    
-
-
-
 
     // console.log(data);
   } catch (error) {

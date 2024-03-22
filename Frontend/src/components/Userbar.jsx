@@ -50,7 +50,7 @@ function Userbar({
                   className="avatar-picture"
                   src={
                     aUser.avatar && aUser.avatar != ""
-                      ? `data:image/png;base64,${aUser.avatar}`
+                      ? `data:image/jpeg;base64,${aUser.avatar}`
                       : avatarPic
                   }
                   alt="user-avatar-picture"
@@ -69,7 +69,7 @@ function Userbar({
                   className="avatar-picture"
                   src={
                     iUser.avatar && iUser.avatar != ""
-                      ? `data:image/png;base64,${iUser.avatar}`
+                      ? `data:image/jpeg;base64,${iUser.avatar}`
                       : avatarPic
                   }
                   alt="user-avatar-picture"
