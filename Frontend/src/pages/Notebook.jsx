@@ -2,19 +2,27 @@ import Navbar from "../components/Navbar.jsx";
 import Sidebar from "../components/Sidebar.jsx";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
+import socket from "../components/Socket.jsx";
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 // page that contains the pages of the user's virtual notebook
-function Notebook(props, targetPage) {
-  const [classes, setClasses] = useState([]);
+// function Notebook(props, targetPage, username) {
+function Notebook(props) {
+  const { notePages, setNotes, classes, setClasses, username, setUsername, selectedNote, setSelectedNote, room, setRoom } = props;
+
   const [value, setValue] = useState("");
-  let notePages = props.notePages;
+
+  // let notePages = notepages;
   let temp = "";
 
-  useEffect(() => {
-    setClasses(JSON.parse(localStorage.getItem("classes")));
-  }, []);
+  // console.log("NB: username: ", username);
+  // console.log("props: ", props);
 
+
+  // useEffect(() => {
+  //   setClasses(JSON.parse(localStorage.getItem("classes")));
+  // }, []);
+ 
   //const {state} = props.location.state;
   //console.log(targetPage.text);
   //const location = useLocation();
@@ -25,7 +33,8 @@ function Notebook(props, targetPage) {
 
   // const [initData, setInitData] = useState('');
 
-  console.log(classes);
+
+  console.log("classes:", classes);
 
   function set_init_value() {
     setValue(targetPage.text);
@@ -61,25 +70,52 @@ function Notebook(props, targetPage) {
     return 0;
   }
 
+
+  // Function to handle callback from Sidebar component
+  const handleNoteSelection = (noteData) => {
+    // setSelectedNote(noteData); // Update selected note in state
+    if (noteData) {
+      setValue(noteData.text); // Update value of ReactQuill
+    }
+  };
+
+  useEffect(() => {
+    console.log("Note set:", selectedNote);
+    // populate area with notes
+    // value = selectedNote.text;
+
+  }, [selectedNote]);
+
   return (
     <>
       {
         // set_init_value()
       }
-      <Navbar classes={classes} />
+      <Navbar 
+        classes={classes} setClasses={setClasses} 
+        username={username} setUsername={setUsername}
+        room={room} setRoom={setRoom} 
+      />
       <div className="container-fluid">
         <div className="row no-gutters">
           <div className="col-2 column1">
-            <Sidebar parentCallback={get_that_data} notePages={notePages} />
+            {/* <Sidebar parentCallback={get_that_data} notePages={notePages} /> */}
+            <Sidebar 
+              parentCallback={handleNoteSelection} notePages={notePages} setNotes={setNotes} 
+              selectedNote={selectedNote} setSelectedNote={setSelectedNote}
+              room={room} setRoom={setRoom} 
+            />
           </div>
           <div className="col-10 column2 the-note-section">
-            <ReactQuill
-              id="the-notes"
-              modules={module}
-              theme="snow"
-              value={value}
-              onChange={setValue}
-            />
+            {selectedNote && (
+              <ReactQuill
+                id="the-notes"
+                modules={module}
+                theme="snow"
+                value={value}
+                onChange={setValue}
+              />
+            )}
           </div>
         </div>
       </div>

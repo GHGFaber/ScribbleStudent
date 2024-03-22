@@ -2,12 +2,15 @@ import Navbar from "../components/Navbar.jsx";
 import Sidebar from "../components/Sidebar.jsx";
 import Userbar from "../components/Userbar.jsx";
 import axios from "axios";
+import moment from 'moment'; // For timestamp
 import { useEffect, useState, useRef } from "react";
 import socket from "../components/Socket.jsx";
 import emptyPic from "../images/huh_what.png";
 import avatarPic from "../images/default_pic.png";
 
 function Chatroom({
+  room,
+  setRoom,
   classes,
   setClasses,
   chats,
@@ -18,10 +21,17 @@ function Chatroom({
   setActiveUsers,
   inactiveUsers,
   setInactiveUsers,
+  notePages,
+  setNotes,
+  selectedNote,
+  setSelectedNote
 }) {
   // Message State
   const [message, setMessage] = useState(null);
-  const [notePages, setNotes] = useState([]);
+  // const [notePages, setNotes] = useState([]);
+  const [typing, setTyping] = useState([]);
+  // Refresh State
+  const [refresh, setRefresh] = useState(0);
 
   function get_time(timestamp) {
     const date = new Date(timestamp);
@@ -82,9 +92,6 @@ function Chatroom({
   // Grab username from session storage (data disappears when browser is closed)
   const storedData = JSON.parse(sessionStorage.getItem("userData")); // Grab object
 
-  // Room State
-  // var [room, setRoom] = useState(null);
-
   function handleKeyDown(event) {
     if (event.key === "Enter") {
       sendMessage();
@@ -103,21 +110,6 @@ function Chatroom({
           : storedData.avatar,
     };
     setChats((prevChats) => [...prevChats, curChat]); //update local chat
-  }
-
-  // contacts backend to fetch the user's notes
-  function get_users_notes_from_server() {
-    axios
-      .get("http://localhost:3000/notes_data")
-      .then((res) => {
-        setNotes(res.data);
-        localStorage.setItem("notes", JSON.stringify(res.data));
-        console.log("notes are: " + localStorage.getItem("notes"));
-      })
-      .catch((error) => {
-        console.error("Error fetching data from the API:", error);
-        console.log("not connected");
-      });
   }
 
   const sendMessage = async () => {
@@ -145,15 +137,29 @@ function Chatroom({
       const classID = chats[0].classID;
       await axios.post("http://localhost:3000/insert-message", {
         message: message,
-        timestamp: new Date(Date.now()).toISOString(),
+        timestamp: moment().format('YYYY-MM-DD HH:mm:ss'),
         classID: classID,
       });
     }
   };
 
+  // Typing
+  function userTyping() {
+    // emit username
+    socket.emit("typing", username);
+  };
+
+  // Clear textarea when switching tabs
+  function clearText() {
+    const textarea = document.getElementById('txt');
+    if (textarea) {
+      textarea.value = ''; // Clear value of textarea
+    }
+  }
+
   useEffect(() => {
-    get_users_notes_from_server();
     scrollToBottom();
+    clearText();
   }, [chats]);
 
   useEffect(() => {
@@ -169,9 +175,18 @@ function Chatroom({
         };
         // Update chats
         setChats((prevChats) => [...prevChats, newChat]);
-      },
-      []
-    );
+      }, []);
+      
+
+    // Users typing in chatroom
+    socket.on("is_typing", (data) => {
+      // Update typing users array based on previous state
+      setTyping(data);
+    });
+
+    socket.on("clear_typing", (data) => {
+      setTyping([]);
+    });
 
     // User joined
     // *** Display message + username when user joins a room ***
@@ -195,12 +210,11 @@ function Chatroom({
       // setChats((prevChats) => [...prevChats, left]);
     });
 
-    // console.log("classID: ", chats[0].classID);
-
     return () => {
       socket.off("receive_message");
       socket.off("user joined");
       socket.off("user left");
+      socket.off("is_typing");
     };
   }, [socket, message]);
 
@@ -208,18 +222,20 @@ function Chatroom({
     <>
       {/* Pass props to Navbar component */}
       <Navbar
-        classes={classes}
-        setClasses={setClasses}
-        chats={chats}
-        setChats={setChats}
-        username={username}
-        setUsername={setUsername}
-        notePages={notePages}
+        room={room} setRoom={setRoom}
+        classes={classes} setClasses={setClasses}
+        chats={chats} setChats={setChats}
+        username={username} setUsername={setUsername}
       />
-      <div className="container-fluid">
+      <div className="container-fluid" >
         <div className="row no-gutters">
           <div className="col-2 column1">
-            <Sidebar parentCallback={dummyCallback} notePages={notePages} />
+            <Sidebar 
+              parentCallback={dummyCallback} 
+              notePages={notePages} setNotes={setNotes} 
+              selectedNote={selectedNote} setSelectedNote={setSelectedNote}
+              classes={classes}
+            />
           </div>
           <div className="col-8 column2">
             <div id="chat-window">{show_chats()}</div>
@@ -232,9 +248,28 @@ function Chatroom({
                     id="txt"
                     onChange={(event) => {
                       setMessage(event.target.value);
+                      userTyping(); 
                     }}
                     onKeyDown={handleKeyDown}
-                    style={{ resize: "none" }}
+                    style={{ 
+                      resize: "none", 
+                      height: "45px", 
+                      borderRadius: "8px",
+                      outline: "none",
+                      boxShadow: "0 0 0 transparent",
+                      padding: "8px",
+                      overflow: "hidden"
+                    }}
+                    // Colored outline and shadow when textarea clicked
+                    onFocus={(event) => {
+                      event.target.style.outline = "2px purple";
+                      event.target.style.boxShadow = "0 0 5px rgb(65, 65, 102)";
+                    }}
+                    onBlur={(event) => {
+                      event.target.style.outline = "none";
+                      event.target.style.boxShadow = "0 0 0 transparent";
+                    }}
+                    placeholder={"Message in " + room}
                     required
                   ></textarea>
                 </div>
@@ -244,7 +279,7 @@ function Chatroom({
                   style={{
                     width: "65%",
                     marginLeft: "0px",
-                    marginTop: "-20px",
+                    marginTop: "-55px",
                     position: "fixed",
                   }}
                 >
@@ -252,16 +287,24 @@ function Chatroom({
                   <button onClick={sendMessage} id="send-button">
                     Send
                   </button>
+                  {typing && typing.length > 0 && (
+                    <div className="typing-container" style={{ marginTop: "-12px" }}>
+                      <div className="typing" >
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                      </div>
+                      <p style={{ marginTop: "20px" }}><b>{typing}</b> is typing...</p>
+                    </div>
+                  )}
                 </div>
               </form>
             )}
           </div>
           <div className="col-2 column3">
             <Userbar
-              activeUsers={activeUsers}
-              setActiveUsers={setActiveUsers}
-              inactiveUsers={inactiveUsers}
-              setInactiveUsers={setInactiveUsers}
+              activeUsers={activeUsers} setActiveUsers={setActiveUsers}
+              inactiveUsers={inactiveUsers} setInactiveUsers={setInactiveUsers}
             />
           </div>
         </div>

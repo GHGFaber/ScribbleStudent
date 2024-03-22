@@ -8,6 +8,12 @@ import { useEffect, useState, useRef } from "react";
 import socket from "../components/Socket.jsx";
 import { connect } from "socket.io-client";
 
+//+++++++++++++++++++++++++++++++++
+// 2 SEPARATE INSTANCES OF NAVBAR:
+// NAVBAR IN CHATROOM
+// NAVBAR IN NOTEBOOK
+//+++++++++++++++++++++++++++++++++
+
 // Maintains current user sessionID
 // Need to use 'withCredentials: true' so cookies are
 // sent with request so session cookie is present
@@ -15,6 +21,8 @@ import { connect } from "socket.io-client";
 axios.defaults.withCredentials = true;
 
 function Navbar({
+  room,
+  setRoom,
   chats,
   setChats,
   classes,
@@ -22,7 +30,30 @@ function Navbar({
   username,
   setUsername,
 }) {
-  const [room, setRoom] = useState(null);
+
+  // Create a ref for Popup
+  const popupRef = useRef(null);
+  // Function to handle "View Profile" click
+  const onViewProfileClick = () => {
+    turn_on_user_profile(); // Call your function
+    if (popupRef.current) {
+      popupRef.current.close(); // Close the popup using the ref
+    }
+  };
+
+  // Inside the Navbar component
+  const [addClassModalOpen, setAddClassModalOpen] = useState(false);
+
+  // Function to handle opening the modal for adding a class
+  const openAddClassModal = () => {
+    setAddClassModalOpen(true);
+  };
+
+  // Function to handle closing the modal for adding a class
+  const closeAddClassModal = () => {
+    setAddClassModalOpen(false);
+  };
+
   const center_offset = {
     left: window.innerWidth / 2,
     top: window.innerHeight / 2,
@@ -35,7 +66,7 @@ function Navbar({
 
   // Destroy sessionID, clear sessionStorage and return to login page
   const logout = async (e) => {
-    e.preventDefault();
+    // e.preventDefault();
     try {
       await axios.post("http://localhost:3000/logout"); // Destroy session ID
       // Grab username from session storage (seemed to solve problem with not displaying in private mode)
@@ -86,7 +117,7 @@ function Navbar({
       const response = await axios.get("http://localhost:3000/user-info");
 
       // if empty username, set username "Anonymous"
-      console.log(response.data);
+      console.log("userdata:",response.data);
       setUserData(response.data);
     } catch (error) {
       console.log("Error fetching user info:", error);
@@ -124,6 +155,7 @@ function Navbar({
         );
         setChats(messageData);
         const defaultRoom = formattedData[0].classInSchoolName;
+        setRoom(defaultRoom);//set current room info
         socket.emit("join_room", defaultRoom);
         console.log("Deafult room: ", defaultRoom);
         console.log("Default classID: ", formattedData[0].classID);
@@ -142,6 +174,7 @@ function Navbar({
     // will determine how the UserProfile behaves
     setUserProfileIsOn(true);
     console.log("User profile is now " + userProfileIsOn);
+    
   }
 
   function turn_off_user_profile() {
@@ -172,6 +205,7 @@ function Navbar({
         profilePic: item.avatar,
       }));
       const room = classData.classInSchoolName;
+      setRoom(room);//set current room info
       console.log("class: ", room);
       console.log("ClassID: ", classID);
       //setRoom(room);
@@ -188,78 +222,78 @@ function Navbar({
     fetchClasses();
   }, [socket]);
 
-  /* JARL'S CODE FOR SETTING CURRENT CLASS */
-  // sets a new class as the current class
-  // const switch_class = async (classInSchool, className) => {
-  //   // get that class whenever the tab is clicked
-  //   const theClassID = classInSchool;
-  //   console.log("navbar: class ID is " + theClassID);
-  //   try {
-  //     const response = await axios.post("http://localhost:3000/messages", {
-  //       classID: theClassID,
-  //     });
-  //     const response2 = await axios.post("http://localhost:3000/classes", {
-  //       className: className,
-  //     });
-  //     sessionStorage.setItem(
-  //       "currentClassData",
-  //       JSON.stringify(response.data.userData)
-  //     );
-  //     sessionStorage.setItem(
-  //       "currentClass",
-  //       JSON.stringify(response2.data.classData)
-  //     );
-  //     console.log(
-  //       "navbar: the current class from the response is " +
-  //         JSON.stringify(response2.data.classData)
-  //     );
-  //     console.log(
-  //       "navbar: the current class in session is " +
-  //         sessionStorage.getItem("currentClass")
-  //     );
-  //     handleClassChange();
-  //   } catch {
-  //     console.log("there has been an error sending the message.");
-  //   }
-  // };
-
   return (
     <nav>
       <div className="the-nav">
         <img className="scrib-emblem" src={logo} alt="Scribble-emblem" />
         <div className="class-buttons">
           {/* Added function to display class name of tab clicked */}
-          {/* If classes is null, then do not display tabs */}
-          {classes && classes.length > 0 && (
+          {/* If classes is null, and chats DNE, then do not display tabs */}
+          {classes && chats && classes.length > 0 && (
             <ul className="nav-items my-auto">
               {classes.map((classInSchool, index) => (
                 <li onClick={() => joinRoom(classInSchool)} key={index}>
-                  <label style={{ cursor: "pointer" }}>
+                  <label style={{ cursor: "pointer", userSelect: "none" }}>
                     {classInSchool.classInSchoolName}
                   </label>
                 </li>
               ))}
+              {/* Add a tab for "Add Class" */}
+              {/* <li>
+                <label className="add-class-button" style={{ cursor: "pointer", userSelect: "none" }}>
+                  <h5>+</h5>
+                </label>
+              </li> */}
+              {/* End of "Add Class" tab */}
             </ul>
           )}
         </div>
 
         <Popup
+          ref={popupRef} // assign ref to popup
           className="signout-button-popup"
           trigger={
             <button className="profile-button my-auto">{username}</button>
           }
           position="bottom right"
         >
-          <div className="whats-inside-the-popup">
+          <div className="whats-inside-the-popup" style={{ padding: '5px' }}>
             <h4>Hi, {username}!</h4>
             <div className="dropdown-container">
               <button
                 type="button"
                 className="view-profile-button"
-                onClick={() => turn_on_user_profile()}
+                onClick={() => {
+                  // Open modal for profile
+                  turn_on_user_profile();
+                  // Close popup on click
+                  popupRef.current.close();
+                }}
               >
                 View Profile
               </button>
+              {/* Add a class from available classes */}
+                {/* Open modal for adding a class */}
+                {/* <button
+                  type="button"
+                  className="view-profile-button"
+                  onClick={openAddClassModal}
+                >
+                  Add Class
+                </button> */}
+                {/* End of "Add Class" button */}
+              {/* <button
+                type="button"
+                className="view-profile-button"
+                onClick={() => {
+                  // Open modal for profile
+                  turn_on_user_profile();
+                  // Close popup on click
+                  popupRef.current.close();
+                }}
+              >
+                Add Class
+              </button> */}
               <Link className="the-sign-out-link" to="/">
                 <button
                   type="button"

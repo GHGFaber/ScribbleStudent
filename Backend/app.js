@@ -172,25 +172,29 @@ io.on("connection", (socket) => {
     socket.room = data;
     socket.join(socket.room);
     socket.to(socket.room).emit("user joined", socket.id);
-    // console.log("New room: ", socket.rooms);
   });
 
   // Which room we are sending the message to
   socket.on("send_message", (data) => {
     // Include username along with message data
-    // const messageData = {
-    //   username: data.username,
-    //   message: data.message,
-    //   room: data.room
-    // };
-    // console.log("To room: ", socket.room);
-    console.log("sent\n###########################", data.avatar);
     const messageData = {
       username: data.username,
       message: data.message,
       avatar: data.avatar,
     };
     socket.to(socket.room).emit("receive_message", messageData);
+  });
+
+  // Users typing in chatroom
+  socket.on("typing", (data) => {
+    const username = data;
+    socket.to(socket.room).emit("is_typing", username);
+
+    // Clear typing state after a delay
+    clearTimeout(socket.typingTimer);
+    socket.typingTimer = setTimeout(() => {
+      socket.to(socket.room).emit("clear_typing", username);
+    }, 3000); // Adjust the delay as needed
   });
 
   // // Broadcast message to users
@@ -247,7 +251,7 @@ app.get("/classes", async (req, res) => {
     // data stored in an array of objects
     // Ex: classData[0].classID grabs the classID from the first object
 
-    //send class data to Frontend as array of objects
+    // Send class data to Frontend as array of objects
     res.json({
       classData: classData,
     });
@@ -257,25 +261,41 @@ app.get("/classes", async (req, res) => {
   }
 });
 
-// // retrieve classes data based on class name
-// app.post("/classes", async (req, res) => {
-//   try {
-//     const { className } = req.body;
-//     // Query the database to retrieve class data
-//     const [classData] = await pool.query("Select * FROM classes WHERE classes.className = ?", [className]);
+// Available classes for user to join
+app.get('/available-classes', async (req, res) => {
+  const userID = req.session.userid;
+  try {
+    // Retrieve the classes that the user is not in
+    const [classData] = await pool.query(
+      "SELECT DISTINCT classes.classID, classes.className FROM classes WHERE classes.classID NOT IN (SELECT classList.classID FROM classList WHERE classList.userID = ?)",
+      [userID]
+    );
+    // Send class data to frontend as array of objects
+    res.json({
+      classData: classData
+    });
 
-//     // data stored in an array of objects
-//     // Ex: classData[0].classID grabs the classID from the first object
+  } catch (error) {
+    console.error("Error fetching class information", error);
+    res.status(500).send("Internal server error");
+  }
+});
 
-//     //send class data to Frontend as array of objects
-//     res.json({
-//       classData: classData
-//     });
-//   } catch (error) {
-//     console.error("Error fetching class information:", error);
-//     res.status(500).send("Internal server error");
-//   }
-// });
+// Add user to a class
+app.post('/add-class', async (req, res) => {
+  const { classID } = req.body;
+  const userID = req.session.userid;
+  try {
+    await pool.query(
+      "INSERT INTO classList (userID, classID) VALUES (?, ?)",
+      [userID, classID]
+    );
+    res.status(200).send("Class added successfully");
+  } catch (error) {
+    console.error("Error inserting user", error);
+    res.status(500).send("Internal server error");
+  }
+});
 
 // retrieve the messages from chatroom table
 app.post("/messages", async (req, res) => {
@@ -301,7 +321,6 @@ app.post("/messages", async (req, res) => {
 
     // data stored in an array of objects
     // Ex: userData[0].message grabs the message from the first object
-    console.log("Message");
 
     // return data to frontend
     console.log("the username is " + userData[0].username);
@@ -314,22 +333,6 @@ app.post("/messages", async (req, res) => {
     res.status(500).send("Internal server error");
   }
 });
-
-// // update chatroom messages
-// app.post("/update-messages", async (req, res) => {
-//   try {
-//     const { message, timestamp, classID } = req.body;
-//     const userID = req.session.userID;
-
-//     // Update the message in the chatrooms table for the specified chatroom ID
-//     await pool.query("UPDATE chatrooms SET message = ?, timestamp = ? WHERE userID = ? AND classID = ?", [message, timestamp, userID, classID]);
-
-//     res.json({ message: "Message updated successfully" });
-//   } catch (error) {
-//     console.error("Error updating message:", error);
-//     res.status(500).send("Internal server error");
-//   }
-// });
 
 // Insert message into chatroom
 app.post("/insert-message", async (req, res) => {
@@ -408,7 +411,6 @@ app.get("/user-info", async (req, res) => {
         // User not found in the database
         res.status(404).send("User not found");
       }
-      // res.json(userid);
       //
       console.log("Current Session ID:", req.sessionID);
       //
@@ -533,7 +535,6 @@ app.post("/reset-password", async (req, res) => {
           return res.status(401).send("Old password is incorrect");
         }
 
-        // console.log("New Password:", newPassword); //testing
         // Hash the new password
         const hashedPassword = await bcrypt.hash(newPassword, 10); // 10 is the number of salt rounds
 
@@ -613,11 +614,6 @@ app.post("/login", async (req, res) => {
 
         // Print userid to stdout (Backend)
         console.log("Userid:", userid);
-
-        // const sessionId = uuidv4();
-        // session[sessionId] = { username, userid };
-        // // res.set('Set-Cookie', `session=${sessionId}`);
-        // // res.send('success');
       } else {
         res.send("Invalid username or password");
       }
@@ -690,8 +686,7 @@ app.post("/create-account", upload.single("Image"), async (req, res) => {
   }
 });
 
-// retrieve the messages from chatroom table
-
+// // retrieve the messages from chatroom table
 // app.post("/messages", async (req, res) => {
 //   try {
 //     //grab classID from frontend
@@ -717,66 +712,66 @@ app.post("/create-account", upload.single("Image"), async (req, res) => {
 //   }
 // });
 
-// Insert message into chatroom
-app.post("/insert-message", async (req, res) => {
-  try {
-    // grab chatroom data from frontend (send in same order from frontend)
-    const { classID, timestamp, message } = req.body;
-    //userID (session)
-    const userID = req.session.userID;
-    //insert chatroom data
-    await pool.query(
-      "INSERT INTO chatrooms (classID, timestamp, message, userID) VALUES (?, ?, ?, ?)",
-      [classID, timestamp, message, userID]
-    );
-  } catch (error) {
-    console.error("Error inserting message:", error);
-    res.status(500).send("Internal server error");
-  }
-});
+// // Insert message into chatroom
+// app.post("/insert-message", async (req, res) => {
+//   try {
+//     // grab chatroom data from frontend (send in same order from frontend)
+//     const { classID, timestamp, message } = req.body;
+//     //userID (session)
+//     const userID = req.session.userID;
+//     //insert chatroom data
+//     await pool.query(
+//       "INSERT INTO chatrooms (classID, timestamp, message, userID) VALUES (?, ?, ?, ?)",
+//       [classID, timestamp, message, userID]
+//     );
+//   } catch (error) {
+//     console.error("Error inserting message:", error);
+//     res.status(500).send("Internal server error");
+//   }
+// });
 
-// update chatroom messages
-app.post("/update-messages", async (req, res) => {
-  try {
-    const userID = req.session.userID;
-    const chatID = req.session.chatID;
-    const { newMessage } = req.body; // Extract the new message content from the request body
+// // update chatroom messages
+// app.post("/update-messages", async (req, res) => {
+//   try {
+//     const userID = req.session.userID;
+//     const chatID = req.session.chatID;
+//     const { newMessage } = req.body; // Extract the new message content from the request body
 
-    // Update the message in the chatrooms table for the specified chatroom ID
-    await pool.query(
-      "UPDATE chatrooms SET message = ? WHERE userID = ? AND chatID = ?",
-      [newMessage, userID, chatID]
-    );
+//     // Update the message in the chatrooms table for the specified chatroom ID
+//     await pool.query(
+//       "UPDATE chatrooms SET message = ? WHERE userID = ? AND chatID = ?",
+//       [newMessage, userID, chatID]
+//     );
 
-    res.json({ message: "Message updated successfully" });
-  } catch (error) {
-    console.error("Error updating message:", error);
-    res.status(500).send("Internal server error");
-  }
-});
+//     res.json({ message: "Message updated successfully" });
+//   } catch (error) {
+//     console.error("Error updating message:", error);
+//     res.status(500).send("Internal server error");
+//   }
+// });
 
-// retrieve classes data based on class name
-app.post("/classes", async (req, res) => {
-  try {
-    const { className } = req.body;
-    // Query the database to retrieve class data
-    const [classData] = await pool.query(
-      "Select * FROM classes WHERE classes.className = ?",
-      [className]
-    );
+// // retrieve classes data based on class name
+// app.post("/classes", async (req, res) => {
+//   try {
+//     const { className } = req.body;
+//     // Query the database to retrieve class data
+//     const [classData] = await pool.query(
+//       "Select * FROM classes WHERE classes.className = ?",
+//       [className]
+//     );
 
-    // data stored in an array of objects
-    // Ex: classData[0].classID grabs the classID from the first object
+//     // data stored in an array of objects
+//     // Ex: classData[0].classID grabs the classID from the first object
 
-    //send class data to Frontend as array of objects
-    res.json({
-      classData: classData,
-    });
-  } catch (error) {
-    console.error("Error fetching class information:", error);
-    res.status(500).send("Internal server error");
-  }
-});
+//     //send class data to Frontend as array of objects
+//     res.json({
+//       classData: classData,
+//     });
+//   } catch (error) {
+//     console.error("Error fetching class information:", error);
+//     res.status(500).send("Internal server error");
+//   }
+// });
 
 // Grab html from public folder
 // Path needs to lead to public directory
@@ -794,51 +789,30 @@ app.use((err, req, res, next) => {
 async function queryDatabase() {
   try {
     // TESTING DATA
-    // const [rows, fields] = await pool.query("SELECT * FROM user");
-    // const classID = 1;
-    // //const [rows, fields] = await pool.query
-    // const [userData] = await pool.query
-    // ("SELECT chatrooms.* FROM chatrooms INNER JOIN user ON user.userID = chatrooms.userID INNER JOIN classes ON classes.classID = chatrooms.classID WHERE classes.classID = ?", [classID]);
-    //const className = 'Biology';
-    // const [userData] = await pool.query("Select * FROM classes");
-    // console.log(userData);
-    // const classID = 1;
-    // const [userData] = await pool.query
-    // ("SELECT chatrooms.message, chatrooms.timestamp, user.username FROM chatrooms INNER JOIN user ON user.userID = chatrooms.userID INNER JOIN classes ON classes.classID = chatrooms.classID WHERE classes.classID = ? ORDER BY chatrooms.timestamp DESC", [classID]);
-    // const [userData] = await pool.query
-    // ("SELECT * FROM classes INNER JOIN chatrooms WHERE classes.classID = chatrooms.classID");
-    // const classID = 3;
-    // const userID = 11;
-    // const message = "What page are we on?";
-    // const timestamp = '2024-03-03T11:46:00.000Z';
-    // await pool.query("INSERT INTO chatrooms (classID, userID, message, timestamp) VALUES (?, ?, ?, ?)", [classID, userID, message, timestamp]);
-    // await pool.query("DELETE chatrooms.userID FROM chatrooms WHERE userID = 2");
-    // const [userData] = await pool.query("Select DISTINCT classes.classID, classes.className FROM classes INNER JOIN chatrooms ON classes.classID = chatrooms.classID INNER JOIN user ON user.userID = chatrooms.userID WHERE user.userID = ?", [2]);
-    // console.log(userData);
-    // const [userData] = await pool.query
-    // ("SELECT * FROM user WHERE user.userID = 25");
-    // console.log(userData[0].avatar);
-    //console.log(rows); // rows contains rows returned by the server
-    // console.log(fields); // fields contains extra meta data about results, if available
-    // good for wanting to see what the table will ask for (id, name, password, etc.) and their
-    // type.
-    // const userID = 1;
-    // const chatID = 3;
-    // const newMessage = "Hello everyone, How's it going?";
-    // await pool.query("UPDATE chatrooms SET message = ? WHERE userID = ? AND chatID = ?", [newMessage, userID, chatID]);
-    // const classID = 1;
-    // const userID = 11;
-    // const timestamp = '2024-02-21T12:56:00.000Z';
-    // const message = "Does anyone have the notes from today's class?";
-    // await pool.query("INSERT INTO chatrooms (classID, timestamp, message, userID) VALUES (?, ?, ?, ?)", [classID, timestamp, message, userID]);
-    // const userID = 11;
-    // const [classData] = await pool.query
-    // ("Select classes.classID, classes.className FROM classes INNER JOIN chatrooms ON classes.classID = chatrooms.classID INNER JOIN user ON user.userID = chatrooms.userID WHERE user.userID = ?", [userID]);
-    // console.log(classData);
-    // const userID = 11;
-    // const [classData] = await pool.query
-    // ("SELECT DISTINCT classes.classID, classes.className FROM classes INNER JOIN classList ON classes.classID = classList.classID INNER JOIN user ON user.userID = classList.userID WHERE user.userID = ?", [userID]);
-    // console.log(classData);
+    const userID = 11;
+    const [userData] = await pool.query(
+      "SELECT DISTINCT classes.classID, classes.className FROM classes INNER JOIN classList ON classes.classID = classList.classID INNER JOIN user ON user.userID = classList.userID WHERE user.userID = ?",
+      [userID]
+    );
+    // Select classes user is not in
+    const [userData2] = await pool.query(
+      "SELECT DISTINCT classes.classID, classes.className FROM classes WHERE classes.classID NOT IN (SELECT classList.classID FROM classList WHERE classList.userID = ?)",
+      [userID]
+    );
+    const [classData] = await pool.query(
+      "SELECT DISTINCT classes.classID, classes.className FROM classes INNER JOIN classList ON classes.classID = classList.classID INNER JOIN user ON user.userID = classList.userID");
+
+    console.log(`\nClasslist:`, classData);
+    console.log(`\nUser ${userID} classlist:\n`, userData);
+    console.log(`\nUser ${userID} available classlist:\n`, userData2);
+
+
+    
+
+
+
+
+    // console.log(data);
   } catch (error) {
     console.error(error);
   }

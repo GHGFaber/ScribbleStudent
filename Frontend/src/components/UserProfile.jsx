@@ -6,14 +6,14 @@ import { Modal, Box } from "@mui/material";
 function UserProfile({ userData, isActive, callback }) {
   const [profileInfo, setProfileInfo] = useState([]);
   let trueFlag = isActive;
-  console.log("YAH BIG INFO HERE", userData[0]);
+  // console.log("YAH BIG INFO HERE", userData[0]);
 
   // retrieve the data from local storage
   // will determine whether or not to display the popup
   const [displayProfile, setDisplayProfile] = useState(trueFlag);
 
   useEffect(() => {
-    console.log("This is the response to the button click");
+    // console.log("This is the response to the button click");
     setDisplayProfile(trueFlag);
     open_user_profile();
     setProfileInfo(userData[0]);
@@ -71,8 +71,8 @@ function UserProfile({ userData, isActive, callback }) {
                 {/* <h4>
                   {userData[0].firstName} {userData[0].lastName}
                 </h4> */}
-                <h5>{userData[0].username}</h5>
-                <h5>{userData[0].email}</h5>
+                <b>Username</b><h5>{userData[0].username}</h5>
+                <b>Email</b><h5>{userData[0].email}</h5>
                 {/* <p>Member since {get_member_since(userData[0].memberSince)}</p>
                 <p>
                   {userData[0].userType} at {userData[0].schoolName}

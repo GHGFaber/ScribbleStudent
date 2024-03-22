@@ -12,13 +12,19 @@ import UserUpdate from "./pages/UserUpdate.jsx";
 import ResetPassword from "./pages/ResetPassword.jsx";
 
 function App() {
-  console.log("Initiating app...");
-
+  // console.log("Initiating app...");
+  // Classes State
   const [classes, setClasses] = useState([]);
   // Chats State
   const [chats, setChats] = useState([]);
   // Username State
   const [username, setUsername] = useState(null);
+  // Room State
+  const [room, setRoom] = useState(null);
+  // Note Pages State
+  const [notePages, setNotes] = useState([]);
+  // State to store selected note
+  const [selectedNote, setSelectedNote] = useState([]);
 
   // Load active users from session storage on component mount
   const [activeUsers, setActiveUsers] = useState(() => {
@@ -39,12 +45,17 @@ function App() {
           <Route index element={<Home />} />
           <Route path="login-page" element={<LoginPage />} />
           <Route path="create-account" element={<CreateAccount />} />
-          <Route path="notebook" element={<Notebook username={username} />} />
-          {/* <Route path="chatroom" element={<Chatroom chats={chats} classes={classes} activeUsers={activeUsers} inactiveUsers={inactiveUsers}/>}/>   */}
+          <Route path="notebook" element={<Notebook 
+            classes={classes} setClasses={setClasses} username={username} setUsername={setUsername} 
+            notePages={notePages} setNotes={setNotes} selectedNote={selectedNote} setSelectedNote={setSelectedNote} 
+            room={room} setRoom={setRoom}
+          />} />
           <Route
             path="chatroom"
             element={
               <Chatroom
+                room={room}
+                setRoom={setRoom}
                 classes={classes}
                 setClasses={setClasses}
                 chats={chats}
@@ -55,6 +66,10 @@ function App() {
                 setActiveUsers={setActiveUsers}
                 inactiveUsers={inactiveUsers}
                 setInactiveUsers={setInactiveUsers}
+                notePages={notePages}
+                setNotes={setNotes}
+                selectedNote={selectedNote}
+                setSelectedNote={setSelectedNote}
               />
             }
           />
