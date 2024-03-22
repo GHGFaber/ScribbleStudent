@@ -2,13 +2,21 @@ import { Link } from "react-router-dom";
 import { initValueContext } from "../components/InitValue.jsx";
 import { useContext, useEffect, useState } from "react";
 import axios from "axios";
-import AddClass from "../components/AddClass.jsx"; 
-
+import AddClass from "../components/AddClass.jsx";
 
 // renders the bar that appears to the left of the screen
 // contains menu selections for the chatroom and individual note pages
-function Sidebar({ notePages, setNotes, username, selectedNote, setSelectedNote, classes, refresh, setRefresh, parentCallback}) {
-
+function Sidebar({
+  notePages,
+  setNotes,
+  username,
+  selectedNote,
+  setSelectedNote,
+  classes,
+  refresh,
+  setRefresh,
+  parentCallback,
+}) {
   // const [dropdownVisible, setDropdownVisible] = useState(false);
   const [dropdownVisible, setDropdownVisible] = useState(
     sessionStorage.getItem("dropdownVisible") === "true"
@@ -30,7 +38,7 @@ function Sidebar({ notePages, setNotes, username, selectedNote, setSelectedNote,
     console.log("Grabbing note data...");
     console.log("selected note:", selectedNote);
     try {
-      const res = await axios.get("http://localhost:3000/notes_data");
+      const res = await axios.get("http://64.23.164.87/api/notes_data");
       setNotes(res.data);
       localStorage.setItem("notes", JSON.stringify(res.data));
     } catch (error) {
@@ -66,7 +74,7 @@ function Sidebar({ notePages, setNotes, username, selectedNote, setSelectedNote,
       get_that_file_wrapper(selectedNote);
     }
     // availableClasses();
-  },[]);
+  }, []);
 
   // Save dropdownVisible state to sessionStorage whenever it changes
   useEffect(() => {
@@ -80,10 +88,14 @@ function Sidebar({ notePages, setNotes, username, selectedNote, setSelectedNote,
   return (
     <div>
       {/* Render modal component conditionally */}
-      {modalOpen && <AddClass 
-        onClose={closeModal} classes={classes}
-        refresh={refresh} setRefresh={setRefresh}
-      />}
+      {modalOpen && (
+        <AddClass
+          onClose={closeModal}
+          classes={classes}
+          refresh={refresh}
+          setRefresh={setRefresh}
+        />
+      )}
 
       <div className="the-column">
         <ul className="sidebar-content">
@@ -105,18 +117,32 @@ function Sidebar({ notePages, setNotes, username, selectedNote, setSelectedNote,
           <nav>
             <li className="side-list">
               <div className="side-selection">
-                <label htmlFor="touch" className="the-link" onClick={() => setDropdownVisible(!dropdownVisible)}>
+                <label
+                  htmlFor="touch"
+                  className="the-link"
+                  onClick={() => setDropdownVisible(!dropdownVisible)}
+                >
                   <h5>Notebook</h5>
                 </label>
               </div>
-              <ul className="slide" style={{ display: dropdownVisible ? "block" : "none" }}>
+              <ul
+                className="slide"
+                style={{ display: dropdownVisible ? "block" : "none" }}
+              >
                 {notePages.map((page) => (
                   <li className="side-list" key={page.filename}>
                     <Link
                       className="the-link"
-                      to={{ pathname: "/notebook", state: { targetFile: page } }}
+                      to={{
+                        pathname: "/notebook",
+                        state: { targetFile: page },
+                      }}
                       onClick={() => get_that_file_wrapper(page)}
-                      style={{ color: "#2d2f31", display: "block", paddingRight: "65px" }}
+                      style={{
+                        color: "#2d2f31",
+                        display: "block",
+                        paddingRight: "65px",
+                      }}
                     >
                       <div className="side-selection">
                         <h6>{page.title}</h6>
