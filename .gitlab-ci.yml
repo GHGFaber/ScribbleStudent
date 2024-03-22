@@ -1,3 +1,11 @@
-build:
+stages:
+  - test
+test:
+  stage: test
   script:
-    - echo "Hello World"
+    - cd ~/scribble
+    - cd builds/NLfz4GjxX/0/gitlab/scribble/scribble/Backend
+    - npm i
+    - cd builds/NLfz4GjxX/0/gitlab/scribble/scribble/Frontend
+    - npm i
+    - npm run build
