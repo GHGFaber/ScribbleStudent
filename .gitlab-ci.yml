@@ -4,7 +4,6 @@ test:
   stage: test
   script:
     - cd ~/scribble
-    - git pull
     - cd builds/NLfz4GjxX/0/gitlab/scribble/scribble/Backend
     - npm i
     - cd ../Frontend
