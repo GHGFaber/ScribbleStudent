@@ -8,7 +8,7 @@ import AddClass from "../components/AddClass.jsx";
 
 // renders the bar that appears to the left of the screen
 // contains menu selections for the chatroom and individual note pages
-function Sidebar({ notePages, setNotes, selectedNote, setSelectedNote, classes, refresh, parentCallback}) {
+function Sidebar({ notePages, setNotes, selectedNote, setSelectedNote, classes}) {
 
   // const [dropdownVisible, setDropdownVisible] = useState(false);
   const [dropdownVisible, setDropdownVisible] = useState(
@@ -18,7 +18,9 @@ function Sidebar({ notePages, setNotes, selectedNote, setSelectedNote, classes, 
   // State to control the modal
   const [modalOpen, setModalOpen] = useState(false); 
 
-  let notes = notePages;
+  // State for storing notes 
+  const [storedNotes, setStoredNotes] = useState([]);
+
   
   // Function to open the modal
   const openModal = () => {
@@ -30,40 +32,11 @@ function Sidebar({ notePages, setNotes, selectedNote, setSelectedNote, classes, 
     setModalOpen(false);
   };
 
-  async function get_users_notes_from_server() {
-    try {
-      const res = await axios.get("http://localhost:3000/notes");
-      if (res && res.data && Array.isArray(res.data.noteData)) {
-        const formattedNotes = await Promise.all(res.data.noteData.map(async note => {
-          return {
-            title: note.description,
-            filename: note.fileName,
-            fileID: note.fileID,
-            text: note.text,
-          };
-        }));
-        console.log("formattedNotes:", formattedNotes);
-        return new Promise((resolve, reject) => {
-          setNotes(formattedNotes);
-          notes = formattedNotes;
-          console.log("formattedNotes:", formattedNotes);
-          resolve(); // Resolve the promise once setNotes completes
-        });
-      }
-    } catch (error) {
-      console.error("Error fetching note data:", error);
-      // Reject the promise if an error occurs
-      return Promise.reject(error);
-    }
-  }
-  
-  
-
   // Function to generate a unique filename
   function generateUniqueFilename(baseName, existingFilenames) {
     let newName = baseName;
     let count = 1;
-    while (existingFilenames.some(page => page.title === newName)) {
+    while (existingFilenames.some(page => page.description === newName)) {
         newName = `${baseName}(${count})`;
         count++;
     }
@@ -75,9 +48,8 @@ function Sidebar({ notePages, setNotes, selectedNote, setSelectedNote, classes, 
     try {
       // file description (Title)
       var description = "NewNote";
-      // if (notePages.some(page => page.title === description)) {
-      if (notes.some(page => page.title === description)) {
-        const uniqueFilename = generateUniqueFilename(description, notes);
+      if (notePages.some(page => page.description === description)) {
+        const uniqueFilename = generateUniqueFilename(description, notePages);
         description = uniqueFilename;
         console.log("Unique Filename:", uniqueFilename);
       } else {
@@ -99,74 +71,58 @@ function Sidebar({ notePages, setNotes, selectedNote, setSelectedNote, classes, 
         description: description,
         text: text,
       });
-      // Fetch new notes
-      get_users_notes_from_server();
+      // Update notes list
+      getUserNotes();
 
     } catch (error) {
       console.error("Error adding new note:", error);
     }
   };
 
-  // wrapper for retrieving the desired file
-  async function get_that_file_wrapper(page) {
-    await get_users_notes_from_server();
-    if (page !== undefined && page !== null) {
-      console.log("note:", notes);
-      console.log("note.filename:", notes.filename);
-      console.log("page.filename:", page.filename);
-      // const targetFile = notePages.find((note) => note.filename === page.filename);
-      const targetFile = notes.find((note) => note.filename === page.filename); //note.filename coming back undefined
-      console.log("targetFile:", targetFile);//wrong data when grabbing first time after changing in notebook
-      // Set and save the selected note
-      setSelectedNote(targetFile);
-      // Create a promise for the parentCallback function
-      const callbackPromise = new Promise((resolve, reject) => {
-        parentCallback(targetFile);
-        resolve(); // Resolve the promise after the parent callback is executed
-      });
-
-      // Set and save the selected note once the parent callback is completed
-      callbackPromise.then(() => {
-        setSelectedNote(targetFile);
-      });
+  // Get the notes from the database
+  const getUserNotes = async() => {
+    try {
+      const response = await axios.get("http://localhost:3000/notes");
+      console.log("User Notes:", response.data.noteData);
+      // Format the notes for displaying
+      const formattedNotes = response.data.noteData.map(note => ({
+        description: note.description,
+        fileName: note.fileName,
+        fileID: note.fileID,
+        text: note.text,
+      }));
+      // Insert formatted data into storedNotes state
+      // setStoredNotes(formattedNotes);
+      setNotes(formattedNotes);
+      
+    } catch (error) {
+      console.error("Error getting notes:", error);
     }
   }
+
+  // Set the note that the user clicks
+  const setUserNote = (note) => {
+    try {
+      console.log("page clicked:", note);
+      // Set the note that the user clicked
+      setSelectedNote(note);
+    } catch(error) {
+      console.error("Error setting user note:", error);
+    }
+  };
 
   // Save dropdownVisible state to sessionStorage whenever it changes
   useEffect(() => {
     sessionStorage.setItem("dropdownVisible", dropdownVisible);
   }, [dropdownVisible]);
 
-  // useEffect(() => {
-  //   sessionStorage.setItem("selectedNote", JSON.stringify(selectedNote));
-  // }, [selectedNote]);
-
+  // When the sidebar loads, grab the note information from database
+  // to display on the siebar dropdown
   useEffect(() => {
-    // Loads the selectedNote initially
-    if (selectedNote === null) {
-    }
-    const storedSelectedNote = sessionStorage.getItem("selectedNote");
-    const note = JSON.parse(storedSelectedNote);
-    get_that_file_wrapper(selectedNote);
-    setSelectedNote(note);
+    getUserNotes();
+    // console.log("Get notes:", storedNotes);
+    console.log("Get notes:", notePages);
   },[]);
-
-  function test(page) {
-    // get_users_notes_from_server();
-    // Loads the selectedNote initially
-    if (selectedNote === null) {
-      const storedSelectedNote = sessionStorage.getItem("selectedNote");
-      const note = JSON.parse(storedSelectedNote);
-      setSelectedNote(note);
-    }
-    get_that_file_wrapper(selectedNote);
-
-  }
-
-  useEffect(() => {
-    console.log("NotePages Changed sidebar", notePages);
-  },[notePages]);
-
 
   return (
     <div>
@@ -203,27 +159,27 @@ function Sidebar({ notePages, setNotes, selectedNote, setSelectedNote, classes, 
                 </label>
               </div>
               <ul className="slide" style={{ display: dropdownVisible ? "block" : "none" }}>
-                {/* {notePages && notePages.map((page) => ( */}
-                {notes.length > 0 && notes.map((page) => (
-                  <li className="side-list" key={page.filename}>
+                {/* Use storedNotes state to display list */}
+                {/* {storedNotes && storedNotes.length > 0 && storedNotes.map((page) => ( */}
+                {notePages && notePages.length > 0 && notePages.map((page) => (
+                  <li className="side-list" key={page.fileName}>
                     <Link
                       className="the-link"
                       to={{ pathname: "/notebook" }}
-                      onClick={() => get_that_file_wrapper(page)}
+                      onClick={() => setUserNote(page)}
                       style={{ color: "#2d2f31", display: "block", paddingRight: "65px" }}
                     >
                       <div className="side-selection">
-                        <h6>{page.title}</h6>
+                        <h6>{page.description}</h6>
                       </div>
                     </Link>
                   </li>
                 ))}
-                {/* Add Note button */}
+                {/* Add Note button (Limit to 5 notes for now) */}
+                {notePages.length < 5 && (
                 <li className="side-list">
                   <Link 
                     className="the-link" 
-                    // to="/notebook"
-                    // onClick={newNote}
                     onClick={newNote}
                     style={{ color: "#2d2f31", display: "block", paddingRight: "65px" }}
                   >
@@ -232,6 +188,7 @@ function Sidebar({ notePages, setNotes, selectedNote, setSelectedNote, classes, 
                     </div>
                   </Link>
                 </li>
+                )}
               </ul>
             </li>
           </nav>

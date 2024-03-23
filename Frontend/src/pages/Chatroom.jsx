@@ -27,7 +27,7 @@ function Chatroom({
 }) {
   // Message State
   const [message, setMessage] = useState(null);
-  // const [notePages, setNotes] = useState([]);
+  // Typing State
   const [typing, setTyping] = useState([]);
   // Refresh State
   const [refresh, setRefresh] = useState(0);

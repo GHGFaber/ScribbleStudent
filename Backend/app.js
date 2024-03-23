@@ -377,7 +377,7 @@ app.post("/add-note", async (req, res) => {
   }
 });
 
-// Update notes
+// Update note
 app.post("/update-note", async (req, res) => {
   try {
     const {fileID, newFileName, newUploadDate, newDescription, newText} = req.body;
@@ -394,6 +394,26 @@ app.post("/update-note", async (req, res) => {
 
   } catch (error) {
     console.error("Error updating file:", error);
+    res.status(500).send("Internal server error");
+  }
+});
+
+// Delete note
+app.post("/delete-note", async (req, res) => {
+  try {
+    const {fileID} = req.body;
+    const userID = req.session.userid;
+
+    // Delete note
+    await pool.query(
+      "DELETE FROM files WHERE fileID = ? AND userID = ?",
+      [fileID, userID]);
+
+    // Send success response
+    res.status(200).send("Note deleted successfully");
+
+  } catch(error) {
+    console.error("Error deleting note:", error);
     res.status(500).send("Internal server error");
   }
 });
