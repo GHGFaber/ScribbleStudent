@@ -187,9 +187,10 @@ function Notebook(props) {
                 />
                 {/* Delete note button */}
                 <button 
+                  className="profile-button"
                   style={{
                     position: "absolute",
-                    top: "10px",
+                    top: "51px",
                     right: "10px",
                   }}
                   onClick={() => {
