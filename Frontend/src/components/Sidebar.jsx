@@ -8,18 +8,21 @@ import AddClass from "../components/AddClass.jsx";
 
 // renders the bar that appears to the left of the screen
 // contains menu selections for the chatroom and individual note pages
-function Sidebar({ notePages, setNotes, selectedNote, setSelectedNote, classes}) {
+function Sidebar({ notePages, setNotes, selectedNote, setSelectedNote, classes, chats}) {
 
   // const [dropdownVisible, setDropdownVisible] = useState(false);
-  const [dropdownVisible, setDropdownVisible] = useState(
-    sessionStorage.getItem("dropdownVisible") === "true"
+  // const [dropdownVisible, setDropdownVisible] = useState(
+  //   sessionStorage.getItem("dropdownVisible") === "true"
+  // );
+
+  const [classesDropdownVisible, setClassesDropdownVisible] = useState();
+
+  const [notebookDropdownVisible, setNotebookDropdownVisible] = useState(
+    sessionStorage.getItem("notebookDropdownVisible") === "true"
   );
 
   // State to control the modal
   const [modalOpen, setModalOpen] = useState(false); 
-
-  // State for storing notes 
-  const [storedNotes, setStoredNotes] = useState([]);
 
   
   // Function to open the modal
@@ -91,8 +94,7 @@ function Sidebar({ notePages, setNotes, selectedNote, setSelectedNote, classes})
         fileID: note.fileID,
         text: note.text,
       }));
-      // Insert formatted data into storedNotes state
-      // setStoredNotes(formattedNotes);
+      // Insert formatted data into notePages state
       setNotes(formattedNotes);
       
     } catch (error) {
@@ -112,15 +114,19 @@ function Sidebar({ notePages, setNotes, selectedNote, setSelectedNote, classes})
   };
 
   // Save dropdownVisible state to sessionStorage whenever it changes
+  // useEffect(() => {
+  //   sessionStorage.setItem("dropdownVisible", dropdownVisible);
+  // }, [dropdownVisible]);
+
+  // Save notebook dropdown to sessionStorage when it changes
   useEffect(() => {
-    sessionStorage.setItem("dropdownVisible", dropdownVisible);
-  }, [dropdownVisible]);
+    sessionStorage.setItem("notebookDropdownVisible", notebookDropdownVisible);
+  }, [notebookDropdownVisible]);
 
   // When the sidebar loads, grab the note information from database
   // to display on the siebar dropdown
   useEffect(() => {
     getUserNotes();
-    // console.log("Get notes:", storedNotes);
     console.log("Get notes:", notePages);
   },[]);
 
@@ -133,14 +139,37 @@ function Sidebar({ notePages, setNotes, selectedNote, setSelectedNote, classes})
 
       <div className="the-column">
         <ul className="sidebar-content">
-          <li className="side-list">
-            {/* Call openModal function when the link is clicked */}
-            <Link className="the-link" to="/chatroom" onClick={openModal}>
+          <nav>
+            <li className="side-list">
               <div className="side-selection">
-                <h5>Classes</h5>
+                <label htmlFor="touch" className="the-link" onClick={() => setClassesDropdownVisible(!classesDropdownVisible)}>
+                  <h5>Classes</h5> 
+                </label>
               </div>
-            </Link>
-          </li>
+              <ul className="slide" style={{ display: classesDropdownVisible ? "block" : "none" }}>
+                <Link 
+                  className="the-link" 
+                  // to="/chatroom" 
+                  onClick={openModal}
+                  style={{ color: "#2d2f31", display: "block", paddingRight: "65px" }}
+                >
+                  <div className="side-selection">
+                    <h6>Join</h6>
+                  </div>
+                </Link>
+                <Link 
+                  className="the-link" 
+                  // to="/chatroom" 
+                  // onClick={openModal}
+                  style={{ color: "#2d2f31", display: "block", paddingRight: "65px" }}
+                >
+                  <div className="side-selection">
+                    <h6>Create</h6>
+                  </div>
+                </Link>
+              </ul>
+            </li>
+          </nav>
           <li className="side-list">
             <Link 
               className="the-link" 
@@ -154,13 +183,17 @@ function Sidebar({ notePages, setNotes, selectedNote, setSelectedNote, classes})
           <nav>
             <li className="side-list">
               <div className="side-selection">
-                <label htmlFor="touch" className="the-link" onClick={() => setDropdownVisible(!dropdownVisible)}>
-                  <h5>Notebook</h5>
+                {/* <label htmlFor="touch" className="the-link" onClick={() => setDropdownVisible(!dropdownVisible)}> */}
+                <label htmlFor="touch" className="the-link" onClick={() => setNotebookDropdownVisible(!notebookDropdownVisible)}>
+                  <h5>Personal<br></br>Notebook</h5> 
                 </label>
+                {notebookDropdownVisible && notePages.length < 5 && (
+                  <button className="plus-button plus-button--small" onClick={newNote} title="add note"></button>
+                )}
               </div>
-              <ul className="slide" style={{ display: dropdownVisible ? "block" : "none" }}>
+              {/* <ul className="slide" style={{ display: dropdownVisible ? "block" : "none" }}> */}
+              <ul className="slide" style={{ display: notebookDropdownVisible ? "block" : "none" }}>
                 {/* Use storedNotes state to display list */}
-                {/* {storedNotes && storedNotes.length > 0 && storedNotes.map((page) => ( */}
                 {notePages && notePages.length > 0 && notePages.map((page) => (
                   <li className="side-list" key={page.fileName}>
                     <Link
@@ -176,7 +209,7 @@ function Sidebar({ notePages, setNotes, selectedNote, setSelectedNote, classes})
                   </li>
                 ))}
                 {/* Add Note button (Limit to 5 notes for now) */}
-                {notePages.length < 5 && (
+                {/* {notePages.length < 5 && (
                 <li className="side-list">
                   <Link 
                     className="the-link" 
@@ -188,7 +221,7 @@ function Sidebar({ notePages, setNotes, selectedNote, setSelectedNote, classes})
                     </div>
                   </Link>
                 </li>
-                )}
+                )} */}
               </ul>
             </li>
           </nav>

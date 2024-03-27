@@ -8,23 +8,49 @@ import socket from "../components/Socket.jsx";
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 // page that contains the pages of the user's virtual notebook
-// function Notebook(props, targetPage, username) {
+
 function Notebook(props) {
   const { notePages, setNotes, classes, setClasses, username, setUsername, selectedNote, setSelectedNote, room, setRoom } = props;
 
-  // uses react-quill to render a textarea where the user can input text on
-  // a page of notes
-  var toolbarOptions = [
-    [{ font: [] }],
-    [{ size: ["small", false, "large", "huge"] }],
-    [{ header: [1, 2, 3, 4, 5, 6, false] }],
-    ["bold", "italic", "underline", "strike"],
-    [{ list: "ordered" }, { list: "bullet" }],
-    [{ script: "sub" }, { script: "super" }],
-    [{ indent: "-1" }, { indent: "+1" }],
-    ["link", "image"],
-    [{ align: [] }],
+  // // uses react-quill to render a textarea where the user can input text on
+  // // a page of notes
+  // var toolbarOptions = [
+  //   [{ font: [] }],
+  //   [{ size: ["small", false, "large", "huge"] }],
+  //   [{ header: [1, 2, 3, 4, 5, 6, false] }],
+  //   ["bold", "italic", "underline", "strike"],
+  //   [{ list: "ordered" }, { list: "bullet" }],
+  //   [{ script: "sub" }, { script: "super" }],
+  //   [{ indent: "-1" }, { indent: "+1" }],
+  //   ["link", "image"],
+  //   [{ align: [] }],
+  // ];
+  // const module = {
+  //   toolbar: toolbarOptions,
+  // };
+
+  const toolbarOptions = [
+    ['bold', 'italic', 'underline', 'strike'],        // toggled buttons
+    ['blockquote', 'code-block'],
+
+    [{ 'header': 1 }, { 'header': 2 }],               // custom button values
+    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+    [{ 'script': 'sub'}, { 'script': 'super' }],      // superscript/subscript
+    [{ 'indent': '-1'}, { 'indent': '+1' }],          // outdent/indent
+    [{ 'direction': 'rtl' }],                         // text direction
+
+    [{ 'size': ['small', false, 'large', 'huge'] }],  // custom dropdown
+    [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+
+    [{ 'font': [] }],
+    [{ 'color': [] }, { 'background': [] }],          // dropdown with defaults from theme
+    [{ 'align': [] }],
+
+    ['clean'],                                         // remove formatting button
+
+    ['link', 'image']                                  // link and image
   ];
+
   const module = {
     toolbar: toolbarOptions,
   };
@@ -190,7 +216,7 @@ function Notebook(props) {
                   className="profile-button"
                   style={{
                     position: "absolute",
-                    top: "51px",
+                    top: "8px",
                     right: "10px",
                   }}
                   onClick={() => {

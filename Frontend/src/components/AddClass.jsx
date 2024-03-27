@@ -74,7 +74,7 @@ function AddClass({ onClose, classes }) {
           >
             <div className="user-profile-content">
                 {/* List user's classes */}
-              <h4 style={{ marginRight: "15%" }}>Join Class</h4>
+              <h4 style={{ marginRight: "15%" }}>Join A Class</h4>
               <Select
                 value={selectedClass}
                 onChange={handleClassChange}

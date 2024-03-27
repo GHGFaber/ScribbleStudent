@@ -29,8 +29,6 @@ function Chatroom({
   const [message, setMessage] = useState(null);
   // Typing State
   const [typing, setTyping] = useState([]);
-  // Refresh State
-  const [refresh, setRefresh] = useState(0);
 
   // Testing room state
   console.log("Room state after refresh:", room);
@@ -105,8 +103,6 @@ function Chatroom({
       // Clear the textarea value after submit
       document.getElementById("txt").value = "";
       setMessage("");
-      // Stops page from refreshing on submission
-      // event.preventDefault();
       userMsg();
       // Send username and message
       socket.emit("send_message", { username: storedData.username, message });
@@ -212,6 +208,7 @@ function Chatroom({
               notePages={notePages} setNotes={setNotes} 
               selectedNote={selectedNote} setSelectedNote={setSelectedNote}
               classes={classes}
+              chats={chats}
             />
           </div>
           <div className="col-8 column2">
