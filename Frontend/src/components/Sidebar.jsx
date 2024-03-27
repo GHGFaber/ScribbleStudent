@@ -4,6 +4,7 @@ import { useContext, useEffect, useState } from "react";
 import axios from "axios";
 import moment from 'moment'; // For timestamp
 import AddClass from "../components/AddClass.jsx"; 
+import CreateClass from "../components/CreateClass.jsx"; 
 
 
 // renders the bar that appears to the left of the screen
@@ -21,18 +22,31 @@ function Sidebar({ notePages, setNotes, selectedNote, setSelectedNote, classes, 
     sessionStorage.getItem("notebookDropdownVisible") === "true"
   );
 
-  // State to control the modal
-  const [modalOpen, setModalOpen] = useState(false); 
+  // State to control the join modal
+  const [joinModalOpen, setJoinModalOpen] = useState(false); 
+
+  // State to control the create modal
+  const [createModalOpen, setCreateModalOpen] = useState(false); 
 
   
-  // Function to open the modal
-  const openModal = () => {
-    setModalOpen(true);
+  // Function to open the join modal
+  const openJoinModal = () => {
+    setJoinModalOpen(true);
   };
 
-  // Function to close the modal
-  const closeModal = () => {
-    setModalOpen(false);
+  // Function to close the join modal
+  const closeJoinModal = () => {
+    setJoinModalOpen(false);
+  };
+
+  // Function to open the create modal
+  const openCreateModal = () => {
+    setCreateModalOpen(true);
+  };
+
+  // Function to close the create modal
+  const closeCreateModal = () => {
+    setCreateModalOpen(false);
   };
 
   // Function to generate a unique filename
@@ -132,9 +146,13 @@ function Sidebar({ notePages, setNotes, selectedNote, setSelectedNote, classes, 
 
   return (
     <div>
-      {/* Render modal component conditionally */}
-      {modalOpen && <AddClass 
-        onClose={closeModal} classes={classes}
+      {/* Render join modal component conditionally */}
+      {joinModalOpen && <AddClass 
+        onClose={closeJoinModal} classes={classes}
+      />}
+      {/* Render create modal component conditionally */}
+      {createModalOpen && <CreateClass 
+        onClose={closeCreateModal} classes={classes}
       />}
 
       <div className="the-column">
@@ -150,7 +168,7 @@ function Sidebar({ notePages, setNotes, selectedNote, setSelectedNote, classes, 
                 <Link 
                   className="the-link" 
                   // to="/chatroom" 
-                  onClick={openModal}
+                  onClick={openJoinModal}
                   style={{ color: "#2d2f31", display: "block", paddingRight: "65px" }}
                 >
                   <div className="side-selection">
@@ -160,7 +178,7 @@ function Sidebar({ notePages, setNotes, selectedNote, setSelectedNote, classes, 
                 <Link 
                   className="the-link" 
                   // to="/chatroom" 
-                  // onClick={openModal}
+                  onClick={openCreateModal}
                   style={{ color: "#2d2f31", display: "block", paddingRight: "65px" }}
                 >
                   <div className="side-selection">
