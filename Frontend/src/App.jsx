@@ -20,7 +20,7 @@ function App() {
   // Username State
   const [username, setUsername] = useState(null);
   // Room State
-  const [room, setRoom] = useState(null);
+  const [room, setRoom] = useState([]);
   // Note Pages State
   const [notePages, setNotes] = useState([]);
   // State to store selected note (trying different storing method)

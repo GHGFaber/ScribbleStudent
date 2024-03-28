@@ -151,7 +151,8 @@ function Navbar({
         }));
         setChats(messageData);
         const defaultRoom = formattedData[0].classInSchoolName;
-        setRoom(defaultRoom);//set current room info
+        // setRoom(defaultRoom); //set current room info
+        setRoom({Name: defaultRoom, ID: classID}); //set current room info
         socket.emit("join_room", defaultRoom);
         console.log("Deafult room: ", defaultRoom);
         console.log("Default classID: ", formattedData[0].classID);
@@ -200,7 +201,7 @@ function Navbar({
         classID: classID,
       }));
       const room = classData.classInSchoolName;
-      setRoom(room);//set current room info
+      setRoom({Name: room, ID: classID});//set current room info
       console.log("class: ", room);
       console.log("ClassID: ", classID);
       //setRoom(room);
