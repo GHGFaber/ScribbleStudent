@@ -3,8 +3,9 @@ import { initValueContext } from "../components/InitValue.jsx";
 import { useContext, useEffect, useState } from "react";
 import axios from "axios";
 import moment from 'moment'; // For timestamp
-import AddClass from "../components/AddClass.jsx"; 
 import CreateClass from "../components/CreateClass.jsx"; 
+import AddClass from "../components/AddClass.jsx"; 
+import LeaveClass from "../components/LeaveClass.jsx"; 
 
 
 // renders the bar that appears to the left of the screen
@@ -22,13 +23,24 @@ function Sidebar({ notePages, setNotes, selectedNote, setSelectedNote, classes, 
     sessionStorage.getItem("notebookDropdownVisible") === "true"
   );
 
-  // State to control the join modal
-  const [joinModalOpen, setJoinModalOpen] = useState(false); 
-
   // State to control the create modal
   const [createModalOpen, setCreateModalOpen] = useState(false); 
+  // State to control the join modal
+  const [joinModalOpen, setJoinModalOpen] = useState(false); 
+  // State for control the Leave modal
+  const [leaveModalOpen, setLeaveModalOpen] = useState(false);
 
   
+  // Function to open the create modal
+  const openCreateModal = () => {
+    setCreateModalOpen(true);
+  };
+
+  // Function to close the create modal
+  const closeCreateModal = () => {
+    setCreateModalOpen(false);
+  };
+
   // Function to open the join modal
   const openJoinModal = () => {
     setJoinModalOpen(true);
@@ -39,14 +51,14 @@ function Sidebar({ notePages, setNotes, selectedNote, setSelectedNote, classes, 
     setJoinModalOpen(false);
   };
 
-  // Function to open the create modal
-  const openCreateModal = () => {
-    setCreateModalOpen(true);
+  // Function to open the leave modal
+  const openLeaveModal = () => {
+    setLeaveModalOpen(true);
   };
 
-  // Function to close the create modal
-  const closeCreateModal = () => {
-    setCreateModalOpen(false);
+  // Function to close the leave modal
+  const closeLeaveModal = () => {
+    setLeaveModalOpen(false);
   };
 
   // Function to generate a unique filename
@@ -146,13 +158,17 @@ function Sidebar({ notePages, setNotes, selectedNote, setSelectedNote, classes, 
 
   return (
     <div>
+      {/* Render create modal component conditionally */}
+      {createModalOpen && <CreateClass 
+        onClose={closeCreateModal} classes={classes}
+      />}
       {/* Render join modal component conditionally */}
       {joinModalOpen && <AddClass 
         onClose={closeJoinModal} classes={classes}
       />}
-      {/* Render create modal component conditionally */}
-      {createModalOpen && <CreateClass 
-        onClose={closeCreateModal} classes={classes}
+      {/* Render leave modal component conditionally */}
+      {leaveModalOpen && <LeaveClass 
+        onClose={closeLeaveModal} classes={classes}
       />}
 
       <div className="the-column">
@@ -168,6 +184,16 @@ function Sidebar({ notePages, setNotes, selectedNote, setSelectedNote, classes, 
                 <Link 
                   className="the-link" 
                   // to="/chatroom" 
+                  onClick={openCreateModal}
+                  style={{ color: "#2d2f31", display: "block", paddingRight: "65px" }}
+                >
+                  <div className="side-selection">
+                    <h6>Create</h6>
+                  </div>
+                </Link>
+                <Link 
+                  className="the-link" 
+                  // to="/chatroom" 
                   onClick={openJoinModal}
                   style={{ color: "#2d2f31", display: "block", paddingRight: "65px" }}
                 >
@@ -178,11 +204,11 @@ function Sidebar({ notePages, setNotes, selectedNote, setSelectedNote, classes, 
                 <Link 
                   className="the-link" 
                   // to="/chatroom" 
-                  onClick={openCreateModal}
+                  onClick={openLeaveModal}
                   style={{ color: "#2d2f31", display: "block", paddingRight: "65px" }}
                 >
                   <div className="side-selection">
-                    <h6>Create</h6>
+                    <h6>Leave</h6>
                   </div>
                 </Link>
               </ul>

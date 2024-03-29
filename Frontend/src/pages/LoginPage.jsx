@@ -24,8 +24,9 @@ function LoginPage() {
         console.log(response.data);
         // Store username in sessionStorage
         // Using username returned from database
-        const dataToStore = { username: response.data.username };
+        const dataToStore = { username: response.data.username, userID: response.data.userID };
         sessionStorage.setItem('userData', JSON.stringify(dataToStore));
+        // console.log("LOOKLOOKLOOK:", response.data.userID); // Gets correct userID
         // Send the username to socket.io ('username')
         socket.emit('login', response.data.username);
         

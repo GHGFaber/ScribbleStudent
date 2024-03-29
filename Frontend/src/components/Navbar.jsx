@@ -131,8 +131,9 @@ function Navbar({
       const response = await axios.get("http://localhost:3000/classes");
       // Assuming the response.data contains the array of class data
       const formattedData = response.data.classData.map((item) => ({
-        classInSchoolName: item.className,
+        className: item.className,
         classID: item.classID,
+        ownerID: item.ownerID,
       }));
       setClasses(formattedData);
       // Set deafult room
@@ -150,7 +151,7 @@ function Navbar({
           classID: classID,
         }));
         setChats(messageData);
-        const defaultRoom = formattedData[0].classInSchoolName;
+        const defaultRoom = formattedData[0].className;
         // setRoom(defaultRoom); //set current room info
         setRoom({Name: defaultRoom, ID: classID}); //set current room info
         socket.emit("join_room", defaultRoom);
@@ -200,7 +201,7 @@ function Navbar({
         timestamp: item.timestamp,
         classID: classID,
       }));
-      const room = classData.classInSchoolName;
+      const room = classData.className;
       setRoom({Name: room, ID: classID});//set current room info
       console.log("class: ", room);
       console.log("ClassID: ", classID);
@@ -230,7 +231,7 @@ function Navbar({
               {classes.map((classInSchool, index) => (
                 <li onClick={() => joinRoom(classInSchool)} key={index}>
                   <label style={{ cursor: "pointer", userSelect: "none" }}>
-                    {classInSchool.classInSchoolName}
+                    {classInSchool.className}
                   </label>
                 </li>
               ))}

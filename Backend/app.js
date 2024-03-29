@@ -224,13 +224,13 @@ app.get("/username", async (req, res) => {
   }
 });
 
-// retrieve classes data based userID
+// Retrieve classes data based userID
 app.get("/classes", async (req, res) => {
   try {
     const userID = req.session.userid;
     // Query the database to retrieve class data
     const [classData] = await pool.query(
-      "SELECT DISTINCT classes.classID, classes.className FROM classes INNER JOIN classList ON classes.classID = classList.classID INNER JOIN user ON user.userID = classList.userID WHERE user.userID = ?",
+      "SELECT DISTINCT classes.classID, classes.ownerID, classes.className FROM classes INNER JOIN classList ON classes.classID = classList.classID INNER JOIN user ON user.userID = classList.userID WHERE user.userID = ?",
       [userID]
     );
     // ("SELECT DISTINCT classes.classID, classes.className FROM classes INNER JOIN chatrooms ON classes.classID = chatrooms.classID INNER JOIN user ON user.userID = chatrooms.userID WHERE user.userID = ?", [userID]);
@@ -264,6 +264,22 @@ app.get('/available-classes', async (req, res) => {
 
   } catch (error) {
     console.error("Error fetching class information", error);
+    res.status(500).send("Internal server error");
+  }
+});
+
+// Remove user from a class
+app.post('/leave-class', async (req, res) => {
+  const { classID } = req.body;
+  const userID = req.session.userid;
+  try {
+    await pool.query(
+      "DELETE FROM classList WHERE userID = ? AND classID = ?",
+      [userID, classID]
+    );
+    res.status(200).send("Class removed successfully");
+  } catch (error) {
+    console.error("Error removing user", error);
     res.status(500).send("Internal server error");
   }
 });
@@ -694,7 +710,7 @@ app.post("/login", async (req, res) => {
           success: true,
           username,
           email,
-          Userid: req.session.userid,
+          userID: req.session.userid,
           hashedPassword,
         });
 
