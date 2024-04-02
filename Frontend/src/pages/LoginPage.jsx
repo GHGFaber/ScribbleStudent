@@ -14,7 +14,7 @@ function LoginPage() {
     event.preventDefault();
     console.log("hi");
     try {
-      const response = await axios.post("http://64.23.164.87/api/login", {
+      const response = await axios.post("http://localhost:3000/login", {
         username: formData.current.username.value,
         password: formData.current.password.value,
         withCredentials: true,
@@ -26,6 +26,7 @@ function LoginPage() {
         const dataToStore = {
           username: response.data.username,
           avatar: response.data.avatar,
+          userID: response.data.userID,
         };
         sessionStorage.setItem("userData", JSON.stringify(dataToStore));
 

@@ -28,7 +28,7 @@ function CreateAccount() {
     console.log("hi");
     try {
       const response = await axios.post(
-        "http://64.23.164.87/api/create-account",
+        "http://localhost:3000/create-account",
         {
           username: formData.username.current.value,
           password: formData.password.current.value,

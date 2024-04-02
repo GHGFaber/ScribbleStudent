@@ -2,35 +2,18 @@ import { useState, useEffect } from "react";
 import { Modal, Box, Button, Select, MenuItem } from "@mui/material";
 import axios from "axios";
 
-function AddClass({ onClose, classes }) {
+function LeaveClass({ onClose, classes }) {
   const [displayProfile, setDisplayProfile] = useState(true);
   const [selectedClass, setSelectedClass] = useState("");
-  // State for available classes for user
-  const [classList, setClassList] = useState([]);
-  const [showAddButton, setShowAddButton] = useState(false);
+  const [showLeaveButton, setShowLeaveButton] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
-  // Query for classes user is not in
-  const availableClasses = async (req, res) => {
+  // Remove user from class
+  const leaveClass = async (req, res) => {
     try {
-      const response = await axios.get(
-        "http://localhost:3000/available-classes"
-      );
-      const formattedData = response.data.classData.map((item) => ({
-        // Grab message data
-        classID: item.classID,
-        className: item.className,
-      }));
-      setClassList(formattedData);
-    } catch (error) {
-      console.error("Error fetching available classes:", error);
-    }
-  };
-
-  // Add user to class
-  const addClass = async (req, res) => {
-    try {
-      await axios.post("http://localhost:3000/add-class", {
-        classID: selectedClass,
+      // Remove user from classList table
+      await axios.post("http://localhost:3000/leave-class", {
+        classID: selectedClass.classID,
       });
       // Refresh browser to show changes
       window.location.reload();
@@ -39,10 +22,35 @@ function AddClass({ onClose, classes }) {
     }
   };
 
+  // Grab userID (userid passed to login page)
+  const handleSubmit = async () => {
+    try {
+      // Grab userID from sessionStorage
+      const userDataJSON = sessionStorage.getItem("userData");
+      const userData = JSON.parse(userDataJSON);
+      const userID = userData.userID;
+      console.log("userID:", userID);
+      const selectedOwnerID = selectedClass.ownerID;
+      console.log("ownerID:", selectedOwnerID);
+
+      // If the userID and the ownerID match, do not allow user to leave class
+      // Owner of course can only leave class if they remove entire course
+      // (For now. May implement passing of ownership later)
+      if (selectedOwnerID !== userID) {
+        setErrorMessage("");
+        leaveClass();
+      } else {
+        setErrorMessage("Owner cannot leave class");
+        return;
+      }
+    } catch (error) {
+      console.error("Error grabbing user info:", error);
+    }
+  };
+
   useEffect(() => {
     setDisplayProfile(true);
     openUserProfile();
-    availableClasses();
   }, []);
 
   function openUserProfile() {
@@ -56,7 +64,7 @@ function AddClass({ onClose, classes }) {
 
   const handleClassChange = (event) => {
     setSelectedClass(event.target.value);
-    setShowAddButton(event.target.value !== "");
+    setShowLeaveButton(event.target.value !== "");
   };
 
   return (
@@ -75,7 +83,7 @@ function AddClass({ onClose, classes }) {
           >
             <div className="user-profile-content">
               {/* List user's classes */}
-              <h4 style={{ marginRight: "15%" }}>Join A Class</h4>
+              <h4 style={{ marginRight: "15%" }}>Leave A Class</h4>
               <Select
                 value={selectedClass}
                 onChange={handleClassChange}
@@ -99,37 +107,26 @@ function AddClass({ onClose, classes }) {
                 <MenuItem value="">
                   <em>--</em>
                 </MenuItem>
-                {classList.map((classInSchool) => (
-                  <MenuItem
-                    key={classInSchool.classID}
-                    value={classInSchool.classID}
-                  >
-                    <div add-class-selection>{classInSchool.className}</div>
+                {classes.map((classInSchool) => (
+                  <MenuItem key={classInSchool.classID} value={classInSchool}>
+                    {classInSchool.className}
                   </MenuItem>
                 ))}
               </Select>
               <br />
-              {showAddButton && (
+              {showLeaveButton && (
                 <button
                   variant="contained"
                   color="primary"
-                  onClick={addClass}
-                  style={{ width: "15%", marginTop: "10%", marginRight: "1%" }}
+                  onClick={handleSubmit}
+                  style={{ width: "17%", marginTop: "10%", marginRight: "1%" }}
                   className="profile-button"
                 >
-                  Add
+                  Leave
                 </button>
               )}
-              {/* <ul style={{ listStyleType: 'none', padding: 0 }}>
-                {classList.map((classInSchool, index) => (
-                    <li key={index}>
-                    <label style={{ userSelect: "none" }}>
-                        {classInSchool.className}
-                    </label>
-                    </li>
-                ))}
-              </ul> */}
               <br />
+              {errorMessage && <p style={{ color: "red" }}>{errorMessage}</p>}
             </div>
           </Box>
         </Modal>
@@ -138,4 +135,4 @@ function AddClass({ onClose, classes }) {
   );
 }
 
-export default AddClass;
+export default LeaveClass;

@@ -9,11 +9,11 @@ function Userbar({
   setInactiveUsers,
 }) {
   // Grab username object from session storage
-
+  const storedData = JSON.parse(sessionStorage.getItem("userData"));
   useEffect(() => {
     socket.connect();
     // Send the username to socket.io ('username')
-    const storedData = JSON.parse(sessionStorage.getItem("userData"));
+
     socket.emit("login", storedData.username, storedData.avatar);
 
     // Receive updated list of active users
@@ -21,7 +21,6 @@ function Userbar({
       setActiveUsers(users);
       // Save active and inactive users to session storage
       sessionStorage.setItem("activeUsers", JSON.stringify(users));
-      console.log("users", users);
     });
 
     // Receive updated list of inactive users
@@ -36,7 +35,7 @@ function Userbar({
       socket.off("activeUsers");
       socket.off("inactiveUsers");
     };
-  }, []);
+  }, [socket]);
 
   return (
     <>

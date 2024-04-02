@@ -26,12 +26,13 @@ function Chatroom({
   selectedNote,
   setSelectedNote,
 }) {
+  console.log("YOOOO", room);
   // Message State
   const [message, setMessage] = useState(null);
-  // const [notePages, setNotes] = useState([]);
+  // Typing State
   const [typing, setTyping] = useState([]);
-  // Refresh State
-  const [refresh, setRefresh] = useState(0);
+  // Current chatroom
+  const [currChatroom, setCurrChatroom] = useState("");
 
   function get_time(timestamp) {
     const date = new Date(timestamp);
@@ -133,9 +134,9 @@ function Chatroom({
       });
       // Update chatroom for class
       // Need the current classID (got it)
-      console.log("Current classID: ", chats[0].classID);
-      const classID = chats[0].classID;
-      await axios.post("http://64.23.164.87/api/insert-message", {
+      console.log("Current classID: ", room.ID);
+      const classID = room.ID;
+      await axios.post("http://localhost:3000/insert-message", {
         message: message,
         timestamp: moment().format("YYYY-MM-DD HH:mm:ss"),
         classID: classID,
@@ -242,6 +243,7 @@ function Chatroom({
               selectedNote={selectedNote}
               setSelectedNote={setSelectedNote}
               classes={classes}
+              chats={chats}
             />
           </div>
           <div className="col-8 column2">
@@ -276,7 +278,7 @@ function Chatroom({
                       event.target.style.outline = "none";
                       event.target.style.boxShadow = "0 0 0 transparent";
                     }}
-                    placeholder={"Message in " + room}
+                    placeholder={"Message in " + room.Name}
                     required
                   ></textarea>
                 </div>
@@ -365,7 +367,7 @@ export default Chatroom;
 //   const className = theClasses[0].className;
 //   console.log("Chatroom: first class is " + className);
 //   try {
-//     const response = await axios.post("http://64.23.164.87/api/classes", {
+//     const response = await axios.post("http://localhost:3000/classes", {
 //       className: className,
 //     });
 //     sessionStorage.setItem(
@@ -393,7 +395,7 @@ export default Chatroom;
 //   const id = localStorage.getItem("id");
 //   console.log(id);
 //   try {
-//     const response = await axios.get("http://64.23.164.87/api/class_data", {
+//     const response = await axios.get("http://localhost:3000/class_data", {
 //       params: { id: id },
 //     });
 //     console.log(response.data);
@@ -430,7 +432,7 @@ export default Chatroom;
 //   const theID = theClass[0].classID;
 //   console.log("get_chat_from_server: class id is " + theID);
 //   axios
-//     .post("http://64.23.164.87/api/messages", {
+//     .post("http://localhost:3000/messages", {
 //       classID: theID,
 //     })
 //     .then((res) => {

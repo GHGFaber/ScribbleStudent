@@ -249,6 +249,47 @@ body,
 .sidebar-content li {
   padding: 10px 10px 10px 10px;
 }
+
+.plus-button {
+  border: 2px solid darkgray;
+  background-color: #ffff90;
+  font-size: 12px;
+  height: 1.5em;
+  width: 1.5em;
+  border-radius: 999px;
+  position: relative;
+  left: 25px;
+  bottom: 6px;
+
+  &:after,
+  &:before {
+    content: "";
+    display: block;
+    background-color: grey;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  &:before {
+    height: 1em;
+    width: 0.2em;
+  }
+
+  &:after {
+    height: 0.2em;
+    width: 1em;
+  }
+}
+body::-webkit-scrollbar {
+  display: none;
+}
+
+.plus-button--small {
+  font-size: 12px;
+}
+
 .column2 {
   width: 100%;
   height: 800px;

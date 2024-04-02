@@ -7,6 +7,7 @@ import UserProfile from "./UserProfile";
 import { useEffect, useState, useRef } from "react";
 import socket from "../components/Socket.jsx";
 import { connect } from "socket.io-client";
+import moment from "moment";
 
 //+++++++++++++++++++++++++++++++++
 // 2 SEPARATE INSTANCES OF NAVBAR:
@@ -67,7 +68,7 @@ function Navbar({
   const logout = async (e) => {
     // e.preventDefault();
     try {
-      await axios.post("http://64.23.164.87/api/logout"); // Destroy session ID
+      await axios.post("http://localhost:3000/logout"); // Destroy session ID
       // Grab username from session storage (seemed to solve problem with not displaying in private mode)
       const storedData = JSON.parse(sessionStorage.getItem("userData")); // Grab object
       const username = storedData.username; // Grab data from object
@@ -113,10 +114,10 @@ function Navbar({
 
   const fetchUserInfo = async () => {
     try {
-      const response = await axios.get("http://64.23.164.87/api/user-info");
+      const response = await axios.get("http://localhost:3000/user-info");
 
       // if empty username, set username "Anonymous"
-      console.log("userdata:", response.data);
+      // console.log("userdata:", response.data);
       setUserData(response.data);
     } catch (error) {
       console.log("Error fetching user info:", error);
@@ -126,18 +127,19 @@ function Navbar({
   // Fetch and set classes
   const fetchClasses = async () => {
     try {
-      const response = await axios.get("http://64.23.164.87/api/classes");
+      const response = await axios.get("http://localhost:3000/classes");
       // Assuming the response.data contains the array of class data
       const formattedData = response.data.classData.map((item) => ({
-        classInSchoolName: item.className,
+        className: item.className,
         classID: item.classID,
+        ownerID: item.ownerID,
       }));
       setClasses(formattedData);
       // Set deafult room
       if (formattedData.length > 0) {
         // Get message data for default room
         const classID = formattedData[0].classID;
-        const response = await axios.post("http://64.23.164.87/api/messages", {
+        const response = await axios.post("http://localhost:3000/messages", {
           classID: classID,
         });
         const messageData = response.data.userData.map((item) => ({
@@ -149,12 +151,16 @@ function Navbar({
           classID: classID,
         }));
 
-        console.log(
-          "fetchClasses: message data avatar is " + messageData.profilePic
-        );
         setChats(messageData);
-        const defaultRoom = formattedData[0].classInSchoolName;
-        setRoom(defaultRoom); //set current room info
+        const defaultRoom = formattedData[0].className;
+        console.log(
+          "🚀 ~ fetchClasses ~ formattedData[0].className:",
+          formattedData[0].className
+        );
+        // setRoom(defaultRoom);
+        //set current room info
+        setRoom({ Name: defaultRoom, ID: classID });
+        //set current room info
         socket.emit("join_room", defaultRoom);
         console.log("Deafult room: ", defaultRoom);
         console.log("Default classID: ", formattedData[0].classID);
@@ -191,7 +197,7 @@ function Navbar({
     if (classData !== null) {
       // Get message data for room
       const classID = classData.classID;
-      const response = await axios.post("http://64.23.164.87/api/messages", {
+      const response = await axios.post("http://localhost:3000/messages", {
         classID: classID,
       });
       const messageData = response.data.userData.map((item) => ({
@@ -202,8 +208,10 @@ function Navbar({
         classID: classID,
         profilePic: item.avatar,
       }));
-      const room = classData.classInSchoolName;
-      setRoom(room); //set current room info
+      const room = classData.className;
+      console.log("🚀 ~ joinRoom ~ room:", classData.className);
+
+      setRoom({ Name: room, ID: classID }); //set current room info
       console.log("class: ", room);
       console.log("ClassID: ", classID);
       //setRoom(room);
@@ -232,7 +240,7 @@ function Navbar({
               {classes.map((classInSchool, index) => (
                 <li onClick={() => joinRoom(classInSchool)} key={index}>
                   <label style={{ cursor: "pointer", userSelect: "none" }}>
-                    {classInSchool.classInSchoolName}
+                    {classInSchool.className}
                   </label>
                 </li>
               ))}

@@ -20,11 +20,11 @@ function App() {
   // Username State
   const [username, setUsername] = useState(null);
   // Room State
-  const [room, setRoom] = useState(null);
+  const [room, setRoom] = useState([]);
   // Note Pages State
   const [notePages, setNotes] = useState([]);
   // State to store selected note
-  const [selectedNote, setSelectedNote] = useState([]);
+  const [selectedNote, setSelectedNote] = useState(null);
 
   // Load active users from session storage on component mount
   const [activeUsers, setActiveUsers] = useState(() => {
@@ -45,11 +45,23 @@ function App() {
           <Route index element={<Home />} />
           <Route path="login-page" element={<LoginPage />} />
           <Route path="create-account" element={<CreateAccount />} />
-          <Route path="notebook" element={<Notebook 
-            classes={classes} setClasses={setClasses} username={username} setUsername={setUsername} 
-            notePages={notePages} setNotes={setNotes} selectedNote={selectedNote} setSelectedNote={setSelectedNote} 
-            room={room} setRoom={setRoom}
-          />} />
+          <Route
+            path="notebook"
+            element={
+              <Notebook
+                classes={classes}
+                setClasses={setClasses}
+                username={username}
+                setUsername={setUsername}
+                notePages={notePages}
+                setNotes={setNotes}
+                selectedNote={selectedNote}
+                setSelectedNote={setSelectedNote}
+                room={room}
+                setRoom={setRoom}
+              />
+            }
+          />
           <Route
             path="chatroom"
             element={

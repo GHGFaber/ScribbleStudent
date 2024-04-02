@@ -51,7 +51,7 @@ const sessionMiddleware = session({
 });
 app.use(sessionMiddleware);
 
-app.use(cors({ origin: "http://64.23.164.87", credentials: true }));
+app.use(cors({ origin: "http://localhost:5173", credentials: true }));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.json());
 
@@ -60,9 +60,9 @@ const server = app.listen(3000, () => {
 });
 
 const io = new Server(server, {
-  path: "/socket.io",
+  // path: "/socket.io",
   cors: {
-    origin: "http://64.23.164.87/",
+    origin: "http://localhost:5173",
     methods: ["GET", "POST"],
   },
 });
@@ -244,7 +244,7 @@ app.get("/classes", async (req, res) => {
     const userID = req.session.userid;
     // Query the database to retrieve class data
     const [classData] = await pool.query(
-      "SELECT DISTINCT classes.classID, classes.className FROM classes INNER JOIN classList ON classes.classID = classList.classID INNER JOIN user ON user.userID = classList.userID WHERE user.userID = ?",
+      "SELECT DISTINCT classes.classID, classes.ownerID, classes.className FROM classes INNER JOIN classList ON classes.classID = classList.classID INNER JOIN user ON user.userID = classList.userID WHERE user.userID = ?",
       [userID]
     );
     // ("SELECT DISTINCT classes.classID, classes.className FROM classes INNER JOIN chatrooms ON classes.classID = chatrooms.classID INNER JOIN user ON user.userID = chatrooms.userID WHERE user.userID = ?", [userID]);
@@ -258,6 +258,22 @@ app.get("/classes", async (req, res) => {
     });
   } catch (error) {
     console.error("Error fetching class information:", error);
+    res.status(500).send("Internal server error");
+  }
+});
+
+// Remove user from a class
+app.post("/leave-class", async (req, res) => {
+  const { classID } = req.body;
+  const userID = req.session.userid;
+  try {
+    await pool.query("DELETE FROM classList WHERE userID = ? AND classID = ?", [
+      userID,
+      classID,
+    ]);
+    res.status(200).send("Class removed successfully");
+  } catch (error) {
+    console.error("Error removing user", error);
     res.status(500).send("Internal server error");
   }
 });
@@ -293,6 +309,31 @@ app.post("/add-class", async (req, res) => {
     res.status(200).send("Class added successfully");
   } catch (error) {
     console.error("Error inserting user", error);
+    res.status(500).send("Internal server error");
+  }
+});
+
+// Create a class
+app.post("/create-class", async (req, res) => {
+  const { className, description } = req.body;
+  const userID = req.session.userid;
+  try {
+    // Create the class
+    await pool.query(
+      "INSERT INTO classes (ownerID, className, description) VALUES (?, ?, ?)",
+      [userID, className, description]
+    );
+    // Get the classID of the created class
+    const [result] = await pool.query(
+      "SELECT classID FROM classes WHERE className = ? AND ownerID = ?",
+      [className, userID]
+    );
+    // Return the classID
+    res.json({
+      classID: result[0].classID,
+    });
+  } catch (error) {
+    console.error("Error creating class", error);
     res.status(500).send("Internal server error");
   }
 });
@@ -348,6 +389,93 @@ app.post("/insert-message", async (req, res) => {
     );
   } catch (error) {
     console.error("Error inserting message:", error);
+    res.status(500).send("Internal server error");
+  }
+});
+
+// Fetch notes for user
+app.get("/notes", async (req, res) => {
+  try {
+    const userID = req.session.userid;
+    const [noteData] = await pool.query(
+      "SELECT fileName, fileID, description, text FROM files WHERE userID = ?",
+      [userID]
+    );
+    // const [noteData] = await pool.query(
+    //   "SELECT fileName, fileID, description, file FROM files WHERE userID = ?",
+    //  [userID]
+    // );
+    // return array of objects
+    res.json({
+      noteData: noteData,
+    });
+  } catch (error) {
+    console.error("Error fetching user notes:", error);
+    res.status(500), send("Internal server error");
+  }
+});
+
+// Insert a new file into files table
+app.post("/add-note", async (req, res) => {
+  try {
+    const { fileName, uploadDate, description, text } = req.body;
+    // grab the userID
+    const userID = req.session.userid;
+
+    // Insert note into files table
+    await pool.query(
+      "INSERT INTO files (fileName, uploadDate, userID, description, text) VALUES (?, ?, ?, ?, ?)",
+      [fileName, uploadDate, userID, description, text]
+    );
+    // // Insert note into files table
+    // await pool.query("INSERT INTO files (fileName, uploadDate, userID, description, file) VALUES (?, ?, ?, ?, ?)",
+    // [fileName, uploadDate, userID, description, file]);
+
+    // Send a success response to the client
+    res.status(200).send("Note added successfully");
+  } catch (error) {
+    console.error("Error inserting file:", error);
+    res.status(500).send("Internal server error");
+  }
+});
+
+// Update note
+app.post("/update-note", async (req, res) => {
+  try {
+    const { fileID, newFileName, newUploadDate, newDescription, newText } =
+      req.body;
+    const userID = req.session.userid;
+
+    // Update note in files table
+    await pool.query(
+      "UPDATE files SET fileName = ?, uploadDate = ?, description = ?, text = ? WHERE userID = ? AND fileID = ?",
+      [newFileName, newUploadDate, newDescription, newText, userID, fileID]
+    );
+
+    // Send a success response to the client
+    res.status(200).send("Note updated successfully");
+  } catch (error) {
+    console.error("Error updating file:", error);
+    res.status(500).send("Internal server error");
+  }
+});
+
+// Delete note
+app.post("/delete-note", async (req, res) => {
+  try {
+    const { fileID } = req.body;
+    const userID = req.session.userid;
+
+    // Delete note
+    await pool.query("DELETE FROM files WHERE fileID = ? AND userID = ?", [
+      fileID,
+      userID,
+    ]);
+
+    // Send success response
+    res.status(200).send("Note deleted successfully");
+  } catch (error) {
+    console.error("Error deleting note:", error);
     res.status(500).send("Internal server error");
   }
 });
@@ -604,7 +732,7 @@ app.post("/login", async (req, res) => {
           success: true,
           username,
           email,
-          Userid: req.session.userid,
+          userID: req.session.userid,
           hashedPassword,
           avatar:
             userData[0].avatar !== null
@@ -789,24 +917,22 @@ app.use((err, req, res, next) => {
 async function queryDatabase() {
   try {
     // TESTING DATA
-    const userID = 11;
-    const [userData] = await pool.query(
-      "SELECT DISTINCT classes.classID, classes.className FROM classes INNER JOIN classList ON classes.classID = classList.classID INNER JOIN user ON user.userID = classList.userID WHERE user.userID = ?",
-      [userID]
-    );
-    // Select classes user is not in
-    const [userData2] = await pool.query(
-      "SELECT DISTINCT classes.classID, classes.className FROM classes WHERE classes.classID NOT IN (SELECT classList.classID FROM classList WHERE classList.userID = ?)",
-      [userID]
-    );
-    const [classData] = await pool.query(
-      "SELECT DISTINCT classes.classID, classes.className FROM classes INNER JOIN classList ON classes.classID = classList.classID INNER JOIN user ON user.userID = classList.userID"
-    );
-
-    console.log(`\nClasslist:`, classData);
-    console.log(`\nUser ${userID} classlist:\n`, userData);
-    console.log(`\nUser ${userID} available classlist:\n`, userData2);
-
+    // const userID = 11;
+    // const [userData] = await pool.query(
+    //   "SELECT DISTINCT classes.classID, classes.className FROM classes INNER JOIN classList ON classes.classID = classList.classID INNER JOIN user ON user.userID = classList.userID WHERE user.userID = ?",
+    //   [userID]
+    // );
+    // // Select classes user is not in
+    // const [userData2] = await pool.query(
+    //   "SELECT DISTINCT classes.classID, classes.className FROM classes WHERE classes.classID NOT IN (SELECT classList.classID FROM classList WHERE classList.userID = ?)",
+    //   [userID]
+    // );
+    // const [classData] = await pool.query(
+    //   "SELECT DISTINCT classes.classID, classes.className FROM classes INNER JOIN classList ON classes.classID = classList.classID INNER JOIN user ON user.userID = classList.userID"
+    // );
+    // console.log(`\nClasslist:`, classData);
+    // console.log(`\nUser ${userID} classlist:\n`, userData);
+    // console.log(`\nUser ${userID} available classlist:\n`, userData2);
     // console.log(data);
   } catch (error) {
     console.error(error);
