@@ -203,6 +203,7 @@
 
 body,
 .App {
+  overflow: hidden;
   color: #414166;
   background-color: #c3c3ff;
   font-family: "Montserrat", sans-serif;
@@ -227,7 +228,8 @@ body,
 .column1,
 .column3 {
   width: 100%;
-  height: 800px;
+  padding: 10px 10px 10px 10px;
+  height: inherit;
   background-size: 100%;
   background-color: #9b9bcc;
 }
@@ -240,48 +242,13 @@ body,
 .sidebar-content {
   padding: 10px 0px 0px 0px;
 }
+.row {
+  height: inherit;
+}
 
 .sidebar-content li {
   padding: 10px 10px 10px 10px;
 }
-
-.plus-button {
-	border: 2px solid darkgray;
-	background-color: #ffff90;
-	font-size: 12px;
-	height: 1.5em;
-	width: 1.5em;
-	border-radius: 999px;
-	position: relative;
-  left: 25px;
-  bottom: 6px;
-	
-	&:after,
-	&:before {
-		content: "";
-		display: block;
-		background-color: grey;
-		position: absolute;
-		top: 50%;
-		left: 50%;
-		transform: translate(-50%, -50%);
-	}
-	
-	&:before {
-		height: 1em;
-		width: 0.2em;
-	}
-
-	&:after {
-		height: 0.2em;
-		width: 1em;
-	}
-}
-
-.plus-button--small {
-	font-size: 12px;
-}
-
 .column2 {
   width: 100%;
   height: 800px;
@@ -290,19 +257,18 @@ body,
   position: relative;
 }
 
-/* For Firefox */
 .chat-container {
   max-height: 680px;
-  overflow-y: auto;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(114, 118, 125, 0.5) transparent; 
+  overflow-y: scroll;
+  scrollbar-width: auto;
+  scrollbar-color: rgba(114, 118, 125, 0.5) transparent;
   border-radius: 8px;
 }
 
 /* For WebKit (Chrome, Safari) */
 .chat-container::-webkit-scrollbar {
   width: 6px; /* Scrollbar width */
-  border-radius: 8px;
+  border-radius: 10px;
 }
 
 .chat-container::-webkit-scrollbar-track {
@@ -345,7 +311,7 @@ p {
 }
 
 .typing span {
-  content: '';
+  content: "";
   animation: blink 1.5s infinite;
   animation-fill-mode: both;
   height: 10px;
@@ -379,7 +345,6 @@ p {
   }
 }
 
-
 .nav-items {
   list-style-type: none;
   padding: 16px 0px 0px 90px;
@@ -410,6 +375,14 @@ p {
 .container-body p {
   padding: 0px 0px 0px 0px;
   margin: 2px;
+}
+.container-body {
+  width: 862px;
+}
+
+.container-fluid {
+  height: 100%;
+  background-color: #c3c3ff;
 }
 
 .user-text {
@@ -656,10 +629,6 @@ p {
   text-decoration: none;
 }
 
-body::-webkit-scrollbar {
-  display: none;
-}
-
 .home-container::-webkit-scrollbar {
   display: none;
 }
@@ -784,4 +753,53 @@ input[type="file"] {
   left: 23%;
   position: absolute;
   text-align: center;
+}
+
+.flexed-container {
+  display: flex;
+}
+
+.avatar-body {
+  align-items: center;
+}
+
+.avatar-picture {
+  padding: 6px 6px 3px 0px;
+  top: 50%;
+  left: 50%;
+  height: 50px;
+  width: 50px;
+  border-radius: 50%;
+}
+
+.the-user-container {
+  display: flex;
+}
+
+.the-user-container li {
+  padding: 16px 0px 0px 0px;
+}
+
+.the-user-column {
+  overflow-y: scroll;
+  max-height: 92%;
+}
+.the-user-column::-webkit-scrollbar {
+  background-color: transparent; /* or add it to the track */
+  display: none;
+  width: 7px;
+  transition: 5s;
+}
+.the-user-column::-webkit-scrollbar:hover {
+  background-color: #c3c3ff; /* or add it to the track */
+}
+
+.the-user-column::-webkit-scrollbar-thumb {
+  background: #ffff90;
+  border-radius: 10px;
+}
+
+.column3:hover .the-user-column::-webkit-scrollbar {
+  display: contents;
+  transition: 5s;
 }

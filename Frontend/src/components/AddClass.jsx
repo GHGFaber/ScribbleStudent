@@ -3,39 +3,41 @@ import { Modal, Box, Button, Select, MenuItem } from "@mui/material";
 import axios from "axios";
 
 function AddClass({ onClose, classes }) {
-    const [displayProfile, setDisplayProfile] = useState(true);
-    const [selectedClass, setSelectedClass] = useState("");
-    // State for available classes for user
-    const [classList, setClassList] = useState([]);
-    const [showAddButton, setShowAddButton] = useState(false);
+  const [displayProfile, setDisplayProfile] = useState(true);
+  const [selectedClass, setSelectedClass] = useState("");
+  // State for available classes for user
+  const [classList, setClassList] = useState([]);
+  const [showAddButton, setShowAddButton] = useState(false);
 
-    // Query for classes user is not in
-    const availableClasses = async(req, res) => {
-        try {
-            const response = await axios.get("http://localhost:3000/available-classes");
-            const formattedData = response.data.classData.map((item) => ({
-                // Grab message data
-                classID: item.classID,
-                className: item.className,
-            }));
-            setClassList(formattedData);
-        } catch(error) {
-            console.error("Error fetching available classes:", error);
-        }
-    };
+  // Query for classes user is not in
+  const availableClasses = async (req, res) => {
+    try {
+      const response = await axios.get(
+        "http://64.23.164.87/api/available-classes"
+      );
+      const formattedData = response.data.classData.map((item) => ({
+        // Grab message data
+        classID: item.classID,
+        className: item.className,
+      }));
+      setClassList(formattedData);
+    } catch (error) {
+      console.error("Error fetching available classes:", error);
+    }
+  };
 
-    // Add user to class
-    const addClass = async(req, res) => {
-        try {
-            await axios.post("http://localhost:3000/add-class", {
-                classID: selectedClass,
-            });
-            // Refresh browser to show changes
-            window.location.reload();
-        } catch(error) {
-            console.error("Error adding user to class", error);
-        }
-    };
+  // Add user to class
+  const addClass = async (req, res) => {
+    try {
+      await axios.post("http://64.23.164.87/api/add-class", {
+        classID: selectedClass,
+      });
+      // Refresh browser to show changes
+      window.location.reload();
+    } catch (error) {
+      console.error("Error adding user to class", error);
+    }
+  };
 
   useEffect(() => {
     setDisplayProfile(true);
@@ -57,50 +59,52 @@ function AddClass({ onClose, classes }) {
     setShowAddButton(event.target.value !== "");
   };
 
-
   return (
     <>
       {displayProfile && (
         <Modal open={true} onClose={closeUserProfile} id="the-user-profile">
           <Box
             sx={{
-              maxWidth: '500px',
-              margin: 'auto',
-              marginTop: '50px',
-              padding: '20px',
-              borderRadius: '4px',
-              textAlign: 'center',
+              maxWidth: "500px",
+              margin: "auto",
+              marginTop: "50px",
+              padding: "20px",
+              borderRadius: "4px",
+              textAlign: "center",
             }}
           >
             <div className="user-profile-content">
-                {/* List user's classes */}
-              <h4 style={{ marginRight: "15%" }}>Join A Class</h4>
+              {/* List user's classes */}
+              <h4 style={{ marginRight: "15%" }}>Join Class</h4>
               <Select
                 value={selectedClass}
                 onChange={handleClassChange}
-                sx={{ 
-                  width: "60%", 
-                  height: "50px", 
-                  marginBottom: "20px", 
-                  marginRight: "15%", 
+                sx={{
+                  width: "60%",
+                  height: "50px",
+                  marginBottom: "20px",
+                  marginRight: "15%",
                   outline: "none",
-                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                    borderColor: '#ffff90', // Change the border color when focused
+                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#ffff90", // Change the border color when focused
                   },
-                  '&:hover .MuiOutlinedInput-notchedOutline': {
-                    borderColor: '#ffff90', // Change the border color on hover
+                  "&:hover .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#ffff90", // Change the border color on hover
                   },
-                  '.MuiOutlinedInput-notchedOutline': {
-                    borderColor: '#ffff90', // Change the default border color
+                  ".MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#ffff90", // Change the default border color
                   },
                 }}
               >
-              <MenuItem value="">
+                <MenuItem value="">
                   <em>--</em>
                 </MenuItem>
                 {classList.map((classInSchool) => (
-                  <MenuItem key={classInSchool.classID} value={classInSchool.classID} >
-                    {classInSchool.className}
+                  <MenuItem
+                    key={classInSchool.classID}
+                    value={classInSchool.classID}
+                  >
+                    <div add-class-selection>{classInSchool.className}</div>
                   </MenuItem>
                 ))}
               </Select>

@@ -2,7 +2,6 @@ import logo from "../react_images/scrib_emblem.png";
 import Popup from "reactjs-popup";
 import { Link } from "react-router-dom";
 import axios from "axios";
-import moment from 'moment'; // For timestamp
 import "reactjs-popup/dist/index.css";
 import UserProfile from "./UserProfile";
 import { useEffect, useState, useRef } from "react";
@@ -31,7 +30,6 @@ function Navbar({
   username,
   setUsername,
 }) {
-
   // Create a ref for Popup
   const popupRef = useRef(null);
   // Function to handle "View Profile" click
@@ -69,7 +67,7 @@ function Navbar({
   const logout = async (e) => {
     // e.preventDefault();
     try {
-      await axios.post("http://localhost:3000/logout"); // Destroy session ID
+      await axios.post("http://64.23.164.87/api/logout"); // Destroy session ID
       // Grab username from session storage (seemed to solve problem with not displaying in private mode)
       const storedData = JSON.parse(sessionStorage.getItem("userData")); // Grab object
       const username = storedData.username; // Grab data from object
@@ -115,10 +113,10 @@ function Navbar({
 
   const fetchUserInfo = async () => {
     try {
-      const response = await axios.get("http://localhost:3000/user-info");
+      const response = await axios.get("http://64.23.164.87/api/user-info");
 
       // if empty username, set username "Anonymous"
-      // console.log("userdata:",response.data);
+      console.log("userdata:", response.data);
       setUserData(response.data);
     } catch (error) {
       console.log("Error fetching user info:", error);
@@ -128,19 +126,18 @@ function Navbar({
   // Fetch and set classes
   const fetchClasses = async () => {
     try {
-      const response = await axios.get("http://localhost:3000/classes");
+      const response = await axios.get("http://64.23.164.87/api/classes");
       // Assuming the response.data contains the array of class data
       const formattedData = response.data.classData.map((item) => ({
-        className: item.className,
+        classInSchoolName: item.className,
         classID: item.classID,
-        ownerID: item.ownerID,
       }));
       setClasses(formattedData);
       // Set deafult room
       if (formattedData.length > 0) {
         // Get message data for default room
         const classID = formattedData[0].classID;
-        const response = await axios.post("http://localhost:3000/messages", {
+        const response = await axios.post("http://64.23.164.87/api/messages", {
           classID: classID,
         });
         const messageData = response.data.userData.map((item) => ({
@@ -148,12 +145,16 @@ function Navbar({
           username: item.username,
           text: item.message,
           timestamp: item.timestamp,
+          profilePic: item.avatar,
           classID: classID,
         }));
+
+        console.log(
+          "fetchClasses: message data avatar is " + messageData.profilePic
+        );
         setChats(messageData);
-        const defaultRoom = formattedData[0].className;
-        // setRoom(defaultRoom); //set current room info
-        setRoom({Name: defaultRoom, ID: classID}); //set current room info
+        const defaultRoom = formattedData[0].classInSchoolName;
+        setRoom(defaultRoom); //set current room info
         socket.emit("join_room", defaultRoom);
         console.log("Deafult room: ", defaultRoom);
         console.log("Default classID: ", formattedData[0].classID);
@@ -172,7 +173,6 @@ function Navbar({
     // will determine how the UserProfile behaves
     setUserProfileIsOn(true);
     console.log("User profile is now " + userProfileIsOn);
-    
   }
 
   function turn_off_user_profile() {
@@ -191,7 +191,7 @@ function Navbar({
     if (classData !== null) {
       // Get message data for room
       const classID = classData.classID;
-      const response = await axios.post("http://localhost:3000/messages", {
+      const response = await axios.post("http://64.23.164.87/api/messages", {
         classID: classID,
       });
       const messageData = response.data.userData.map((item) => ({
@@ -200,9 +200,10 @@ function Navbar({
         text: item.message,
         timestamp: item.timestamp,
         classID: classID,
+        profilePic: item.avatar,
       }));
-      const room = classData.className;
-      setRoom({Name: room, ID: classID});//set current room info
+      const room = classData.classInSchoolName;
+      setRoom(room); //set current room info
       console.log("class: ", room);
       console.log("ClassID: ", classID);
       //setRoom(room);
@@ -231,7 +232,7 @@ function Navbar({
               {classes.map((classInSchool, index) => (
                 <li onClick={() => joinRoom(classInSchool)} key={index}>
                   <label style={{ cursor: "pointer", userSelect: "none" }}>
-                    {classInSchool.className}
+                    {classInSchool.classInSchoolName}
                   </label>
                 </li>
               ))}
@@ -254,7 +255,7 @@ function Navbar({
           }
           position="bottom right"
         >
-          <div className="whats-inside-the-popup" style={{ padding: '5px' }}>
+          <div className="whats-inside-the-popup" style={{ padding: "5px" }}>
             <h4>Hi, {username}!</h4>
             <div className="dropdown-container">
               <button
@@ -270,15 +271,15 @@ function Navbar({
                 View Profile
               </button>
               {/* Add a class from available classes */}
-                {/* Open modal for adding a class */}
-                {/* <button
+              {/* Open modal for adding a class */}
+              {/* <button
                   type="button"
                   className="view-profile-button"
                   onClick={openAddClassModal}
                 >
                   Add Class
                 </button> */}
-                {/* End of "Add Class" button */}
+              {/* End of "Add Class" button */}
               {/* <button
                 type="button"
                 className="view-profile-button"

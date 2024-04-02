@@ -51,7 +51,7 @@ const sessionMiddleware = session({
 });
 app.use(sessionMiddleware);
 
-app.use(cors({ origin: "http://localhost:5173", credentials: true }));
+app.use(cors({ origin: "http://64.23.164.87", credentials: true }));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.json());
 
@@ -60,8 +60,9 @@ const server = app.listen(3000, () => {
 });
 
 const io = new Server(server, {
+  path: "/socket.io",
   cors: {
-    origin: "http://localhost:5173",
+    origin: "http://64.23.164.87/",
     methods: ["GET", "POST"],
   },
 });
@@ -78,10 +79,16 @@ app.get("/notes_data", (req, res) => {
 // Async function to query database and populate inactive users map
 async function populateInactiveUsers() {
   try {
-    const [results] = await pool.query("SELECT userID, username FROM user");
+    const [results] = await pool.query(
+      "SELECT userID, username, avatar FROM user"
+    );
     results.forEach((row) => {
       const username = row.username;
       inactiveUsers.set(username, { username });
+      let avatar = "";
+      if (row.avatar === null) avatar = "";
+      else avatar = row.avatar.toString();
+      inactiveUsers.set(username, { username, avatar });
     });
   } catch (error) {
     console.error("Error fetching usernames:", error);
@@ -99,14 +106,20 @@ io.on("connection", (socket) => {
   console.log(`User Connected: ${socket.id}`);
 
   // Receive username from client
-  socket.on("login", (username) => {
+  socket.on("login", (username, avatar) => {
     // Remove from inactive users if exists
+    let convertedAvatar = "";
+
+    if (avatar && avatar !== null) convertedAvatar = avatar;
+
     if (inactiveUsers.has(username)) {
       inactiveUsers.delete(username);
+      console.log("match");
     }
-    if (!activeUsers.has(username)) {
+    if (!activeUsers.has(username, convertedAvatar)) {
       // Store username and socket ID
-      activeUsers.set(socket.id, { username });
+      console.log("setting");
+      activeUsers.set(socket.id, { username, avatar: convertedAvatar });
       // Broadcast updated list of active users
       io.emit("activeUsers", Array.from(activeUsers.values()));
       // Broadcast updated list of inactive active users
@@ -168,6 +181,7 @@ io.on("connection", (socket) => {
     const messageData = {
       username: data.username,
       message: data.message,
+      avatar: data.avatar,
     };
     socket.to(socket.room).emit("receive_message", messageData);
   });
@@ -224,13 +238,13 @@ app.get("/username", async (req, res) => {
   }
 });
 
-// Retrieve classes data based userID
+// retrieve classes data based userID
 app.get("/classes", async (req, res) => {
   try {
     const userID = req.session.userid;
     // Query the database to retrieve class data
     const [classData] = await pool.query(
-      "SELECT DISTINCT classes.classID, classes.ownerID, classes.className FROM classes INNER JOIN classList ON classes.classID = classList.classID INNER JOIN user ON user.userID = classList.userID WHERE user.userID = ?",
+      "SELECT DISTINCT classes.classID, classes.className FROM classes INNER JOIN classList ON classes.classID = classList.classID INNER JOIN user ON user.userID = classList.userID WHERE user.userID = ?",
       [userID]
     );
     // ("SELECT DISTINCT classes.classID, classes.className FROM classes INNER JOIN chatrooms ON classes.classID = chatrooms.classID INNER JOIN user ON user.userID = chatrooms.userID WHERE user.userID = ?", [userID]);
@@ -249,7 +263,7 @@ app.get("/classes", async (req, res) => {
 });
 
 // Available classes for user to join
-app.get('/available-classes', async (req, res) => {
+app.get("/available-classes", async (req, res) => {
   const userID = req.session.userid;
   try {
     // Retrieve the classes that the user is not in
@@ -259,68 +273,26 @@ app.get('/available-classes', async (req, res) => {
     );
     // Send class data to frontend as array of objects
     res.json({
-      classData: classData
+      classData: classData,
     });
-
   } catch (error) {
     console.error("Error fetching class information", error);
     res.status(500).send("Internal server error");
   }
 });
 
-// Remove user from a class
-app.post('/leave-class', async (req, res) => {
-  const { classID } = req.body;
-  const userID = req.session.userid;
-  try {
-    await pool.query(
-      "DELETE FROM classList WHERE userID = ? AND classID = ?",
-      [userID, classID]
-    );
-    res.status(200).send("Class removed successfully");
-  } catch (error) {
-    console.error("Error removing user", error);
-    res.status(500).send("Internal server error");
-  }
-});
-
 // Add user to a class
-app.post('/add-class', async (req, res) => {
+app.post("/add-class", async (req, res) => {
   const { classID } = req.body;
   const userID = req.session.userid;
   try {
-    await pool.query(
-      "INSERT INTO classList (userID, classID) VALUES (?, ?)",
-      [userID, classID]
-    );
+    await pool.query("INSERT INTO classList (userID, classID) VALUES (?, ?)", [
+      userID,
+      classID,
+    ]);
     res.status(200).send("Class added successfully");
   } catch (error) {
     console.error("Error inserting user", error);
-    res.status(500).send("Internal server error");
-  }
-});
-
-// Create a class
-app.post('/create-class', async (req, res) => {
-  const { className, description } = req.body;
-  const userID = req.session.userid;
-  try {
-    // Create the class
-    await pool.query(
-      "INSERT INTO classes (ownerID, className, description) VALUES (?, ?, ?)",
-      [userID, className, description]
-    );
-    // Get the classID of the created class
-    const [result] = await pool.query(
-      "SELECT classID FROM classes WHERE className = ? AND ownerID = ?",
-      [className, userID]
-    );
-    // Return the classID
-    res.json({
-      classID: result[0].classID,
-    });
-  } catch (error) {
-    console.error("Error creating class", error);
     res.status(500).send("Internal server error");
   }
 });
@@ -332,20 +304,27 @@ app.post("/messages", async (req, res) => {
     const { classID } = req.body;
     // fetch chatroom messages
     const [userData] = await pool.query(
-      "SELECT chatrooms.message, chatrooms.timestamp, user.username FROM chatrooms INNER JOIN user ON user.userID = chatrooms.userID INNER JOIN classes ON classes.classID = chatrooms.classID WHERE classes.classID = ? ORDER BY chatrooms.timestamp ASC ",
+      "SELECT chatrooms.message, chatrooms.timestamp, user.username, user.avatar FROM chatrooms INNER JOIN user ON user.userID = chatrooms.userID INNER JOIN classes ON classes.classID = chatrooms.classID WHERE classes.classID = ? ORDER BY chatrooms.timestamp ASC ",
       [classID]
     );
+
+    userData.forEach((data) => {
+      if (data.avatar !== null) {
+        data.avatar = data.avatar.toString();
+      }
+    });
     // // Loads the last 10 messages for the chatroom ordered by timestamp
     // const [userData] = await pool.query(
     //   "SELECT * FROM (SELECT chatrooms.message, chatrooms.timestamp, user.username FROM chatrooms INNER JOIN user ON user.userID = chatrooms.userID INNER JOIN classes ON classes.classID = chatrooms.classID WHERE classes.classID = ? ORDER BY chatrooms.timestamp DESC LIMIT 10) AS last_messages ORDER BY last_messages.timestamp ASC",
     //   [classID]
     // );
-  
 
     // data stored in an array of objects
     // Ex: userData[0].message grabs the message from the first object
 
     // return data to frontend
+    console.log("the username is " + userData[0].username);
+    console.log(userData.length);
     res.json({
       userData: userData,
     });
@@ -372,93 +351,6 @@ app.post("/insert-message", async (req, res) => {
     res.status(500).send("Internal server error");
   }
 });
-
-// Fetch notes for user
-app.get("/notes", async(req, res) => {
-  try{
-    const userID = req.session.userid;
-    const [noteData] = await pool.query(
-      "SELECT fileName, fileID, description, text FROM files WHERE userID = ?",
-     [userID]
-    );
-    // const [noteData] = await pool.query(
-    //   "SELECT fileName, fileID, description, file FROM files WHERE userID = ?",
-    //  [userID]
-    // );
-    // return array of objects
-    res.json({
-      noteData: noteData,
-    });
-  } catch(error) {
-    console.error("Error fetching user notes:", error);
-    res.status(500), send("Internal server error");
-  } 
-});
-
-// Insert a new file into files table
-app.post("/add-note", async (req, res) => {
-  try {
-    const { fileName, uploadDate, description, text } = req.body;
-    // grab the userID
-    const userID = req.session.userid;
-
-    // Insert note into files table
-    await pool.query("INSERT INTO files (fileName, uploadDate, userID, description, text) VALUES (?, ?, ?, ?, ?)", 
-    [fileName, uploadDate, userID, description, text]);
-    // // Insert note into files table
-    // await pool.query("INSERT INTO files (fileName, uploadDate, userID, description, file) VALUES (?, ?, ?, ?, ?)", 
-    // [fileName, uploadDate, userID, description, file]);
-
-    // Send a success response to the client
-    res.status(200).send("Note added successfully");
-
-  } catch (error) {
-    console.error("Error inserting file:", error);
-    res.status(500).send("Internal server error");
-  }
-});
-
-// Update note
-app.post("/update-note", async (req, res) => {
-  try {
-    const {fileID, newFileName, newUploadDate, newDescription, newText} = req.body;
-    const userID = req.session.userid;
-
-    // Update note in files table
-    await pool.query(
-      "UPDATE files SET fileName = ?, uploadDate = ?, description = ?, text = ? WHERE userID = ? AND fileID = ?",
-      [newFileName, newUploadDate, newDescription, newText, userID, fileID]
-    );
-
-    // Send a success response to the client
-    res.status(200).send("Note updated successfully");
-
-  } catch (error) {
-    console.error("Error updating file:", error);
-    res.status(500).send("Internal server error");
-  }
-});
-
-// Delete note
-app.post("/delete-note", async (req, res) => {
-  try {
-    const {fileID} = req.body;
-    const userID = req.session.userid;
-
-    // Delete note
-    await pool.query(
-      "DELETE FROM files WHERE fileID = ? AND userID = ?",
-      [fileID, userID]);
-
-    // Send success response
-    res.status(200).send("Note deleted successfully");
-
-  } catch(error) {
-    console.error("Error deleting note:", error);
-    res.status(500).send("Internal server error");
-  }
-});
-
 
 // // generate secret key
 // const crypto = require('crypto');
@@ -504,6 +396,7 @@ app.get("/user-info", async (req, res) => {
       const [userData] = await pool.query(
         `select user.username, 
                 user.email, 
+                user.avatar, 
                 JSON_ARRAYAGG(classes.className) as classes
                  from user 
                  LEFT JOIN classList ON user.userID = classList.userID
@@ -705,13 +598,18 @@ app.post("/login", async (req, res) => {
         console.log("Session ID:", req.sessionID);
 
         // sends user info to the Frontend on submit
+        //MOISES added new field to send on login
         res.send({
           user: userData[0].userID,
           success: true,
           username,
           email,
-          userID: req.session.userid,
+          Userid: req.session.userid,
           hashedPassword,
+          avatar:
+            userData[0].avatar !== null
+              ? userData[0].avatar.toString()
+              : userData[0].avatar,
         });
 
         // Print userid to stdout (Backend)
@@ -743,6 +641,7 @@ app.post("/logout", (req, res) => {
 // Account creation post
 app.post("/create-account", upload.single("Image"), async (req, res) => {
   const { username, email, password, croppedimg } = req.body;
+
   try {
     const [existingUser] = await pool.query(
       "SELECT * FROM user WHERE username = ? OR email = ?",
@@ -787,6 +686,93 @@ app.post("/create-account", upload.single("Image"), async (req, res) => {
   }
 });
 
+// // retrieve the messages from chatroom table
+// app.post("/messages", async (req, res) => {
+//   try {
+//     //grab classID from frontend
+//     const { classID } = req.body;
+//     console.log("messages: id is " + req.body.classID);
+//     //fetch chatroom messages
+//     const [userData] = await pool.query(
+//       "SELECT chatrooms.message, chatrooms.timestamp, user.username FROM chatrooms INNER JOIN user ON user.userID = chatrooms.userID INNER JOIN classes ON classes.classID = chatrooms.classID WHERE classes.classID = ?",
+//       [classID]
+//     );
+
+//     // data stored in an array of objects
+//     // Ex: userData[0].message grabs the message from the first object
+
+//     //return data to frontend
+//     //returns message, timestamp, and username
+//     res.json({
+//       userData: userData,
+//     });
+//   } catch (error) {
+//     console.error("Error fetching chatroom messages:", error);
+//     res.status(500).send("Internal server error");
+//   }
+// });
+
+// // Insert message into chatroom
+// app.post("/insert-message", async (req, res) => {
+//   try {
+//     // grab chatroom data from frontend (send in same order from frontend)
+//     const { classID, timestamp, message } = req.body;
+//     //userID (session)
+//     const userID = req.session.userID;
+//     //insert chatroom data
+//     await pool.query(
+//       "INSERT INTO chatrooms (classID, timestamp, message, userID) VALUES (?, ?, ?, ?)",
+//       [classID, timestamp, message, userID]
+//     );
+//   } catch (error) {
+//     console.error("Error inserting message:", error);
+//     res.status(500).send("Internal server error");
+//   }
+// });
+
+// // update chatroom messages
+// app.post("/update-messages", async (req, res) => {
+//   try {
+//     const userID = req.session.userID;
+//     const chatID = req.session.chatID;
+//     const { newMessage } = req.body; // Extract the new message content from the request body
+
+//     // Update the message in the chatrooms table for the specified chatroom ID
+//     await pool.query(
+//       "UPDATE chatrooms SET message = ? WHERE userID = ? AND chatID = ?",
+//       [newMessage, userID, chatID]
+//     );
+
+//     res.json({ message: "Message updated successfully" });
+//   } catch (error) {
+//     console.error("Error updating message:", error);
+//     res.status(500).send("Internal server error");
+//   }
+// });
+
+// // retrieve classes data based on class name
+// app.post("/classes", async (req, res) => {
+//   try {
+//     const { className } = req.body;
+//     // Query the database to retrieve class data
+//     const [classData] = await pool.query(
+//       "Select * FROM classes WHERE classes.className = ?",
+//       [className]
+//     );
+
+//     // data stored in an array of objects
+//     // Ex: classData[0].classID grabs the classID from the first object
+
+//     //send class data to Frontend as array of objects
+//     res.json({
+//       classData: classData,
+//     });
+//   } catch (error) {
+//     console.error("Error fetching class information:", error);
+//     res.status(500).send("Internal server error");
+//   }
+// });
+
 // Grab html from public folder
 // Path needs to lead to public directory
 // to fetch html
@@ -802,29 +788,24 @@ app.use((err, req, res, next) => {
 // Use async/await with the promise-based query
 async function queryDatabase() {
   try {
-
     // TESTING DATA
-    // const userID = 11;
-    // const [userData] = await pool.query(
-    //   "SELECT DISTINCT classes.classID, classes.className FROM classes INNER JOIN classList ON classes.classID = classList.classID INNER JOIN user ON user.userID = classList.userID WHERE user.userID = ?",
-    //   [userID]
-    // );
-    // // Select classes user is not in
-    // const [userData2] = await pool.query(
-    //   "SELECT DISTINCT classes.classID, classes.className FROM classes WHERE classes.classID NOT IN (SELECT classList.classID FROM classList WHERE classList.userID = ?)",
-    //   [userID]
-    // );
-    // const [classData] = await pool.query(
-    //   "SELECT DISTINCT classes.classID, classes.className FROM classes INNER JOIN classList ON classes.classID = classList.classID INNER JOIN user ON user.userID = classList.userID");
+    const userID = 11;
+    const [userData] = await pool.query(
+      "SELECT DISTINCT classes.classID, classes.className FROM classes INNER JOIN classList ON classes.classID = classList.classID INNER JOIN user ON user.userID = classList.userID WHERE user.userID = ?",
+      [userID]
+    );
+    // Select classes user is not in
+    const [userData2] = await pool.query(
+      "SELECT DISTINCT classes.classID, classes.className FROM classes WHERE classes.classID NOT IN (SELECT classList.classID FROM classList WHERE classList.userID = ?)",
+      [userID]
+    );
+    const [classData] = await pool.query(
+      "SELECT DISTINCT classes.classID, classes.className FROM classes INNER JOIN classList ON classes.classID = classList.classID INNER JOIN user ON user.userID = classList.userID"
+    );
 
-    // console.log(`\nClasslist:\n`, classData);
-    // console.log(`\nUser ${userID} classlist:\n`, userData);
-    // console.log(`\nUser ${userID} available classlist:\n`, userData2);
-
-    // Deletes from classList
-    // const classID = 17;
-    // await pool.query("DELETE FROM classList WHERE classID = ?", [classID]);
-0
+    console.log(`\nClasslist:`, classData);
+    console.log(`\nUser ${userID} classlist:\n`, userData);
+    console.log(`\nUser ${userID} available classlist:\n`, userData2);
 
     // console.log(data);
   } catch (error) {
