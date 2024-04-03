@@ -101,7 +101,7 @@ function Sidebar({
       // local timestamp
       const uploadDate = moment().format("YYYY-MM-DD HH:mm:ss");
 
-      await axios.post("http://localhost:3000/add-note", {
+      await axios.post(`${import.meta.env.VITE_ENDPOINT}/add-note`, {
         fileName: fileName,
         uploadDate: uploadDate,
         description: description,
@@ -117,7 +117,9 @@ function Sidebar({
   // Get the notes from the database
   const getUserNotes = async () => {
     try {
-      const response = await axios.get("http://localhost:3000/notes");
+      const response = await axios.get(
+        `${import.meta.env.VITE_ENDPOINT}/notes`
+      );
       console.log("User Notes:", response.data.noteData);
       // Format the notes for displaying
       const formattedNotes = response.data.noteData.map((note) => ({

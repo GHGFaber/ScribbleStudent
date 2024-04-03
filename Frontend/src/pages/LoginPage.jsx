@@ -14,11 +14,14 @@ function LoginPage() {
     event.preventDefault();
     console.log("hi");
     try {
-      const response = await axios.post("http://localhost:3000/login", {
-        username: formData.current.username.value,
-        password: formData.current.password.value,
-        withCredentials: true,
-      });
+      const response = await axios.post(
+        `${import.meta.env.VITE_ENDPOINT}/login`,
+        {
+          username: formData.current.username.value,
+          password: formData.current.password.value,
+          withCredentials: true,
+        }
+      );
       if (response.data.success) {
         console.log(response.data);
         // Store username in sessionStorage

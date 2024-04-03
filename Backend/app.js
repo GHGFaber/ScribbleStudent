@@ -61,8 +61,9 @@ const server = app.listen(3000, () => {
   console.log("App listening on port 3000");
 });
 
-let addrPath = "";
-if (process.env.LOCAL === false) {
+if (process.env.LOCAL) {
+  var addrPath = "";
+} else {
   addrPath = "/socket.io";
 }
 
@@ -77,6 +78,7 @@ const io = new Server(server, {
 console.log(io);
 console.log(process.env.ORIGIN);
 console.log(process.env.LOCAL);
+console.log(addrPath);
 
 // Session context shared w/ socket.io
 io.engine.use(sessionMiddleware);

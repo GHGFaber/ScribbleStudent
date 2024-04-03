@@ -68,7 +68,7 @@ function Navbar({
   const logout = async (e) => {
     // e.preventDefault();
     try {
-      await axios.post("http://localhost:3000/logout"); // Destroy session ID
+      await axios.post(`${import.meta.env.VITE_ENDPOINT}/logout`); // Destroy session ID
       // Grab username from session storage (seemed to solve problem with not displaying in private mode)
       const storedData = JSON.parse(sessionStorage.getItem("userData")); // Grab object
       const username = storedData.username; // Grab data from object
@@ -114,7 +114,9 @@ function Navbar({
 
   const fetchUserInfo = async () => {
     try {
-      const response = await axios.get("http://localhost:3000/user-info");
+      const response = await axios.get(
+        `${import.meta.env.VITE_ENDPOINT}/user-info`
+      );
 
       // if empty username, set username "Anonymous"
       // console.log("userdata:", response.data);
@@ -127,7 +129,9 @@ function Navbar({
   // Fetch and set classes
   const fetchClasses = async () => {
     try {
-      const response = await axios.get("http://localhost:3000/classes");
+      const response = await axios.get(
+        `${import.meta.env.VITE_ENDPOINT}/classes`
+      );
       // Assuming the response.data contains the array of class data
       const formattedData = response.data.classData.map((item) => ({
         className: item.className,
@@ -139,9 +143,12 @@ function Navbar({
       if (formattedData.length > 0) {
         // Get message data for default room
         const classID = formattedData[0].classID;
-        const response = await axios.post("http://localhost:3000/messages", {
-          classID: classID,
-        });
+        const response = await axios.post(
+          `${import.meta.env.VITE_ENDPOINT}/messages`,
+          {
+            classID: classID,
+          }
+        );
         const messageData = response.data.userData.map((item) => ({
           // Grab message data
           username: item.username,
@@ -197,9 +204,12 @@ function Navbar({
     if (classData !== null) {
       // Get message data for room
       const classID = classData.classID;
-      const response = await axios.post("http://localhost:3000/messages", {
-        classID: classID,
-      });
+      const response = await axios.post(
+        `${import.meta.env.VITE_ENDPOINT}/messages`,
+        {
+          classID: classID,
+        }
+      );
       const messageData = response.data.userData.map((item) => ({
         // Grab message data
         username: item.username,

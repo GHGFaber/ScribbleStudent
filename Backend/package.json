@@ -20,7 +20,10 @@
   "type": "module",
   "main": "database.js",
   "scripts": {
-    "start": "concurrently \"$env:NODE_ENV=\"prod\"\" \"node app.js\"",
-    "test": "concurrently \"$env:NODE_ENV=\"test\"\" \"node app.js\""
+    "build": "cross-env NODE_ENV=prod node app.js",
+    "start": "cross-env NODE_ENV=test node app.js"
+  },
+  "devDependencies": {
+    "cross-env": "^7.0.3"
   }
 }

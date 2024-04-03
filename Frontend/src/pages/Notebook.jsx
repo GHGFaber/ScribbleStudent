@@ -92,7 +92,9 @@ function Notebook(props) {
   // *** Pass as prop for callback so not having to duplicate code in sidebar ***
   const getUserNotes = async () => {
     try {
-      const response = await axios.get("http://localhost:3000/notes");
+      const response = await axios.get(
+        `${import.meta.env.VITE_ENDPOINT}/notes`
+      );
       console.log("User Notes:", response.data.noteData);
       // Format the notes for displaying
       const formattedNotes = response.data.noteData.map((note) => ({
@@ -113,7 +115,7 @@ function Notebook(props) {
   const updateNotes = async (req, res) => {
     try {
       // Update notes in database
-      await axios.post("http://localhost:3000/update-note", {
+      await axios.post(`${import.meta.env.VITE_ENDPOINT}/update-note`, {
         fileID: selectedNote.fileID,
         newFileName: selectedNote.fileName,
         newUploadDate: moment().format("YYYY-MM-DD HH:mm:ss"),
@@ -138,7 +140,7 @@ function Notebook(props) {
 
       if (isConfirmed) {
         // Delete note after user clicks button
-        await axios.post("http://localhost:3000/delete-note", {
+        await axios.post(`${import.meta.env.VITE_ENDPOINT}/delete-note`, {
           fileID: noteID,
         });
         // Update note list

@@ -7,7 +7,6 @@ import { useEffect, useState, useRef } from "react";
 import socket from "../components/Socket.jsx";
 import emptyPic from "../images/huh_what.png";
 import avatarPic from "../images/default_pic.png";
-
 function Chatroom({
   room,
   setRoom,
@@ -136,7 +135,7 @@ function Chatroom({
       // Need the current classID (got it)
       console.log("Current classID: ", room.ID);
       const classID = room.ID;
-      await axios.post("http://localhost:3000/insert-message", {
+      await axios.post(`${import.meta.env.VITE_ENDPOINT}/insert-message`, {
         message: message,
         timestamp: moment().format("YYYY-MM-DD HH:mm:ss"),
         classID: classID,

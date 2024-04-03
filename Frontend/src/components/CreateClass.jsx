@@ -21,7 +21,7 @@ function CreateClass({ onClose, classes }) {
         );
         if (confirmed) {
           const response = await axios.post(
-            "http://localhost:3000/create-class",
+            `http://localhost:3000/create-class`,
             {
               className: className,
               description: description,
@@ -29,7 +29,7 @@ function CreateClass({ onClose, classes }) {
           );
           console.log("classID:", response.data.classID);
           // Add user to the created class
-          await axios.post("http://localhost:3000/add-class", {
+          await axios.post(`http://localhost:3000/add-class`, {
             classID: response.data.classID,
           });
           // Refresh browser to show changes
@@ -46,7 +46,9 @@ function CreateClass({ onClose, classes }) {
   // Make sure the class name is not already taken
   const verifyClassName = async (req, res) => {
     try {
-      const { data } = await axios.get("http://localhost:3000/classes");
+      const { data } = await axios.get(
+        `${import.meta.env.VITE_ENDPOINT}/classes`
+      );
       const classExists = data.classData.some(
         (item) => item.className === className
       );

@@ -4,8 +4,8 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
+    "dev": "cross-env VITE_ENDPOINT=http://localhost:3000 VITE_SOCKET=http://localhost:3000 vite",
+    "build": "cross-env VITE_ENDPOINT=https://64.23.164.87/api VITE_SOCKET=https://64.23.164.87 vite build",
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview"
   },
@@ -15,6 +15,7 @@
     "@mui/styled-engine": "^5.15.11",
     "axios": "^1.6.7",
     "bootstrap": "^5.3.2",
+    "cross-env": "^7.0.3",
     "moment": "^2.30.1",
     "quill-image-resize-module": "^3.0.0",
     "react": "^18.2.0",
