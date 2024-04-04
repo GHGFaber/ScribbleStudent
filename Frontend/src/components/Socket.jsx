@@ -4,8 +4,9 @@ import.meta.env.VITE_ENDPOINT;
 // const socket = io.connect(`${import.meta.env.VITE_ENDPOINT}{
 //     reconnection: false
 // });
+var pathValue = null;
 if (import.meta.env.VITE_ENDPOINT === "https://64.23.164.87/api") {
-  var pathValue = "/api/socket.io";
+  pathValue = "/api/socket.io";
 }
 const socket = io.connect(`${import.meta.env.VITE_SOCKET}`, {
   path: pathValue || "",
