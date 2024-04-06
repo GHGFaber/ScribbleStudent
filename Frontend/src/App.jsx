@@ -20,9 +20,17 @@ function App() {
   // Username State
   const [username, setUsername] = useState(null);
   // Room State
-  const [room, setRoom] = useState([]);
+  // const [room, setRoom] = useState([]);
+
+  const [room, setRoom] = useState(() => {
+    const savedRoom = sessionStorage.getItem("room");
+    return savedRoom ? JSON.parse(savedRoom) : [];
+  });
+
   // Note Pages State
   const [notePages, setNotes] = useState([]);
+  // Class Note Pages State
+  const [classNotes, setClassNotes] = useState([]);
   // State to store selected note
   const [selectedNote, setSelectedNote] = useState(null);
 
@@ -59,6 +67,8 @@ function App() {
                 setSelectedNote={setSelectedNote}
                 room={room}
                 setRoom={setRoom}
+                classNotes={classNotes}
+                setClassNotes={setClassNotes}
               />
             }
           />
@@ -82,6 +92,8 @@ function App() {
                 setNotes={setNotes}
                 selectedNote={selectedNote}
                 setSelectedNote={setSelectedNote}
+                classNotes={classNotes}
+                setClassNotes={setClassNotes}
               />
             }
           />

@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { initValueContext } from "../components/InitValue.jsx";
 import { useContext, useEffect, useState } from "react";
 import axios from "axios";
+import socket from "../components/Socket.jsx";
 import AddClass from "../components/AddClass.jsx";
 import moment from "moment"; // For timestamp
 import CreateClass from "../components/CreateClass.jsx";
@@ -16,6 +17,10 @@ function Sidebar({
   setSelectedNote,
   classes,
   chats,
+  room,
+  classNotes,
+  setClassNotes,
+  username,
   // refresh,
   // setRefresh,
   // parentCallback,
@@ -29,6 +34,10 @@ function Sidebar({
 
   const [notebookDropdownVisible, setNotebookDropdownVisible] = useState(
     sessionStorage.getItem("notebookDropdownVisible") === "true"
+  );
+
+  const [classNotesDropdownVisible, setClassNotesDropdownVisible] = useState(
+    sessionStorage.getItem("classNotesDropdownVisible") === "true"
   );
 
   // State to control the create modal
@@ -79,8 +88,8 @@ function Sidebar({
     return newName;
   }
 
-  // Create a new note file
-  const newNote = async (req, res) => {
+  // Create a new user note
+  const newUserNote = async (req, res) => {
     try {
       // file description (Title)
       var description = "NewNote";
@@ -101,7 +110,7 @@ function Sidebar({
       // local timestamp
       const uploadDate = moment().format("YYYY-MM-DD HH:mm:ss");
 
-      await axios.post("http://localhost:3000/add-note", {
+      await axios.post("http://localhost:3000/add-user-note", {
         fileName: fileName,
         uploadDate: uploadDate,
         description: description,
@@ -114,10 +123,10 @@ function Sidebar({
     }
   };
 
-  // Get the notes from the database
+  // Get the user notes from the database
   const getUserNotes = async () => {
     try {
-      const response = await axios.get("http://localhost:3000/notes");
+      const response = await axios.get("http://localhost:3000/user-notes");
       console.log("User Notes:", response.data.noteData);
       // Format the notes for displaying
       const formattedNotes = response.data.noteData.map((note) => ({
@@ -129,14 +138,75 @@ function Sidebar({
       // Insert formatted data into notePages state
       setNotes(formattedNotes);
     } catch (error) {
-      console.error("Error getting notes:", error);
+      console.error("Error getting user notes:", error);
+    }
+  };
+
+    // Create a new class note
+    const newClassNote = async (req, res) => {
+      try {
+        // file description (Title)
+        var description = "NewNote";
+        if (classNotes.some((page) => page.description === description)) {
+          const uniqueFilename = generateUniqueFilename(description, classNotes);
+          description = uniqueFilename;
+          console.log("Unique Filename:", uniqueFilename);
+        } else {
+          console.log("NewNote is unique");
+        }
+        // FileName
+        const fileName = description + ".txt";
+        console.log(fileName);
+        // // File
+        // const file = "";
+        // Text
+        const text = "";
+        // local timestamp
+        const uploadDate = moment().format("YYYY-MM-DD HH:mm:ss");
+  
+        await axios.post("http://localhost:3000/add-class-note", {
+          fileName: fileName,
+          uploadDate: uploadDate,
+          description: description,
+          text: text,
+          classID: room.ID,
+        });
+        // Update class notes list
+        getClassNotes();
+      } catch (error) {
+        console.error("Error adding new class note:", error);
+      }
+    };
+
+  // Get the class notes from the database
+  const getClassNotes = async () => {
+    try {
+      const response = await axios.post("http://localhost:3000/class-notes", {
+        classID: room.ID,
+      });
+      // Format the notes for displaying
+      const formattedNotes = response.data.noteData.map((note) => ({
+        description: note.description,
+        fileName: note.fileName,
+        fileID: note.fileID,
+        text: note.text,
+      }));
+      // Insert formatted data into notePages state
+      console.log("class notes:", formattedNotes);
+      setClassNotes(formattedNotes);
+    } catch (error) {
+      console.error("Error getting class notes:", error);
     }
   };
 
   // Set the note that the user clicks
+  // If user clicks personal note, room should be 
+  // set back to previous class room.Name
   const setUserNote = (note) => {
     try {
       console.log("page clicked:", note);
+      // Set room back to class room 
+      socket.emit("join_room", room.Name);
       // Set the note that the user clicked
       setSelectedNote(note);
     } catch (error) {
@@ -144,15 +214,38 @@ function Sidebar({
     }
   };
 
-  /// Save notebook dropdown to sessionStorage when it changes
+  // Set the class note that the user clicks
+  // Before setting the selected note, join a room using the fileID
+  // note.fileID should contain the selected note's fileID (it does)
+  const setClassNote = (note) => {
+    try {
+      console.log("page clicked:", note);
+      // console.log("fileID of selected Note:", note.fileID);
+      // Join room with note.fileID as the room name
+      const noteRoom = note.fileID;
+      socket.emit("join_room", noteRoom);
+      // Set the note that the user clicked
+      setSelectedNote(note);
+    } catch (error) {
+      console.error("Error setting user note:", error);
+    }
+  };
+
+  // Save notebook dropdown to sessionStorage when it changes
   useEffect(() => {
     sessionStorage.setItem("notebookDropdownVisible", notebookDropdownVisible);
   }, [notebookDropdownVisible]);
 
+  // Save class notebook dropdown to sessionStorage when it changes
+  useEffect(() => {
+    sessionStorage.setItem("classNotesDropdownVisible", classNotesDropdownVisible);
+  }, [classNotesDropdownVisible]);
+
   useEffect(() => {
     getUserNotes();
+    getClassNotes();
     console.log("Get notes:", notePages);
-  }, []);
+  }, [room]);
 
   return (
     <div>
@@ -250,13 +343,13 @@ function Sidebar({
                   }
                 >
                   <h5>
-                    Personal<br></br>Notebook
+                    {username}'s<br></br>Notebook
                   </h5>
                 </label>
-                {notebookDropdownVisible && notePages.length < 5 && (
+                {notebookDropdownVisible && notePages && notePages.length < 5 && (
                   <button
                     className="plus-button plus-button--small"
-                    onClick={newNote}
+                    onClick={newUserNote}
                     title="add note"
                   ></button>
                 )}
@@ -274,6 +367,58 @@ function Sidebar({
                         className="the-link"
                         to={{ pathname: "/notebook" }}
                         onClick={() => setUserNote(page)}
+                        style={{
+                          color: "#2d2f31",
+                          display: "block",
+                          paddingRight: "65px",
+                        }}
+                      >
+                        <div className="side-selection">
+                          <h6>{page.description}</h6>
+                        </div>
+                      </Link>
+                    </li>
+                  ))}
+              </ul>
+            </li>
+          </nav>
+          {/* Class Notebook */}
+          {/* Notebook changes only for class owner */}
+          <nav>
+            <li className="side-list">
+              <div className="side-selection">
+                <label
+                  htmlFor="touch"
+                  className="the-link"
+                  onClick={() =>
+                    setClassNotesDropdownVisible(!classNotesDropdownVisible)
+                  }
+                >
+                  <h5>
+                    {room.Name}<br></br>Notebook
+                  </h5>
+                </label>
+                {classNotesDropdownVisible && (
+                  <button
+                    className="plus-button plus-button--small"
+                    onClick={newClassNote}
+                    title="add note"
+                  ></button>
+                )}
+              </div>
+              <ul
+                className="slide"
+                style={{ display: classNotesDropdownVisible ? "block" : "none" }}
+              >
+                {/* Use classNotes state to display list */}
+                {classNotes &&
+                  classNotes.length > 0 &&
+                  classNotes.map((page) => (
+                    <li className="side-list" key={page.fileName}>
+                      <Link
+                        className="the-link"
+                        to={{ pathname: "/notebook" }}
+                        onClick={() => setClassNote(page)}
                         style={{
                           color: "#2d2f31",
                           display: "block",
