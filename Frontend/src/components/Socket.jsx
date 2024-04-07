@@ -5,7 +5,7 @@ import.meta.env.VITE_ENDPOINT;
 //     reconnection: false
 // });
 var pathValue = null;
-if (import.meta.env.VITE_ENDPOINT === "https://64.23.164.87/api") {
+if (import.meta.env.VITE_ENDPOINT === "https://scribblestudent/api") {
   pathValue = "/api/socket.io";
 }
 const socket = io.connect(`${import.meta.env.VITE_SOCKET}`, {
