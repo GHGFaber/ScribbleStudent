@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "cross-env VITE_ENDPOINT=http://localhost:3000 VITE_SOCKET=http://localhost:3000 vite",
-    "build": "cross-env VITE_ENDPOINT=https://64.23.164.87/api VITE_SOCKET=https://64.23.164.87 vite build",
+    "build": "cross-env VITE_ENDPOINT=https://scribblestudent.com/api VITE_SOCKET=https://scribblestudent.com vite build",
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview"
   },
