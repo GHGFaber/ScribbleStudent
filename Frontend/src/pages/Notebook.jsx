@@ -139,6 +139,16 @@ function Notebook(props) {
     updateNotes();
   }, 2000); // Adjust the debounce delay as needed
 
+  let updateTimer = 0;
+  // update notes after 2 seconds of no typing
+  function delayedUpdate() {
+    clearTimeout(updateTimer); // clear the existing timer
+    updateTimer = setTimeout(() => {
+      // update notes once timer runs out
+      updateNotes();
+    }, 2000);
+  }
+
   // Update notes after change is made to selectedNote
   const updateNotes = async (req, res) => {
     try {
@@ -152,7 +162,7 @@ function Notebook(props) {
         newDescription: selectedNote.description,
         newText: selectedNote.text,
       });
-      // emit notes update
+      console.log("selectedNote updated:", selectedNote);
       console.log("Note updated in database");
       // Update note list
       getUserNotes();
@@ -195,10 +205,11 @@ function Notebook(props) {
       // emit note chnages to others in room
       // (Causing recurssion when more than one user in the shared notes)
       // Update notes function is the cause of the resending socket problem
-      // updateNotes();
       debouncedUpdate();
+      // instead of debounce, use timer to know when to update all at once
+      // delayedUpdate();
+      // updateNotes();
       getClassNotes();
-      console.log("selectedNote updated:", selectedNote);
     } else {
       console.log("selectedNote not updated");
     }
@@ -208,7 +219,7 @@ function Notebook(props) {
     // Receive real time note changes
     socket.on("is_typing_notes", (data) => {
       if (selectedNote && selectedNote.text !== data) {
-        console.log("text update received");
+        console.log("text update received", data);
         // Update typing users array based on previous state
         setSelectedNote((prevSelectedNote) => ({
           ...prevSelectedNote,
@@ -218,7 +229,7 @@ function Notebook(props) {
       }
     });
 
-    // Receive real time note title change
+    // // Receive real time note title change
     socket.on("updated_notes_title", (data) => {
       if (selectedNote && selectedNote.description !== data) {
         console.log("title update received");
@@ -262,6 +273,11 @@ function Notebook(props) {
       socket.emit("typing-notes", newText);
     }
   };
+
+  // Database loads <br> correctly
+  // Receiving socket does not load <br> correctly
+  // Problem found. New title udpate function causing problem with newlines
+  // ***Fix title update***
   
 
   return (
@@ -293,7 +309,7 @@ function Notebook(props) {
               username={username}
             />
           </div>
-          <div className="col-10 column2 the-note-section">
+          <div className="col-10 column2 the-note-section" style={{ whiteSpace: 'pre-wrap' }}>
             {selectedNote && (
               <>
                 <h3
@@ -314,12 +330,18 @@ function Notebook(props) {
                       newTitle !== "" &&
                       newTitle !== selectedNote.description
                     ) {
-                      setSelectedNote({
-                        ...selectedNote,
+                      // setSelectedNote({
+                      //   ...selectedNote,
+                      //   description: newTitle,
+                      //   fileName: newTitle + ".txt",
+                      //   modified: true,
+                      // });
+                      setSelectedNote((prevSelectedNote) => ({
+                        ...prevSelectedNote,
                         description: newTitle,
                         fileName: newTitle + ".txt",
                         modified: true,
-                      });
+                      }));
                       
                     }
                   }}

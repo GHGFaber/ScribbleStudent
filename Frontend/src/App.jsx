@@ -20,8 +20,6 @@ function App() {
   // Username State
   const [username, setUsername] = useState(null);
   // Room State
-  // const [room, setRoom] = useState([]);
-
   const [room, setRoom] = useState(() => {
     const savedRoom = sessionStorage.getItem("room");
     return savedRoom ? JSON.parse(savedRoom) : [];
@@ -35,17 +33,20 @@ function App() {
   const [selectedNote, setSelectedNote] = useState(null);
 
   // Load active users from session storage on component mount
-  const [activeUsers, setActiveUsers] = useState(() => {
-    const savedUsers = sessionStorage.getItem("activeUsers");
-    return savedUsers ? JSON.parse(savedUsers) : [];
-  });
+  // const [activeUsers, setActiveUsers] = useState(() => {
+  //   const savedUsers = sessionStorage.getItem("activeUsers");
+  //   return savedUsers ? JSON.parse(savedUsers) : [];
+  // });
 
+  const [activeUsers, setActiveUsers] = useState([]);
+  
   // Load inactive users session storage on component mount
-  const [inactiveUsers, setInactiveUsers] = useState(() => {
-    const savedUsers = sessionStorage.getItem("inactiveUsers");
-    return savedUsers ? JSON.parse(savedUsers) : [];
-  });
-
+  // const [inactiveUsers, setInactiveUsers] = useState(() => {
+  //   const savedUsers = sessionStorage.getItem("inactiveUsers");
+  //   return savedUsers ? JSON.parse(savedUsers) : [];
+  // });
+  const [inactiveUsers, setInactiveUsers] = useState([]);
+  
   return (
     <BrowserRouter>
       <div className="App">
