@@ -532,6 +532,26 @@ app.post("/add-class-note", async (req, res) => {
   }
 });
 
+// Fetch latest note changes from specific note
+app.post("/latest-note-changes", async (req, res) => {
+  try {
+    // Grab the fileID
+    const { fileID } = req.body;
+    // Select the note
+    const [noteData] = await pool.query(
+      "SELECT fileName, fileID, description, text FROM files WHERE fileID = ?",
+      [fileID]
+    );
+    // return array of objects
+    res.json({
+      noteData: noteData,
+    });
+  } catch (error) {
+    console.error("Error fetching updated note:", error);
+    res.status(500), send("Internal server error");
+  }
+});
+
 // // generate secret key
 // const crypto = require('crypto');
 

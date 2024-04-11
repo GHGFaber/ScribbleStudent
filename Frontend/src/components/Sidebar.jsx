@@ -7,6 +7,7 @@ import AddClass from "../components/AddClass.jsx";
 import moment from "moment"; // For timestamp
 import CreateClass from "../components/CreateClass.jsx";
 import LeaveClass from "../components/LeaveClass.jsx";
+import { get } from "firebase/database";
 
 // renders the bar that appears to the left of the screen
 // contains menu selections for the chatroom and individual note pages
@@ -216,16 +217,26 @@ function Sidebar({
 
   // Set the class note that the user clicks
   // Before setting the selected note, join a room using the fileID
-  // note.fileID should contain the selected note's fileID (it does)
-  const setClassNote = (note) => {
+  // User should grab latest changes of class note before setting to selectedNote
+  const setClassNote = async (note) => {
     try {
-      console.log("page clicked:", note);
-      // console.log("fileID of selected Note:", note.fileID);
+      // // get latest note changes before setting selectedNote
+      // const response = await axios.post("http://localhost:3000/latest-note-changes", {
+      //   fileID: note.fileID,
+      // });
+
+      // Show latest changes
+      // console.log("page clicked:", response.data.noteData[0]);
+      console.log("page clickednote:", note);
+
       // Join room with note.fileID as the room name
       const noteRoom = note.fileID;
+      // const noteRoom = response.data.noteData[0].fileID;
+
       socket.emit("join_room", noteRoom);
       // Set the note that the user clicked
       setSelectedNote(note);
+      // setSelectedNote(response.data.noteData[0]);
     } catch (error) {
       console.error("Error setting user note:", error);
     }
@@ -384,6 +395,9 @@ function Sidebar({
                       </Link>
                     </li>
                   ))}
+                {notePages && notePages.length === 0 && (
+                  <p style={{marginLeft: "12px"}}>(Empty)</p>
+                )}
               </ul>
             </li>
           </nav>
@@ -423,19 +437,24 @@ function Sidebar({
                       <Link
                         className="the-link"
                         to={{ pathname: "/notebook" }}
+                        // Set the classNote
+                        // Then fetch latest updates from database before setting selectedNote
                         onClick={() => setClassNote(page)}
                         style={{
                           color: "#2d2f31",
                           display: "block",
                           paddingRight: "65px",
                         }}
-                      >
+                        >
                         <div className="side-selection">
                           <h6>{page.description}</h6>
                         </div>
                       </Link>
                     </li>
                   ))}
+                {classNotes && classNotes.length === 0 && (
+                  <h6>(Empty)</h6>
+                )}
               </ul>
             </li>
           </nav>

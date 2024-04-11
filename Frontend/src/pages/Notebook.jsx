@@ -27,6 +27,8 @@ function Notebook(props) {
     setClassNotes,
   } = props;
 
+  // State to detect if the change was local
+
   const toolbarOptions = [
     ["bold", "italic", "underline", "strike"], // toggled buttons
     ["blockquote", "code-block"],
@@ -167,7 +169,8 @@ function Notebook(props) {
       // Update note list
       getUserNotes();
       getClassNotes();
-      socket.emit("notes-update-title", selectedNote.description);
+      // socket.emit("notes-update-title", selectedNote.description);
+      socket.emit("typing-notes", selectedNote.text);
     } catch (error) {
       console.error("Error updating notes:", error);
     }
@@ -207,8 +210,8 @@ function Notebook(props) {
       // Update notes function is the cause of the resending socket problem
       // debouncedUpdate();
       // instead of debounce, use timer to know when to update all at once
-      delayedUpdate();
-      // updateNotes();
+      // delayedUpdate();
+      updateNotes();
       getClassNotes();
     } else {
       console.log("selectedNote not updated");
@@ -219,7 +222,7 @@ function Notebook(props) {
     // Receive real time note changes
     socket.on("is_typing_notes", (data) => {
       if (selectedNote && selectedNote.text !== data) {
-        console.log("text update received", data);
+        console.log("text update received:", data);
         // Update typing users array based on previous state
         setSelectedNote((prevSelectedNote) => ({
           ...prevSelectedNote,
@@ -251,6 +254,9 @@ function Notebook(props) {
 
   // Set the room for the selectedNote when in Notebook
   useEffect(() => {
+    // if (selectedNote !== null) {
+    //   socket.emit("join_room", selectedNote.fileID);
+    // }
     socket.emit("join_room", selectedNote.fileID);
   }, []);
 
@@ -279,8 +285,8 @@ function Notebook(props) {
         text: newText,
         modified: true,
       });
-      console.log("text emitted");
-      socket.emit("typing-notes", newText);
+      console.log("handleQuillChange");
+      // socket.emit("typing-notes", newText);
     }
   };
 
@@ -352,7 +358,9 @@ function Notebook(props) {
                       //   fileName: newTitle + ".txt",
                       //   modified: true,
                       // }));
-                      
+
+                      // emit new title to socket
+                      socket.emit("notes-update-title", newTitle);
                     }
                   }}
                 >
@@ -364,7 +372,13 @@ function Notebook(props) {
                   modules={module}
                   theme="snow"
                   value={selectedNote.text}
-                  onChange={handleQuillChange}
+                  // Check if change is made by the current user
+                  onChange={(newText, delta, source) => {
+                    if (source === "user") {
+                      handleQuillChange(newText);
+                    }
+                  }}
+                  
                 />
                 {/* Delete note button */}
                 <button
