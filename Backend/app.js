@@ -201,7 +201,9 @@ io.on("connection", (socket) => {
   // Users typing in class note book
   socket.on("typing-notes", (data) => {
     // immediately update notes
-    console.log("User:", activeUsers.get(socket.id).username);
+    if (activeUsers.has(socket.id) && activeUsers.get(socket.id).username !== undefined) {
+      console.log("User:", activeUsers.get(socket.id).username);
+    }
     console.log("Updated Notes:", data);
     socket.to(socket.room).emit("is_typing_notes", data);
   });
@@ -209,7 +211,9 @@ io.on("connection", (socket) => {
   // Handle title change in notebook
   socket.on("notes-update-title", (data) => {
     // immediately update notes
-    console.log("User:", activeUsers.get(socket.id).username);
+    if (activeUsers.has(socket.id) && activeUsers.get(socket.id).username !== undefined) {
+      console.log("User:", activeUsers.get(socket.id).username);
+    }
     console.log("Updated Title:", data);
     socket.to(socket.room).emit("updated_notes_title", data);
   });

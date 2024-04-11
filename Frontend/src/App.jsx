@@ -30,7 +30,12 @@ function App() {
   // Class Note Pages State
   const [classNotes, setClassNotes] = useState([]);
   // State to store selected note
-  const [selectedNote, setSelectedNote] = useState(null);
+  // const [selectedNote, setSelectedNote] = useState(null);
+
+  const [selectedNote, setSelectedNote] = useState(() => {
+    const savedNote = sessionStorage.getItem('selectedNote');
+    return savedNote ? JSON.parse(savedNote) : null;
+  });
 
   // Load active users from session storage on component mount
   // const [activeUsers, setActiveUsers] = useState(() => {

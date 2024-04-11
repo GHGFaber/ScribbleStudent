@@ -241,6 +241,11 @@ function Sidebar({
     sessionStorage.setItem("classNotesDropdownVisible", classNotesDropdownVisible);
   }, [classNotesDropdownVisible]);
 
+  // save selected note to sessionStorage when it changes
+  useEffect(() => {
+    sessionStorage.setItem('selectedNote', JSON.stringify(selectedNote));
+  }, [selectedNote]);
+
   useEffect(() => {
     getUserNotes();
     getClassNotes();

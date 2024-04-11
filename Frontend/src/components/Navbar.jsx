@@ -80,7 +80,7 @@ function Navbar({
       //remove user from active users list
       socket.emit("logout", username);
       // Clear session storage
-      //sessionStorage.clear();
+      sessionStorage.clear();
       window.location.href = "/login-page"; // Navigate to login page
     } catch (error) {
       console.error("Error during logout", error);
@@ -177,7 +177,6 @@ function Navbar({
         );
         //set current room info
         setRoom({ Name: defaultRoom, ID: classID });
-        //set current room info
         socket.emit("join_room", defaultRoom);
         console.log("Deafult room: ", defaultRoom);
         console.log("Default classID: ", formattedData[0].classID);
@@ -231,12 +230,14 @@ function Navbar({
       setRoom({ Name: room, ID: classID }); //set current room info
       console.log("class: ", room);
       console.log("ClassID: ", classID);
-      //user join
-      socket.emit("join_room", room);
       // socket.emit("login", username, userAvatar, room);
-      // Clear chat
-      setChats([]);
-      setChats(messageData);
+      if (chats) {
+        // only join room if in chatroom
+        socket.emit("join_room", room);
+        // Clear chat
+        setChats([]);
+        setChats(messageData);
+      }
     }
   };
 

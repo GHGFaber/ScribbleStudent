@@ -146,7 +146,7 @@ function Notebook(props) {
     updateTimer = setTimeout(() => {
       // update notes once timer runs out
       updateNotes();
-    }, 2000);
+    }, 1000);
   }
 
   // Update notes after change is made to selectedNote
@@ -205,9 +205,9 @@ function Notebook(props) {
       // emit note chnages to others in room
       // (Causing recurssion when more than one user in the shared notes)
       // Update notes function is the cause of the resending socket problem
-      debouncedUpdate();
+      // debouncedUpdate();
       // instead of debounce, use timer to know when to update all at once
-      // delayedUpdate();
+      delayedUpdate();
       // updateNotes();
       getClassNotes();
     } else {
@@ -229,7 +229,7 @@ function Notebook(props) {
       }
     });
 
-    // // Receive real time note title change
+    // Receive real time note title change
     socket.on("updated_notes_title", (data) => {
       if (selectedNote && selectedNote.description !== data) {
         console.log("title update received");
@@ -249,6 +249,11 @@ function Notebook(props) {
   // }, [selectedNote]);
   }, [socket]);
 
+  // Set the room for the selectedNote when in Notebook
+  useEffect(() => {
+    socket.emit("join_room", selectedNote.fileID);
+  }, []);
+
   //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   // Whats left:
   // - Use sockets to send selectedNote data in real time to all users in class room
@@ -264,11 +269,16 @@ function Notebook(props) {
     // Check if the new text consists of only spaces
     if (newText !== selectedNote.text) {
       // If it's only spaces, update state and emit socket event immediately
-      setSelectedNote((prevSelectedNote) => ({
-        ...prevSelectedNote,
+      // setSelectedNote((prevSelectedNote) => ({
+      //   ...prevSelectedNote,
+      //   text: newText,
+      //   modified: true,
+      // }));
+      setSelectedNote({
+        ...selectedNote,
         text: newText,
         modified: true,
-      }));
+      });
       console.log("text emitted");
       socket.emit("typing-notes", newText);
     }
@@ -330,18 +340,18 @@ function Notebook(props) {
                       newTitle !== "" &&
                       newTitle !== selectedNote.description
                     ) {
-                      // setSelectedNote({
-                      //   ...selectedNote,
-                      //   description: newTitle,
-                      //   fileName: newTitle + ".txt",
-                      //   modified: true,
-                      // });
-                      setSelectedNote((prevSelectedNote) => ({
-                        ...prevSelectedNote,
+                      setSelectedNote({
+                        ...selectedNote,
                         description: newTitle,
                         fileName: newTitle + ".txt",
                         modified: true,
-                      }));
+                      });
+                      // setSelectedNote((prevSelectedNote) => ({
+                      //   ...prevSelectedNote,
+                      //   description: newTitle,
+                      //   fileName: newTitle + ".txt",
+                      //   modified: true,
+                      // }));
                       
                     }
                   }}
