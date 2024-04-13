@@ -174,6 +174,8 @@ function Sidebar({
         });
         // Update class notes list
         getClassNotes();
+        // emit for users to get new class list
+        socket.emit("new-class-list");
       } catch (error) {
         console.error("Error adding new class note:", error);
       }
@@ -203,13 +205,15 @@ function Sidebar({
   // Set the note that the user clicks
   // If user clicks personal note, room should be 
   // set back to previous class room.Name
-  const setUserNote = (note) => {
+  const setUserNote = async (note) => {
     try {
+      // set the selectedNote for initial viewing
+      setSelectedNote(note);
+
       console.log("page clicked:", note);
       // Set room back to class room 
       socket.emit("join_room", room.Name);
-      // Set the note that the user clicked
-      setSelectedNote(note);
+
     } catch (error) {
       console.error("Error setting user note:", error);
     }
@@ -220,23 +224,30 @@ function Sidebar({
   // User should grab latest changes of class note before setting to selectedNote
   const setClassNote = async (note) => {
     try {
-      // // get latest note changes before setting selectedNote
-      // const response = await axios.post("http://localhost:3000/latest-note-changes", {
-      //   fileID: note.fileID,
-      // });
+      // set the selectedNote for initial viewing
+      setSelectedNote(note);
+      // join the room for the note selected
+      const noteRoom = note.fileID;
+      socket.emit("join_room", noteRoom);
+
+      // get latest note changes before setting selectedNote
+      const response = await axios.post("http://localhost:3000/latest-note-changes", {
+        fileID: note.fileID,
+      });
+      const newNote = response.data.noteData[0];
 
       // Show latest changes
-      // console.log("page clicked:", response.data.noteData[0]);
-      console.log("page clickednote:", note);
+      // console.log("page clicked:", newNote.text);
+      // console.log("page clickednote:", note.text);
 
-      // Join room with note.fileID as the room name
-      const noteRoom = note.fileID;
-      // const noteRoom = response.data.noteData[0].fileID;
-
-      socket.emit("join_room", noteRoom);
-      // Set the note that the user clicked
-      setSelectedNote(note);
-      // setSelectedNote(response.data.noteData[0]);
+      // If the updated data does not equal the initial data
+      // then update the selected Note
+      if (note.text !== newNote.text || note.description !== newNote.description) {
+        console.log("Old Data !== New Data");
+        setSelectedNote(response.data.noteData[0]);
+      } else {
+        console.log("Old Data === New Data");
+      }
     } catch (error) {
       console.error("Error setting user note:", error);
     }
@@ -257,11 +268,22 @@ function Sidebar({
     sessionStorage.setItem('selectedNote', JSON.stringify(selectedNote));
   }, [selectedNote]);
 
+  // class room change
   useEffect(() => {
     getUserNotes();
     getClassNotes();
     console.log("Get notes:", notePages);
   }, [room]);
+
+  // sockets
+  useEffect(() => {
+    if (!chats) {
+      // update class list 
+      socket.on("update-class-list", () => {
+        getClassNotes();
+      });
+    }
+  }, [socket]);
 
   return (
     <div>

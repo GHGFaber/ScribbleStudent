@@ -216,6 +216,16 @@ io.on("connection", (socket) => {
     }
     console.log("Updated Title:", data);
     socket.to(socket.room).emit("updated_notes_title", data);
+    // have all users update class list
+    socket.broadcast.emit("update-class-list");
+    // io.emit("update-class-list");
+  });
+
+  // Handle updating class list when notes have been added or deleted
+  socket.on("new-class-list", () => {
+    // emit to all users to update class list
+    socket.broadcast.emit("update-class-list");
+    //  io.emit("update-class-list");
   });
 
 });
@@ -478,10 +488,14 @@ app.post("/delete-user-note", async (req, res) => {
     const userID = req.session.userid;
 
     // Delete note
-    await pool.query("DELETE FROM files WHERE fileID = ? AND userID = ?", [
+    await pool.query("DELETE FROM files WHERE fileID = ?", [
       fileID,
-      userID,
     ]);
+    // // Delete note
+    // await pool.query("DELETE FROM files WHERE fileID = ? AND userID = ?", [
+    //   fileID,
+    //   userID,
+    // ]);
 
     // Send success response
     res.status(200).send("Note deleted successfully");

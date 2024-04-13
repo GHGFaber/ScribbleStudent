@@ -192,6 +192,8 @@ function Notebook(props) {
         // Update note list
         getUserNotes();
         getClassNotes();
+        // emit for users to get new class list
+        socket.emit("new-class-list");
         // Reset selectedNote to null
         setSelectedNote(null);
       }

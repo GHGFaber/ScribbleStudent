@@ -176,6 +176,7 @@ function Navbar({
           formattedData[0].className
         );
         //set current room info
+        // setRoom({ Name: defaultRoom, ID: classID });
         setRoom({ Name: defaultRoom, ID: classID });
         socket.emit("join_room", defaultRoom);
         console.log("Deafult room: ", defaultRoom);
