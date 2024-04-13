@@ -7,7 +7,7 @@ import AddClass from "../components/AddClass.jsx";
 import moment from "moment"; // For timestamp
 import CreateClass from "../components/CreateClass.jsx";
 import LeaveClass from "../components/LeaveClass.jsx";
-import { get } from "firebase/database";
+// import { get } from "firebase/database";
 
 // renders the bar that appears to the left of the screen
 // contains menu selections for the chatroom and individual note pages
