@@ -11,18 +11,7 @@ import moment from "moment";
 // page that contains the pages of the user's virtual notebook
 // function Notebook(props, targetPage, username) {
 function Notebook(props) {
-  const {
-    notePages,
-    setNotes,
-    classes,
-    setClasses,
-    username,
-    setUsername,
-    selectedNote,
-    setSelectedNote,
-    room,
-    setRoom,
-  } = props;
+  const { notePages, setNotes, classes, setClasses, username, setUsername, selectedNote, setSelectedNote, room, setRoom, directChats, setDirectChats, friendInfo, setFriendInfo } = props;
 
   const toolbarOptions = [
     ["bold", "italic", "underline", "strike"], // toggled buttons
@@ -167,13 +156,11 @@ function Notebook(props) {
       {
         // set_init_value()
       }
-      <Navbar
-        classes={classes}
-        setClasses={setClasses}
-        username={username}
-        setUsername={setUsername}
-        room={room}
-        setRoom={setRoom}
+      <Navbar 
+        classes={classes} setClasses={setClasses} 
+        username={username} setUsername={setUsername}
+        room={room} setRoom={setRoom} directChats={directChats} setDirectChats={setDirectChats}
+        friendInfo={friendInfo} setFriendInfo={setFriendInfo}
       />
       <div className="container-fluid">
         <div className="row no-gutters">

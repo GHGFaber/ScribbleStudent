@@ -107,6 +107,8 @@ io.on("connection", (socket) => {
 
   // Receive username from client
   socket.on("login", (username, avatar) => {
+    console.log("Entering login socket...");
+
     // Remove from inactive users if exists
     let convertedAvatar = "";
 
@@ -125,7 +127,10 @@ io.on("connection", (socket) => {
       // Broadcast updated list of inactive active users
       io.emit("inactiveUsers", Array.from(inactiveUsers.values()));
       // Add user to default class room
+      //display_users();
     }
+
+    console.log("Login: the socket id for " + username + " is " + socket.id);
   });
 
   // Receive username from logout
@@ -198,6 +203,23 @@ io.on("connection", (socket) => {
     }, 3000); // Adjust the delay as needed
   });
 
+  socket.on("send_direct_message", (data) => {
+    console.log("send direct message socket has ran");
+    // Include username along with message data
+    // const messageData = {
+    //   username: data.username,
+    //   message: data.message,
+    //   room: data.room
+    // };
+    // console.log("To room: ", socket.room);
+    const messageData = {
+      username: data.username,
+      message: data.message,
+      avatar: data.avatar
+      //room: data.room
+    };
+    socket.to(socket.room).emit("receive_direct_message", messageData);
+  });
   // // Broadcast message to users
   // socket.on("send_broadcast", (data) => {
   //   // Include username along with message data
@@ -375,6 +397,22 @@ app.post("/messages", async (req, res) => {
   }
 });
 
+// // update chatroom messages
+// app.post("/update-messages", async (req, res) => {
+//   try {
+//     const { message, timestamp, classID } = req.body;
+//     const userID = req.session.userID;
+
+//     // Update the message in the chatrooms table for the specified chatroom ID
+//     await pool.query("UPDATE chatrooms SET message = ?, timestamp = ? WHERE userID = ? AND classID = ?", [message, timestamp, userID, classID]);
+
+//     res.json({ message: "Message updated successfully" });
+//   } catch (error) {
+//     console.error("Error updating message:", error);
+//     res.status(500).send("Internal server error");
+//   }
+// });
+
 // Insert message into chatroom
 app.post("/insert-message", async (req, res) => {
   try {
@@ -480,6 +518,7 @@ app.post("/delete-note", async (req, res) => {
   }
 });
 
+
 // // generate secret key
 // const crypto = require('crypto');
 
@@ -540,6 +579,7 @@ app.get("/user-info", async (req, res) => {
         res.status(404).send("User not found");
       }
       //
+      // console.log("Login: the socket id for " + username + " is " + socket.id);
       console.log("Current Session ID:", req.sessionID);
       //
     } else {
@@ -554,7 +594,380 @@ app.get("/user-info", async (req, res) => {
   }
 });
 
-// End of external modification ++++++++++++++++++++++++++++++++++++++++++++++++
+function display_users() {
+  console.log("++++++++++++++++++++++++++++++++++++++++++++");
+  console.log("ACTIVE USERS:");
+  console.log(activeUsers);
+  console.log("++++++++++++++++++++++++++++++++++++++++++++");
+  console.log("INACTIVE USERS:");
+  console.log(inactiveUsers);
+  console.log("++++++++++++++++++++++++++++++++++++++++++++");
+}
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// START OF DIRECT MESSAGE ENDPOINTS
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+// use session ID of the other user instead
+
+// how to structure:
+// look into how one chatroom works in a smaller scale
+// for two users
+// class with one other user = DM
+// use a randomized friend code
+
+// try on login, randomly make a code
+
+// one other sol: randomly make code on login, saved on database table
+// If they share it, the person will be able to add em
+
+// Suggestion: If we had static codes, don't want it to have the person save it
+// and give to other users
+
+// is socket ID feasible????
+// -- It could be feasible for socket.io DMs, it should work
+// 
+
+// by the start of the weekend of the 20th - clean up the code
+// get the DMs done
+// website is best is can be
+// do we need extra help??????????
+// start merging on Tuesday on Expo week
+
+
+app.post("/get-friend-id-from-code", async (req, res) => {
+  try {
+
+    // takes in friend code as parameter
+    const { friendCode } = req.body;
+    const friendUsername = activeUsers.get(friendCode).username;
+
+    if (friendUsername) {
+      console.log("Friend will be retrieved.");
+      const friendID = await pool.query("select userID from user where username = ?", [friendUsername]);
+
+      if (friendID) {
+        res.json({
+          friendID: friendID
+      })}
+    } else console.error("The friend code is undefined: " + error);
+
+  } catch (error) {
+    res.status(500).send("Internal server error");
+    console.error("Error retrieving friend ID: ", error);
+  }
+
+});
+app.post("/add-friend-dm", async (req, res) => {
+  try {
+    let userID = '';
+    if (req.session) {
+      userID = req.session.userid;
+      console.log("user's session ID is " + userID);
+    }
+    const {friendID} = req.body;
+    console.log("friend id (unfiltered) is " + JSON.stringify(friendID[0]));
+    const extractedFriendID = friendID[0].userID;
+    // this must be a JSON object
+    // const userIDs = [userID, friendID];
+    console.log("The friend ID used for add-friend-dm is " + extractedFriendID);
+
+    const updateDMOfUser = await pool.query("insert into dmList (participantID) values (?)", [userID]);
+    const createdDMID = await pool.query("select LAST_INSERT_ID() as lastID");
+
+    // created DM ID is not JSON, it is a JS object
+    const extractedID = Object.values(createdDMID[0])[0].lastID;
+
+    console.log("add-friend-dm: extracted ID is: " + extractedID);
+    //console.log("add-friend-dm: the last createdDMID is " + createdDMID[0].lastID);
+
+    if (updateDMOfUser) {
+
+      //const temp = await pool.query("select * from dmList");
+      //console.log("Temp is: " + JSON.stringify(temp[0]));
+      
+      //const midResponse = await pool.query("select LAST_INSERT_ID");
+      //console.log(midResponse.data);
+      //const dmID = midResponse[0].dmID;
+
+      if (createdDMID) {
+        const updateDMOfFriend = await pool.query("insert into dmList (dmID, participantID) values (?, ?)", [extractedID, extractedFriendID]);
+
+        if (updateDMOfUser && updateDMOfFriend) res.json("DM successfully added");
+        else res.status(404).send("Error updating DMs");
+
+      } else res.status(404).send("Error adding friend to DM");
+      
+      
+    } else res.status(404).send("Error adding user to DM");
+
+    
+
+    //res.json("test");
+
+  } catch (error) {
+    res.status(500).send("Internal server error");
+    console.error("Error adding new DM: ", error);
+  }
+});
+app.post("/add-to-friend-list", async (req, res) => {
+
+  // get the user ID from the friend list
+  
+  try {
+    const {friendID} = req.body;
+    console.log("The request is: " + JSON.stringify(friendID));
+    const friendIDNum = friendID[0].userID;
+    const userID = req.session.userid;
+    console.log("the requested friend ID is " + friendIDNum);
+    console.log("the userID is " + userID);
+
+    // confirm whether or not the friend is already added to the friend list
+
+    const response0 = await pool.query("select * from friendList where userID = ? and friendID = ?", [userID, friendIDNum]);
+    //console.log(JSON.stringify(response0[0]));
+    //console.log("What is the friend list length? It is " + response0[0].length);
+    console.log("What is the friend ID? It is " + friendIDNum);
+    console.log("What is your ID? It is " + userID);
+
+    // friend ID is not cooperating with Sql
+
+    if (response0) {
+      if (response0[0].length !== 0) console.log("Error: friend alrady exists");
+      else {
+        const response1 = await pool.query("insert into friendList values (?, ?)", [userID, friendIDNum]);
+        const response2 = await pool.query("insert into friendList values (?, ?)", [friendIDNum, userID]);
+  
+        if (response1 && response2) console.log("Friend has been successfully added to list.");
+        else console.log("Error: friend list not updated");
+      }
+    } else console.log("error finding the friend");
+
+  
+/*
+    const response1 = await pool.query("select JSON_ARRAYAGG(friendID) from friendList where userID = ?", [userID]);
+    // console.log("response 1 is: " + JSON.stringify(response1));
+    console.log("friend ID is: " + JSON.stringify(friendID));
+    
+    let newFriendList = response1;
+    console.log("response1 is " + JSON.stringify(newFriendList));
+    newFriendList.push(friendID);
+    console.log("new friend list is: " + JSON.stringify(newFriendList));
+    const formattedFriendList = JSON.stringify(newFriendList);
+    
+
+    
+    const response2 = await pool.query("update user set friendsList = ? where userID = ?", [JSON.stringify(newFriendList), userID]);
+
+    if (response2) {
+      console.log("User's friend list successfully updated");
+    } else console.log("Error: user's friend list not updated");
+*/
+
+  } catch (error) {
+    res.status(500).send("Internal server error");
+    console.error("Error adding to friend list: " + error);
+  }
+})
+
+app.post("/grab-friends", async (req, res) => {
+  try {
+    const userID = req.session.userid;
+    let convertedFriendList = [];
+
+    const checkFriendList = await pool.query("select * from friendList");
+
+    console.log("The friend lists for all users are: " + JSON.stringify(checkFriendList[0]));
+    console.log("My user ID is: " + userID);
+
+    const response = await pool.query("select user.username, user.avatar, user.userID from user cross join friendList on user.userID = friendList.friendID where friendList.userID = ?", [userID]);
+    
+    // TODO: also fetch the dm ID here too
+
+    if (response && response[0].length !== 0) {
+      convertedFriendList = response[0].map((item) => ({
+        username: item.username,
+        avatar: item.avatar,
+        userID: item.userID
+      }))
+    } else console.log("No friends!!!!!!!!!!");
+/*
+    friendListKeys.forEach(async function(key) {
+      response = await pool.query("select user.username, user.avatar, user.userID from user where user.userID = ?", [friendList[key]]);
+      //convertedFriendList.push(retrievedFriend);
+    })
+
+    if (response && response.length !== 0) {
+      console.log("app: the response is: " + JSON.stringify(response));
+      retrievedFriend = response.data.map((item) => ({
+        username: item.username,
+        avatar: item.avatar,
+        userID: item.userID
+      }))
+    } else console.log("No friends!!!!!!!!!");
+ */  
+   
+    res.json({
+      friends: convertedFriendList
+    })
+  } catch (error) {
+    res.status(500).send("Internal server error");
+    console.error("Error adding new DM: ", error);
+  }
+});
+
+app.post("/match-dm-ids", async (req, res) => {
+  try {
+    const {friendID} = req.body;
+    const userID = req.session.userid;
+    let theDMString = "";
+    console.log("The friend ID for DM IDs is: " + JSON.stringify(friendID));
+    console.log("If I can't have " + userID + ", I don't want nobody baby...");
+
+    //const temp = await pool.query("select * from dmList");
+
+    //console.log("the temp is: " + JSON.stringify(temp[0]));
+
+    const response1 = await pool.query("select JSON_ARRAYAGG(dmID) as theID from dmList where participantID = ?", [friendID]);
+    console.log("The response 1 for DM IDs is: " + JSON.stringify(response1[0][0].theID));
+
+    const firstTargetDM = response1[0][0].theID;
+    //const firstTargetDM = JSON.stringify(response1[0][0].theID).toString();
+
+    console.log("firstTargetDM is " + firstTargetDM);
+
+    console.log("Your query looks like this: select dmID from dmList where dmID in (" + firstTargetDM + ") and participantID = " + userID);
+
+    if (firstTargetDM) {
+      const response2 = await pool.query("select dmID from dmList where dmID in (?) and participantID = ?", [firstTargetDM, userID]);
+      if (response2 && response2.length !== 0) {
+
+        console.log("The final response for match dm ids is " + JSON.stringify(response2[0]));
+        res.json({
+          dmID: response2[0][0].dmID
+        })
+        console.log("DM ID successfully retrieved");
+      } else res.status(404).send("Error fetching DM ID");
+    } else res.status(404).send("Error identifying friend DM");
+
+    /*
+    const users = [];
+    const inverseUsers = [];
+    users.push(friendID);
+    users.push(userID);
+    inverseUsers.push(userID);
+    inverseUsers.push(friendID);
+    */
+
+    //each user has their own JSON file
+    // ex. if Hello has 1, 2, 3
+    // 3 is Levi's ID
+    // Compare friend ID -> here are their DMs
+    // Levi has Hello's ID (1, 2, 4)
+    // comparing individual DMs
+
+    // don't match DM IDs - match friend lists
+    // if they have friends - find friend IDs in list
+    // match user IDs
+
+    // if grabbing everything... store every message?
+
+    // use JSON array???????
+
+    // overhead concerns
+
+    // we could also SELECT first
+
+    // use the sockets -> grab socket ID
+
+    // const [result] = await pool.query("select dmID from dmList where JSON_ARRAYAGG(participants) = ? or JSON_ARRAYAGG(participants) = ?", [users, inverseUsers]);
+    
+  } catch (error) {
+    res.status(500).send("Internal server error");
+    console.error("Error matching DM: ", error);
+  }
+});
+
+app.post("/direct_messages", async (req, res) => {
+  try {
+    //grab classID from frontend
+    const { dmID } = req.body;
+    // fetch chatroom messages
+    const [userData] = await pool.query(
+      "SELECT directMessages.messages, directMessages.timestamp, user.username, user.avatar FROM directMessages INNER JOIN user ON user.userID = directMessages.participantID WHERE directMessages.dmID = ? ORDER BY directMessages.timestamp ASC",
+      [dmID]
+    );
+  
+    // data stored in an array of objects
+    // Ex: userData[0].message grabs the message from the first object
+    console.log("Message");
+
+    // return data to frontend
+    res.json({
+      userData: userData,
+    });
+  } catch (error) {
+    console.error("Error fetching chatroom messages:", error);
+    res.status(500).send("Internal server error");
+  }
+});
+
+// Insert message into direct message session
+app.post("/insert-direct-message", async (req, res) => {
+  try {
+    // grab direct message data from frontend (send in same order from frontend)
+    const { message, timestamp, dmID, username } = req.body;
+    console.log("Insert message payload is: ");
+    console.log("Message: " + message);
+    console.log("Timestamp: " + timestamp);
+    console.log("DM ID: " + dmID);
+    // userID (session)
+    const userIDResponse = await pool.query("select userID from user where username = ?", [username]);
+    console.log("the userIDResponse is: " + JSON.stringify(userIDResponse));
+    const userID = userIDResponse[0][0].userID;
+    // insert chatroom data
+    await pool.query(
+      "INSERT INTO directMessages (participantID, dmID, timestamp, messages) VALUES (?, ?, ?, ?)",
+      [userID, dmID, timestamp, message]
+    );
+  } catch (error) {
+    console.error("Error inserting message:", error);
+    res.status(500).send("Internal server error");
+  }
+});
+
+app.post("/get-friend-info", async (req, res) => {
+  try {
+   const {friendID} = req.body;
+   console.log("get-friend-info: friendID is " + JSON.stringify(friendID));
+      // Query the database to retrieve user information based on user ID
+      const [userData] = await pool.query(
+        `select user.username, 
+                user.email, 
+                user.avatar, 
+                JSON_ARRAYAGG(classes.className) as classes
+                 from user 
+                 LEFT JOIN classList ON user.userID = classList.userID
+                LEFT JOIN classes ON classList.classID = classes.classID 
+                where user.userID = ?;`,
+        [friendID]
+      );
+      if (userData.length === 1) {
+        // User data found, send user information to the frontend
+        res.json(userData);
+      } else {
+        // User not found in the database
+        res.status(404).send("User not found");
+      }
+  } catch (error) {
+    // Error occurred while fetching user information
+    console.error("Error fetching user information:", error);
+    res.status(500).send("Internal server error");
+  }
+});
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// END OF DIRECT MESSAGE ENDPOINTS
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 // Check login credentials
 // Updates user accounts from the user update page

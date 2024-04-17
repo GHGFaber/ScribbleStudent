@@ -30,6 +30,7 @@ function LoginPage() {
         };
         sessionStorage.setItem("userData", JSON.stringify(dataToStore));
 
+        console.log("Emitting login socket...");
         // Send the username to socket.io ('username')
         socket.emit("login", response.data.username, response.data.avatar);
 

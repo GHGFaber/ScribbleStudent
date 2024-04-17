@@ -4,6 +4,7 @@ import LoginPage from "./pages/LoginPage.jsx";
 import CreateAccount from "./pages/CreateAccount.jsx";
 import Chatroom from "./pages/Chatroom.jsx";
 import Notebook from "./pages/Notebook.jsx";
+import DirectMessages from "./pages/DirectMessages.jsx";
 import { createRef, useState, useEffect } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import axios from "axios";
@@ -17,14 +18,34 @@ function App() {
   const [classes, setClasses] = useState([]);
   // Chats State
   const [chats, setChats] = useState([]);
+
+  const [directChats, setDirectChats] = useState([]);
+
   // Username State
   const [username, setUsername] = useState(null);
   // Room State
   const [room, setRoom] = useState([]);
+  // DM Room State
+  const [directRoom, setDirectRoom] = useState([]);
   // Note Pages State
   const [notePages, setNotes] = useState([]);
   // State to store selected note
   const [selectedNote, setSelectedNote] = useState(null);
+
+  const [friendInfo, setFriendInfo] = useState();
+  const [profileInfo, setProfileInfo] = useState();
+
+  /*
+  const [listOfFriends, setListOfFriends] = useState([
+    {
+      username: "Ringo334"
+    }
+  ]);
+  */
+
+  useEffect(() => {
+    // call get_friends API
+  }, []);
 
   // Load active users from session storage on component mount
   const [activeUsers, setActiveUsers] = useState(() => {
@@ -38,6 +59,25 @@ function App() {
     return savedUsers ? JSON.parse(savedUsers) : [];
   });
 
+  // Load user's note pages from session storage on component mount
+  const [userNotePages, setUserNotePages] = useState(() => {
+    const savedNotes = localStorage.getItem("notes");
+    return savedNotes ? JSON.parse(savedNotes) : [];
+  });
+
+   // Load user's note pages from session storage on component mount
+   /*
+   const [directMessages, setDirectMessages] = useState(() => {
+    /*
+    const directMessages = localStorage.getItem("direct_messages");
+    return directMessages ? JSON.parse(directMessages) : [];
+  });
+  */
+
+  useEffect(() => {
+    console.log("app.jsx: notes are: " + JSON.stringify(userNotePages));
+  }, [userNotePages]);
+
   return (
     <BrowserRouter>
       <div className="App">
@@ -45,23 +85,24 @@ function App() {
           <Route index element={<Home />} />
           <Route path="login-page" element={<LoginPage />} />
           <Route path="create-account" element={<CreateAccount />} />
-          <Route
-            path="notebook"
-            element={
-              <Notebook
-                classes={classes}
-                setClasses={setClasses}
-                username={username}
-                setUsername={setUsername}
-                notePages={notePages}
-                setNotes={setNotes}
-                selectedNote={selectedNote}
-                setSelectedNote={setSelectedNote}
-                room={room}
-                setRoom={setRoom}
+          <Route path="notebook" 
+                 element={
+                  <Notebook 
+                    classes={classes} 
+                    setClasses={setClasses} 
+                    username={username} 
+                    setUsername={setUsername} 
+                    notePages={notePages} 
+                    setNotes={setNotes} 
+                    selectedNote={selectedNote} 
+                    setSelectedNote={setSelectedNote} 
+                    room={room} 
+                    setRoom={setRoom}
+                    friendInfo={friendInfo}
+                    setFriendInfo={setFriendInfo}
+                  />
+                } 
               />
-            }
-          />
           <Route
             path="chatroom"
             element={
@@ -72,6 +113,8 @@ function App() {
                 setClasses={setClasses}
                 chats={chats}
                 setChats={setChats}
+                directChats={directChats}
+                setDirectChats={setDirectChats}
                 username={username}
                 setUsername={setUsername}
                 activeUsers={activeUsers}
@@ -82,6 +125,33 @@ function App() {
                 setNotes={setNotes}
                 selectedNote={selectedNote}
                 setSelectedNote={setSelectedNote}
+                friendInfo={friendInfo}
+                setFriendInfo={setFriendInfo}
+              />
+            }
+          />
+          <Route
+            path="direct-messages"
+            element={
+              <DirectMessages
+                classes={classes}
+                setClasses={setClasses}
+                chats={chats}
+                setChats={setChats}
+                directChats={directChats}
+                setDirectChats={setDirectChats}
+                username={username}
+                setUsername={setUsername}
+                activeUsers={activeUsers}
+                setActiveUsers={setActiveUsers}
+                inactiveUsers={inactiveUsers}
+                setInactiveUsers={setInactiveUsers}
+                room={room}
+                setRoom={setRoom}
+                friendInfo={friendInfo}
+                setFriendInfo={setFriendInfo}
+                profileInfo={profileInfo}
+                setProfileInfo={setProfileInfo}
               />
             }
           />

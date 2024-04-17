@@ -30,6 +30,10 @@ function Navbar({
   setClasses,
   username,
   setUsername,
+  directChats,
+  setDirectChats,
+  friendInfo,
+  setFriendInfo
 }) {
   // Create a ref for Popup
   const popupRef = useRef(null);
@@ -60,6 +64,7 @@ function Navbar({
   };
 
   const [userProfileIsOn, setUserProfileIsOn] = useState(false);
+  const [listOfFriends, setListOfFriends] = useState([]);
   const [userData, setUserData] = useState([]);
   const testClosureString = "This originates from Navbar.jsx";
   const formData = useRef(null);
@@ -172,6 +177,58 @@ function Navbar({
     }
   };
 
+  async function get_default_dm_room() {
+    try {
+      let formattedListOfFriends = [];
+      const list = await axios.post("http://localhost:3000/grab-friends");
+      console.log("Navbar: the dm list is: " + JSON.stringify(list));
+      if (list && list.length !== 0) {
+        formattedListOfFriends = list.data.friends.map((item) => ({
+          username: item.username,
+          avatar: item.avatar,
+          userID: item.userID
+        }))
+        setListOfFriends(formattedListOfFriends);
+      } else console.log("Nothing in direct messages!!!!!");
+     
+  
+      if (formattedListOfFriends.length !== 0) {
+        const firstFriendID = formattedListOfFriends[0].userID;
+        console.log("the firstFriendID is " + JSON.stringify(firstFriendID));
+        setFriendInfo(firstFriendID);
+        //console.log("session Storage is " + sessionStorage.getItem("friendID"));
+        const theResponse = await axios.post("http://localhost:3000/match-dm-ids", {
+          friendID: firstFriendID
+        });
+
+        console.log("Return to old " + JSON.stringify(theResponse));
+
+        const dmessageID = theResponse.data.dmID;
+
+        const response = await axios.post("http://localhost:3000/direct_messages", {
+          dmID: dmessageID
+        });
+  
+        const directMessageData = response.data.userData.map((item) => ({
+          username: item.username,
+          timestamp: item.timestamp,
+          message: item.messages,
+          avatar: item.avatar
+        }))
+        setDirectChats(directMessageData);
+        const defaultDMRoom = dmessageID;
+  
+        setRoom(defaultDMRoom);
+        socket.emit("join_room", defaultDMRoom);
+      } else {
+        console.log("User has no friends");
+        setDirectChats([]);
+      }
+    } catch (error) {
+      console.error("Error retrieving friend list: " + error);
+    }
+  }
+
   function turn_on_user_profile() {
     console.log("User profile was originally " + userProfileIsOn);
     console.log("You just pressed turn on user profile");
@@ -235,8 +292,9 @@ function Navbar({
         <div className="class-buttons">
           {/* Added function to display class name of tab clicked */}
           {/* If classes is null, and chats DNE, then do not display tabs */}
+          <ul className="nav-items my-auto">
           {classes && chats && classes.length > 0 && (
-            <ul className="nav-items my-auto">
+            <>
               {classes.map((classInSchool, index) => (
                 <li onClick={() => joinRoom(classInSchool)} key={index}>
                   <label style={{ cursor: "pointer", userSelect: "none" }}>
@@ -251,10 +309,17 @@ function Navbar({
                 </label>
               </li> */}
               {/* End of "Add Class" tab */}
-            </ul>
+            </>
           )}
+            <li onClick={() => get_default_dm_room()}>
+            <Link className="the-link" to="/direct-messages">
+              <label style={{ cursor: "pointer" }}>
+                Direct Messages
+              </label>
+            </Link>
+            </li>
+          </ul>
         </div>
-
         <Popup
           ref={popupRef} // assign ref to popup
           className="signout-button-popup"

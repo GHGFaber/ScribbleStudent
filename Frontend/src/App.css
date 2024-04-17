@@ -844,3 +844,60 @@ input[type="file"] {
   display: contents;
   transition: 5s;
 }
+
+#the-dm-textarea {
+   /* position: absolute; */
+  /* bottom: 0;
+  padding-left: 0px;
+  padding-right: 0px; */
+  position: fixed;
+
+  margin-top: -110px;
+  margin-left: 0px;
+  width: 57%;
+  padding: 10px;
+  /* resize: none; */
+}
+
+#send-dm-button {
+  width: 100%;
+  color: #9090ff;
+  background-color: #ffff90;
+  border: none;
+  border-radius: 30px;
+  margin-top: 10px; /* Added */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Added */
+}
+
+#the-add-friend h4 {
+  font-weight: bold;
+}
+
+#the-add-friend p {
+  margin: 0;
+}
+
+.add-friend-content {
+  background-color: #6c6c90;
+  font-family: "Montserrat";
+  color: #ffff90;
+  border: 2px solid #ffff90;
+  width: 400px;
+  height: auto;
+  top: 30%;
+  left: 35%;
+  position: absolute;
+  padding: 5px 5px 5px 5px;
+}
+
+#add-friend-button {
+  background-color: #ffff90;
+  color: #6c6c90;
+  text-align: right;
+  top: 10px;
+  right: 20px;
+  border-radius: 30px;
+  padding: 5px 10px 5px 10px;
+  border: none;
+  margin: 3px;
+}
