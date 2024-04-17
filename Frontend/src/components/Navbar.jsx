@@ -41,6 +41,11 @@ function Navbar({
     }
   };
 
+  // Grab user data for avatar
+  var storedData = sessionStorage.getItem("userData");
+  // Parse the JSON string to convert it back to an object
+  var userAvatar = JSON.parse(storedData);
+
   // Inside the Navbar component
   const [addClassModalOpen, setAddClassModalOpen] = useState(false);
 
@@ -75,7 +80,7 @@ function Navbar({
       //remove user from active users list
       socket.emit("logout", username);
       // Clear session storage
-      //sessionStorage.clear();
+      sessionStorage.clear();
       window.location.href = "/login-page"; // Navigate to login page
     } catch (error) {
       console.error("Error during logout", error);
@@ -138,7 +143,15 @@ function Navbar({
       // Set deafult room
       if (formattedData.length > 0) {
         // Get message data for default room
-        const classID = formattedData[0].classID;
+        let classID = "";
+        // let classID = room.ID;
+        console.log("room id:", room.ID);
+        console.log("default id:", formattedData[0].classID);
+        if (room.ID) {
+          classID = room.ID;
+        } else {
+          classID = formattedData[0].classID;
+        }
         const response = await axios.post("http://localhost:3000/messages", {
           classID: classID,
         });
@@ -147,20 +160,25 @@ function Navbar({
           username: item.username,
           text: item.message,
           timestamp: item.timestamp,
-          profilePic: item.avatar,
+          userID: item.userID,
+          // profilePic: item.avatar,
           classID: classID,
         }));
 
         setChats(messageData);
-        const defaultRoom = formattedData[0].className;
+        let defaultRoom = "";
+        if (room.Name) {
+          defaultRoom = room.Name;
+        } else {
+          defaultRoom = formattedData[0].className
+        }
         console.log(
           "🚀 ~ fetchClasses ~ formattedData[0].className:",
           formattedData[0].className
         );
-        // setRoom(defaultRoom);
         //set current room info
+        // setRoom({ Name: defaultRoom, ID: classID });
         setRoom({ Name: defaultRoom, ID: classID });
-        //set current room info
         socket.emit("join_room", defaultRoom);
         console.log("Deafult room: ", defaultRoom);
         console.log("Default classID: ", formattedData[0].classID);
@@ -206,7 +224,8 @@ function Navbar({
         text: item.message,
         timestamp: item.timestamp,
         classID: classID,
-        profilePic: item.avatar,
+        userID: item.userID,
+        // profilePic: item.avatar,
       }));
       const room = classData.className;
       console.log("🚀 ~ joinRoom ~ room:", classData.className);
@@ -214,13 +233,21 @@ function Navbar({
       setRoom({ Name: room, ID: classID }); //set current room info
       console.log("class: ", room);
       console.log("ClassID: ", classID);
-      //setRoom(room);
-      socket.emit("join_room", room);
-      // Clear chat
-      setChats([]);
-      setChats(messageData);
+      // socket.emit("login", username, userAvatar, room);
+      if (chats) {
+        // only join room if in chatroom
+        socket.emit("join_room", room);
+        // Clear chat
+        setChats([]);
+        setChats(messageData);
+      }
     }
   };
+
+  // useEffect to save changes to session storage
+  useEffect(() => {
+    sessionStorage.setItem("room", JSON.stringify(room));
+  }, [room]);
 
   useEffect(() => {
     fetchUserInfo();
@@ -235,7 +262,7 @@ function Navbar({
         <div className="class-buttons">
           {/* Added function to display class name of tab clicked */}
           {/* If classes is null, and chats DNE, then do not display tabs */}
-          {classes && chats && classes.length > 0 && (
+          {classes && classes.length > 0 && (
             <ul className="nav-items my-auto">
               {classes.map((classInSchool, index) => (
                 <li onClick={() => joinRoom(classInSchool)} key={index}>

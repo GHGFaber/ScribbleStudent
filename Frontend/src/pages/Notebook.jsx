@@ -7,6 +7,8 @@ import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import axios from "axios";
 import moment from "moment";
+import _ from 'lodash';
+import avatarPic from "../images/default_pic.png";
 
 // page that contains the pages of the user's virtual notebook
 // function Notebook(props, targetPage, username) {
@@ -22,7 +24,15 @@ function Notebook(props) {
     setSelectedNote,
     room,
     setRoom,
+    classNotes,
+    setClassNotes,
   } = props;
+
+  // Grab username object from session storage
+  const storedData = JSON.parse(sessionStorage.getItem("userData"));
+
+  // State for collaborators
+  const [collaborator, setCollaborator] = useState([]);
 
   const toolbarOptions = [
     ["bold", "italic", "underline", "strike"], // toggled buttons
@@ -46,23 +56,23 @@ function Notebook(props) {
     ["link", "image"], // link and image
   ];
 
-  console.log("classes:", classes);
+  // console.log("classes:", classes);
 
-  function set_init_value() {
-    setValue(targetPage.text);
-  }
+  // function set_init_value() {
+  //   setValue(targetPage.text);
+  // }
 
   const module = {
     toolbar: toolbarOptions,
   };
 
-  function get_that_data_wrapper(childData) {
-    return get_that_data(childData);
-  }
+  // function get_that_data_wrapper(childData) {
+  //   return get_that_data(childData);
+  // }
 
-  function dummy() {
-    return 0;
-  }
+  // function dummy() {
+  //   return 0;
+  // }
 
   // Function to handle callback from Sidebar component
   const handleNoteSelection = (noteData) => {
@@ -92,7 +102,7 @@ function Notebook(props) {
   // *** Pass as prop for callback so not having to duplicate code in sidebar ***
   const getUserNotes = async () => {
     try {
-      const response = await axios.get("http://localhost:3000/notes");
+      const response = await axios.get("http://localhost:3000/user-notes");
       console.log("User Notes:", response.data.noteData);
       // Format the notes for displaying
       const formattedNotes = response.data.noteData.map((note) => ({
@@ -109,20 +119,63 @@ function Notebook(props) {
     }
   };
 
+  // Get the notes from the database
+  // *** Pass as prop for callback so not having to duplicate code in sidebar ***
+  const getClassNotes = async () => {
+    try {
+      const response = await axios.post("http://localhost:3000/class-notes", {
+        classID: room.ID,
+      });
+      // Format the notes for displaying
+      const formattedNotes = response.data.noteData.map((note) => ({
+        description: note.description,
+        fileName: note.fileName,
+        fileID: note.fileID,
+        text: note.text,
+      }));
+      // Insert formatted data into storedNotes state
+      console.log("Get New Class Notes");
+      setClassNotes(formattedNotes);
+    } catch (error) {
+      console.error("Error getting notes:", error);
+    }
+  };
+
+  // update notes in database after 2 seconds of no typing
+  const debouncedUpdate = _.debounce((newText) => {
+    updateNotes();
+  }, 2000); // Adjust the debounce delay as needed
+
+  let updateTimer = 0;
+  // update notes after 2 seconds of no typing
+  function delayedUpdate() {
+    clearTimeout(updateTimer); // clear the existing timer
+    updateTimer = setTimeout(() => {
+      // update notes once timer runs out
+      updateNotes();
+    }, 1000);
+  }
+
   // Update notes after change is made to selectedNote
   const updateNotes = async (req, res) => {
     try {
+      // If not the user that modified the note, then don't save to database
+      if (!selectedNote || !selectedNote.modified) return;
       // Update notes in database
-      await axios.post("http://localhost:3000/update-note", {
+      await axios.post("http://localhost:3000/update-user-note", {
         fileID: selectedNote.fileID,
         newFileName: selectedNote.fileName,
         newUploadDate: moment().format("YYYY-MM-DD HH:mm:ss"),
         newDescription: selectedNote.description,
         newText: selectedNote.text,
       });
+      console.log("selectedNote updated:", selectedNote);
       console.log("Note updated in database");
       // Update note list
       getUserNotes();
+      getClassNotes();
+      // socket.emit("notes-update-title", selectedNote.description);
+      socket.emit("typing-notes", selectedNote.text);
     } catch (error) {
       console.error("Error updating notes:", error);
     }
@@ -138,11 +191,14 @@ function Notebook(props) {
 
       if (isConfirmed) {
         // Delete note after user clicks button
-        await axios.post("http://localhost:3000/delete-note", {
+        await axios.post("http://localhost:3000/delete-user-note", {
           fileID: noteID,
         });
         // Update note list
         getUserNotes();
+        getClassNotes();
+        // emit for users to get new class list
+        socket.emit("new-class-list");
         // Reset selectedNote to null
         setSelectedNote(null);
       }
@@ -151,16 +207,121 @@ function Notebook(props) {
     }
   };
 
+
   // When the selecteNote.text changes
   // update the database
   useEffect(() => {
     if (selectedNote !== null && selectedNote !== undefined) {
+      // emit note chnages to others in room
+      // (Causing recurssion when more than one user in the shared notes)
+      // Update notes function is the cause of the resending socket problem
+      // debouncedUpdate();
+      // instead of debounce, use timer to know when to update all at once
+      // delayedUpdate();
       updateNotes();
-      console.log("selectedNote updated:", selectedNote);
+      getClassNotes();
     } else {
       console.log("selectedNote not updated");
     }
   }, [selectedNote]);
+
+  useEffect(() => {
+    // Receive real time note changes
+    socket.on("is_typing_notes", (data) => {
+      if (selectedNote && selectedNote.text !== data) {
+        console.log("text update received:", data);
+        // Update typing users array based on previous state
+        setSelectedNote((prevSelectedNote) => ({
+          ...prevSelectedNote,
+          text: data,
+          modified: false,
+        }));
+      }
+    });
+
+    // Receive real time note title change
+    socket.on("updated_notes_title", (data) => {
+      if (selectedNote && selectedNote.description !== data) {
+        console.log("title update received");
+        // Update typing users array based on previous state
+        setSelectedNote((prevSelectedNote) => ({
+          ...prevSelectedNote,
+          description: data,
+          modified: false,
+        }));
+      }
+    });
+
+    // // Receive collaborator data to join
+    // socket.on("join-collab-data", (data) => {
+    //   // add collaborators
+    //   setCollaborator(prevCollaborator => [...prevCollaborator, data]);
+    // });
+
+    // // Receive collaborator data to leave
+    // socket.on("leave-collab-data", (data) => {
+    //   // remove collaborators
+    //   setCollaborator(prevCollaborator => prevCollaborator.filter(user => user.userID !== data.userID));
+    // });
+
+    return () => {
+      socket.off("is_typing_notes");
+      socket.off("updated_notes_title");
+      // socket.off("join-collab-data");
+      // socket.off("leave-collab-data");
+    };
+  // }, [selectedNote]);
+  }, [socket]);
+
+  // Set the room for the selectedNote when in Notebook
+  useEffect(() => {
+    // if (selectedNote !== null) {
+    //   socket.emit("join_room", selectedNote.fileID);
+    // }
+    socket.emit("join_room", selectedNote.fileID);
+
+    // Set collaborator 
+    setCollaborator([storedData]);
+    // // Emit avatar and username to socket
+    // socket.emit("join-collab", [storedData], selectedNote.fileID);
+  }, []);
+
+
+
+  //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  // - Show cursor for each collaborator
+  //
+  // - Owner of class should be the only one allowed to add and delete a note
+  //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  // Handle onChange event of ReactQuill
+  const handleQuillChange = (newText) => {
+    // Check if the new text consists of only spaces
+    if (newText !== selectedNote.text) {
+      // If it's only spaces, update state and emit socket event immediately
+      // setSelectedNote((prevSelectedNote) => ({
+      //   ...prevSelectedNote,
+      //   text: newText,
+      //   modified: true,
+      // }));
+      setSelectedNote({
+        ...selectedNote,
+        text: newText,
+        modified: true,
+      });
+      console.log("handleQuillChange");
+      // socket.emit("typing-notes", newText);
+    }
+  };
+
+  // Grab users avatar and username (DONE)
+  // Display users avatar and username (DONE)
+  // Emit users avatar and username to socket using selectedNote.fileID
+  // Grab socket data from all users in room
+  // add all other users avatar and username to collaborator state
+  // If selecteNote.fileID changes, emit to socket to have users remove username and avatar from collaborator
+  // Clear collaborator state
+
 
   return (
     <>
@@ -186,9 +347,12 @@ function Notebook(props) {
               setSelectedNote={setSelectedNote}
               room={room}
               setRoom={setRoom}
+              classNotes={classNotes}
+              setClassNotes={setClassNotes}
+              username={username}
             />
           </div>
-          <div className="col-10 column2 the-note-section">
+          <div className="col-10 column2 the-note-section" style={{ whiteSpace: 'pre-wrap' }}>
             {selectedNote && (
               <>
                 <h3
@@ -213,24 +377,51 @@ function Notebook(props) {
                         ...selectedNote,
                         description: newTitle,
                         fileName: newTitle + ".txt",
+                        modified: true,
                       });
+                      // setSelectedNote((prevSelectedNote) => ({
+                      //   ...prevSelectedNote,
+                      //   description: newTitle,
+                      //   fileName: newTitle + ".txt",
+                      //   modified: true,
+                      // }));
+
+                      // emit new title to socket
+                      socket.emit("notes-update-title", newTitle);
                     }
                   }}
                 >
                   {selectedNote.description}
-                </h3>{" "}
+                </h3> {""}
+                {/* {collaborator.map((aUser, index) => (
+                  <div className="the-user-container" key={index} style={{marginLeft: "10px"}}>
+                    <div className="the-user-avatar" style={{cursor: "pointer"}}>
+                      <img
+                        className="avatar-picture"
+                        src={
+                          aUser.avatar && aUser.avatar != ""
+                            ? `data:image/jpeg;base64,${aUser.avatar}`
+                            : avatarPic
+                        }
+                        alt="user-avatar-picture"
+                        title= {aUser.username}
+                      />
+                    </div>
+                  </div>
+                ))} */}
                 {/* Display document title */}
                 <ReactQuill
                   id="the-notes"
                   modules={module}
                   theme="snow"
                   value={selectedNote.text}
-                  onChange={(newText) => {
-                    setSelectedNote((prevSelectedNote) => ({
-                      ...prevSelectedNote,
-                      text: newText,
-                    }));
+                  // Check if change is made by the current user
+                  onChange={(newText, delta, source) => {
+                    if (source === "user") {
+                      handleQuillChange(newText);
+                    }
                   }}
+                  
                 />
                 {/* Delete note button */}
                 <button

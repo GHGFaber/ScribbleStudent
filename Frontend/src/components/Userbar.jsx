@@ -20,14 +20,14 @@ function Userbar({
     socket.on("activeUsers", (users) => {
       setActiveUsers(users);
       // Save active and inactive users to session storage
-      sessionStorage.setItem("activeUsers", JSON.stringify(users));
+      // sessionStorage.setItem("activeUsers", JSON.stringify(users));
     });
 
     // Receive updated list of inactive users
     socket.on("inactiveUsers", (users) => {
       setInactiveUsers(users);
       // Save inactive users to session storage
-      sessionStorage.setItem("inactiveUsers", JSON.stringify(users));
+      // sessionStorage.setItem("inactiveUsers", JSON.stringify(users));
     });
 
     // Clean up the socket listener
@@ -43,7 +43,7 @@ function Userbar({
         <ul className="active-users">
           <h5>Online - {activeUsers.length}</h5>
           {activeUsers.map((aUser, index) => (
-            <div className="the-user-container">
+            <div className="the-user-container" key={index}>
               <div className="the-user-avatar">
                 <img
                   className="avatar-picture"
@@ -62,7 +62,7 @@ function Userbar({
         <ul className="inactive-users">
           <h5>Offline - {inactiveUsers.length}</h5>
           {inactiveUsers.map((iUser, index) => (
-            <div className="the-user-container">
+            <div className="the-user-container" key={index}>
               <div className="the-user-avatar">
                 <img
                   className="avatar-picture"

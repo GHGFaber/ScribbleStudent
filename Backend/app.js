@@ -106,7 +106,7 @@ io.on("connection", (socket) => {
   console.log(`User Connected: ${socket.id}`);
 
   // Receive username from client
-  socket.on("login", (username, avatar) => {
+  socket.on("login", (username, avatar, room) => {
     // Remove from inactive users if exists
     let convertedAvatar = "";
 
@@ -198,15 +198,48 @@ io.on("connection", (socket) => {
     }, 3000); // Adjust the delay as needed
   });
 
-  // // Broadcast message to users
-  // socket.on("send_broadcast", (data) => {
-  //   // Include username along with message data
-  //   const messageData = {
-  //     username: data.username,
-  //     message: data.message
-  //   };
-  //   socket.broadcast.emit("receive_message", messageData);
+  // Users typing in class note book
+  socket.on("typing-notes", (data) => {
+    // immediately update notes
+    if (activeUsers.has(socket.id) && activeUsers.get(socket.id).username !== undefined) {
+      console.log("User:", activeUsers.get(socket.id).username);
+    }
+    console.log("Updated Notes:", data);
+    socket.to(socket.room).emit("is_typing_notes", data);
+  });
+
+  // Handle title change in notebook
+  socket.on("notes-update-title", (data) => {
+    // immediately update notes
+    if (activeUsers.has(socket.id) && activeUsers.get(socket.id).username !== undefined) {
+      console.log("User:", activeUsers.get(socket.id).username);
+    }
+    console.log("Updated Title:", data);
+    socket.to(socket.room).emit("updated_notes_title", data);
+    // have all users update class list
+    socket.broadcast.emit("update-class-list");
+    // io.emit("update-class-list");
+  });
+
+  // Handle updating class list when notes have been added or deleted
+  socket.on("new-class-list", () => {
+    // emit to all users to update class list
+    socket.broadcast.emit("update-class-list");
+    //  io.emit("update-class-list");
+  });
+
+  // // Join collaborative note 
+  // socket.on("join-collab", (data, room) => {
+  //   // emit user data to the rest of the users in the note room
+  //   socket.to(room).emit("join-collab-data", data);
   // });
+
+  // // Leave collaborative note 
+  // socket.on("leave-collab", (data, room) => {
+  //   // emit user data to the rest of the users in the note room
+  //   socket.to(room).emit("leave-collab-data", data);
+  // });
+
 });
 
 // retrieve username of current user in session
@@ -234,6 +267,28 @@ app.get("/username", async (req, res) => {
     }
   } catch (error) {
     console.error("Error fetching user information:", error);
+    res.status(500).send("Internal server error");
+  }
+});
+
+// Load user avatars, usernames, and userIDs
+app.get("/user-avatars", async (req, res) => {
+  try {
+    // fetch all user avatars, usernames, and userIDs
+    const [avatarData] = await pool.query("SELECT user.userID, user.username, user.avatar FROM user WHERE avatar IS NOT NULL");
+    // console.log("data:", avatarData);
+    avatarData.forEach((data) => {
+      if (data.avatar !== null) {
+        data.avatar = data.avatar.toString();
+      }
+    });
+
+    res.json({
+      avatarData: avatarData,
+    });
+
+  } catch(error) {
+    console.error("Error fetching user avatar information:", error);
     res.status(500).send("Internal server error");
   }
 });
@@ -345,15 +400,20 @@ app.post("/messages", async (req, res) => {
     const { classID } = req.body;
     // fetch chatroom messages
     const [userData] = await pool.query(
-      "SELECT chatrooms.message, chatrooms.timestamp, user.username, user.avatar FROM chatrooms INNER JOIN user ON user.userID = chatrooms.userID INNER JOIN classes ON classes.classID = chatrooms.classID WHERE classes.classID = ? ORDER BY chatrooms.timestamp ASC ",
+      "SELECT chatrooms.message, chatrooms.timestamp, user.username, user.userID FROM chatrooms INNER JOIN user ON user.userID = chatrooms.userID INNER JOIN classes ON classes.classID = chatrooms.classID WHERE classes.classID = ? ORDER BY chatrooms.timestamp ASC ",
       [classID]
     );
+    // // fetch chatroom messages
+    // const [userData] = await pool.query(
+    //   "SELECT chatrooms.message, chatrooms.timestamp, user.username, user.userID, user.avatar FROM chatrooms INNER JOIN user ON user.userID = chatrooms.userID INNER JOIN classes ON classes.classID = chatrooms.classID WHERE classes.classID = ? ORDER BY chatrooms.timestamp ASC ",
+    //   [classID]
+    // );
 
-    userData.forEach((data) => {
-      if (data.avatar !== null) {
-        data.avatar = data.avatar.toString();
-      }
-    });
+    // userData.forEach((data) => {
+    //   if (data.avatar !== null) {
+    //     data.avatar = data.avatar.toString();
+    //   }
+    // });
     // // Loads the last 10 messages for the chatroom ordered by timestamp
     // const [userData] = await pool.query(
     //   "SELECT * FROM (SELECT chatrooms.message, chatrooms.timestamp, user.username FROM chatrooms INNER JOIN user ON user.userID = chatrooms.userID INNER JOIN classes ON classes.classID = chatrooms.classID WHERE classes.classID = ? ORDER BY chatrooms.timestamp DESC LIMIT 10) AS last_messages ORDER BY last_messages.timestamp ASC",
@@ -364,7 +424,7 @@ app.post("/messages", async (req, res) => {
     // Ex: userData[0].message grabs the message from the first object
 
     // return data to frontend
-    console.log("the username is " + userData[0].username);
+    // console.log("the username is " + userData[0].username);
     console.log(userData.length);
     res.json({
       userData: userData,
@@ -394,11 +454,11 @@ app.post("/insert-message", async (req, res) => {
 });
 
 // Fetch notes for user
-app.get("/notes", async (req, res) => {
+app.get("/user-notes", async (req, res) => {
   try {
     const userID = req.session.userid;
     const [noteData] = await pool.query(
-      "SELECT fileName, fileID, description, text FROM files WHERE userID = ?",
+      "SELECT fileName, fileID, description, text FROM files WHERE userID = ? AND classID IS NULL",
       [userID]
     );
     // const [noteData] = await pool.query(
@@ -416,7 +476,7 @@ app.get("/notes", async (req, res) => {
 });
 
 // Insert a new file into files table
-app.post("/add-note", async (req, res) => {
+app.post("/add-user-note", async (req, res) => {
   try {
     const { fileName, uploadDate, description, text } = req.body;
     // grab the userID
@@ -440,7 +500,7 @@ app.post("/add-note", async (req, res) => {
 });
 
 // Update note
-app.post("/update-note", async (req, res) => {
+app.post("/update-user-note", async (req, res) => {
   try {
     const { fileID, newFileName, newUploadDate, newDescription, newText } =
       req.body;
@@ -448,8 +508,8 @@ app.post("/update-note", async (req, res) => {
 
     // Update note in files table
     await pool.query(
-      "UPDATE files SET fileName = ?, uploadDate = ?, description = ?, text = ? WHERE userID = ? AND fileID = ?",
-      [newFileName, newUploadDate, newDescription, newText, userID, fileID]
+      "UPDATE files SET fileName = ?, uploadDate = ?, description = ?, text = ? WHERE fileID = ?",
+      [newFileName, newUploadDate, newDescription, newText, fileID]
     );
 
     // Send a success response to the client
@@ -461,22 +521,87 @@ app.post("/update-note", async (req, res) => {
 });
 
 // Delete note
-app.post("/delete-note", async (req, res) => {
+app.post("/delete-user-note", async (req, res) => {
   try {
     const { fileID } = req.body;
     const userID = req.session.userid;
 
     // Delete note
-    await pool.query("DELETE FROM files WHERE fileID = ? AND userID = ?", [
+    await pool.query("DELETE FROM files WHERE fileID = ?", [
       fileID,
-      userID,
     ]);
+    // // Delete note
+    // await pool.query("DELETE FROM files WHERE fileID = ? AND userID = ?", [
+    //   fileID,
+    //   userID,
+    // ]);
 
     // Send success response
     res.status(200).send("Note deleted successfully");
   } catch (error) {
     console.error("Error deleting note:", error);
     res.status(500).send("Internal server error");
+  }
+});
+
+// Fetch notes for class
+app.post("/class-notes", async (req, res) => {
+  try {
+    // Grab the classID
+    const { classID } = req.body;
+    // Select all notes for that class
+    const [noteData] = await pool.query(
+      "SELECT fileName, fileID, description, text FROM files WHERE classID = ?",
+      [classID]
+    );
+    // return array of objects
+    res.json({
+      noteData: noteData,
+    });
+  } catch (error) {
+    console.error("Error fetching user notes:", error);
+    res.status(500), send("Internal server error");
+  }
+});
+
+// Insert a new class note
+app.post("/add-class-note", async (req, res) => {
+  try {
+    const { fileName, uploadDate, description, text, classID } = req.body;
+    // grab the userID
+    const userID = req.session.userid;
+
+    // Insert note into files table
+    await pool.query(
+      "INSERT INTO files (fileName, uploadDate, userID, classID, description, text) VALUES (?, ?, ?, ?, ?, ?)",
+      [fileName, uploadDate, userID, classID, description, text]
+    );
+
+    // Send a success response to the client
+    res.status(200).send("Class note added successfully");
+  } catch (error) {
+    console.error("Error inserting class note:", error);
+    res.status(500).send("Internal server error");
+  }
+});
+
+// Fetch latest note changes from specific note
+app.post("/latest-note-changes", async (req, res) => {
+  try {
+    // Grab the fileID
+    const { fileID } = req.body;
+    // Select the note
+    const [noteData] = await pool.query(
+      "SELECT fileName, fileID, description, text FROM files WHERE fileID = ?",
+      [fileID]
+    );
+    // return array of objects
+    res.json({
+      noteData: noteData,
+    });
+  } catch (error) {
+    console.error("Error fetching updated note:", error);
+    res.status(500), send("Internal server error");
   }
 });
 
@@ -934,6 +1059,7 @@ async function queryDatabase() {
     // console.log(`\nUser ${userID} classlist:\n`, userData);
     // console.log(`\nUser ${userID} available classlist:\n`, userData2);
     // console.log(data);
+
   } catch (error) {
     console.error(error);
   }

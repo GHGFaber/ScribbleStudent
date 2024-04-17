@@ -20,24 +20,38 @@ function App() {
   // Username State
   const [username, setUsername] = useState(null);
   // Room State
-  const [room, setRoom] = useState([]);
+  const [room, setRoom] = useState(() => {
+    const savedRoom = sessionStorage.getItem("room");
+    return savedRoom ? JSON.parse(savedRoom) : [];
+  });
+
   // Note Pages State
   const [notePages, setNotes] = useState([]);
+  // Class Note Pages State
+  const [classNotes, setClassNotes] = useState([]);
   // State to store selected note
-  const [selectedNote, setSelectedNote] = useState(null);
+  // const [selectedNote, setSelectedNote] = useState(null);
+
+  const [selectedNote, setSelectedNote] = useState(() => {
+    const savedNote = sessionStorage.getItem('selectedNote');
+    return savedNote ? JSON.parse(savedNote) : null;
+  });
 
   // Load active users from session storage on component mount
-  const [activeUsers, setActiveUsers] = useState(() => {
-    const savedUsers = sessionStorage.getItem("activeUsers");
-    return savedUsers ? JSON.parse(savedUsers) : [];
-  });
+  // const [activeUsers, setActiveUsers] = useState(() => {
+  //   const savedUsers = sessionStorage.getItem("activeUsers");
+  //   return savedUsers ? JSON.parse(savedUsers) : [];
+  // });
 
+  const [activeUsers, setActiveUsers] = useState([]);
+  
   // Load inactive users session storage on component mount
-  const [inactiveUsers, setInactiveUsers] = useState(() => {
-    const savedUsers = sessionStorage.getItem("inactiveUsers");
-    return savedUsers ? JSON.parse(savedUsers) : [];
-  });
-
+  // const [inactiveUsers, setInactiveUsers] = useState(() => {
+  //   const savedUsers = sessionStorage.getItem("inactiveUsers");
+  //   return savedUsers ? JSON.parse(savedUsers) : [];
+  // });
+  const [inactiveUsers, setInactiveUsers] = useState([]);
+  
   return (
     <BrowserRouter>
       <div className="App">
@@ -59,6 +73,8 @@ function App() {
                 setSelectedNote={setSelectedNote}
                 room={room}
                 setRoom={setRoom}
+                classNotes={classNotes}
+                setClassNotes={setClassNotes}
               />
             }
           />
@@ -82,6 +98,8 @@ function App() {
                 setNotes={setNotes}
                 selectedNote={selectedNote}
                 setSelectedNote={setSelectedNote}
+                classNotes={classNotes}
+                setClassNotes={setClassNotes}
               />
             }
           />
