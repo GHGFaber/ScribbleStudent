@@ -160,7 +160,8 @@ function Navbar({
           username: item.username,
           text: item.message,
           timestamp: item.timestamp,
-          profilePic: item.avatar,
+          userID: item.userID,
+          // profilePic: item.avatar,
           classID: classID,
         }));
 
@@ -223,7 +224,8 @@ function Navbar({
         text: item.message,
         timestamp: item.timestamp,
         classID: classID,
-        profilePic: item.avatar,
+        userID: item.userID,
+        // profilePic: item.avatar,
       }));
       const room = classData.className;
       console.log("🚀 ~ joinRoom ~ room:", classData.className);

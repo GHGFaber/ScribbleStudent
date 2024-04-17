@@ -33,6 +33,16 @@ function LoginPage() {
         // Send the username to socket.io ('username')
         // socket.emit("login", response.data.username, response.data.avatar);
 
+        // Fetch avatar data
+        const response2 = await axios.get("http://localhost:3000/user-avatars");
+        const avatarData = response2.data.avatarData.map((item) => ({
+          // Grab message data
+          avatar: item.avatar,
+          username: item.username,
+          userID: item.userID,
+        }));
+        sessionStorage.setItem("avatarData", JSON.stringify(avatarData));
+
         // Redirect to the chatroom
         navigate("/chatroom");
       } else {

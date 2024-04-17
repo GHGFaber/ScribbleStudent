@@ -236,10 +236,6 @@ function Sidebar({
       });
       const newNote = response.data.noteData[0];
 
-      // Show latest changes
-      // console.log("page clicked:", newNote.text);
-      // console.log("page clickednote:", note.text);
-
       // If the updated data does not equal the initial data
       // then update the selected Note
       if (note.text !== newNote.text || note.description !== newNote.description) {

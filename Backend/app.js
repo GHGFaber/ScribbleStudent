@@ -228,6 +228,18 @@ io.on("connection", (socket) => {
     //  io.emit("update-class-list");
   });
 
+  // // Join collaborative note 
+  // socket.on("join-collab", (data, room) => {
+  //   // emit user data to the rest of the users in the note room
+  //   socket.to(room).emit("join-collab-data", data);
+  // });
+
+  // // Leave collaborative note 
+  // socket.on("leave-collab", (data, room) => {
+  //   // emit user data to the rest of the users in the note room
+  //   socket.to(room).emit("leave-collab-data", data);
+  // });
+
 });
 
 // retrieve username of current user in session
@@ -255,6 +267,28 @@ app.get("/username", async (req, res) => {
     }
   } catch (error) {
     console.error("Error fetching user information:", error);
+    res.status(500).send("Internal server error");
+  }
+});
+
+// Load user avatars, usernames, and userIDs
+app.get("/user-avatars", async (req, res) => {
+  try {
+    // fetch all user avatars, usernames, and userIDs
+    const [avatarData] = await pool.query("SELECT user.userID, user.username, user.avatar FROM user WHERE avatar IS NOT NULL");
+    // console.log("data:", avatarData);
+    avatarData.forEach((data) => {
+      if (data.avatar !== null) {
+        data.avatar = data.avatar.toString();
+      }
+    });
+
+    res.json({
+      avatarData: avatarData,
+    });
+
+  } catch(error) {
+    console.error("Error fetching user avatar information:", error);
     res.status(500).send("Internal server error");
   }
 });
@@ -366,15 +400,20 @@ app.post("/messages", async (req, res) => {
     const { classID } = req.body;
     // fetch chatroom messages
     const [userData] = await pool.query(
-      "SELECT chatrooms.message, chatrooms.timestamp, user.username, user.avatar FROM chatrooms INNER JOIN user ON user.userID = chatrooms.userID INNER JOIN classes ON classes.classID = chatrooms.classID WHERE classes.classID = ? ORDER BY chatrooms.timestamp ASC ",
+      "SELECT chatrooms.message, chatrooms.timestamp, user.username, user.userID FROM chatrooms INNER JOIN user ON user.userID = chatrooms.userID INNER JOIN classes ON classes.classID = chatrooms.classID WHERE classes.classID = ? ORDER BY chatrooms.timestamp ASC ",
       [classID]
     );
+    // // fetch chatroom messages
+    // const [userData] = await pool.query(
+    //   "SELECT chatrooms.message, chatrooms.timestamp, user.username, user.userID, user.avatar FROM chatrooms INNER JOIN user ON user.userID = chatrooms.userID INNER JOIN classes ON classes.classID = chatrooms.classID WHERE classes.classID = ? ORDER BY chatrooms.timestamp ASC ",
+    //   [classID]
+    // );
 
-    userData.forEach((data) => {
-      if (data.avatar !== null) {
-        data.avatar = data.avatar.toString();
-      }
-    });
+    // userData.forEach((data) => {
+    //   if (data.avatar !== null) {
+    //     data.avatar = data.avatar.toString();
+    //   }
+    // });
     // // Loads the last 10 messages for the chatroom ordered by timestamp
     // const [userData] = await pool.query(
     //   "SELECT * FROM (SELECT chatrooms.message, chatrooms.timestamp, user.username FROM chatrooms INNER JOIN user ON user.userID = chatrooms.userID INNER JOIN classes ON classes.classID = chatrooms.classID WHERE classes.classID = ? ORDER BY chatrooms.timestamp DESC LIMIT 10) AS last_messages ORDER BY last_messages.timestamp ASC",
@@ -1020,6 +1059,7 @@ async function queryDatabase() {
     // console.log(`\nUser ${userID} classlist:\n`, userData);
     // console.log(`\nUser ${userID} available classlist:\n`, userData2);
     // console.log(data);
+
   } catch (error) {
     console.error(error);
   }

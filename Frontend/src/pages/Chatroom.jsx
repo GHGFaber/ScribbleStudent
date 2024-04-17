@@ -36,6 +36,32 @@ function Chatroom({
   // Current chatroom
   const [currChatroom, setCurrChatroom] = useState("");
 
+  // // Get avatar data for all users
+  // const getAvatarData = async () => {
+  //   try {
+  //     // Fetch avatar data
+  //     const response = await axios.get("http://localhost:3000/user-avatars");
+  //     const formattedData = response.data.avatarData.map((item) => ({
+  //       // Grab message data
+  //       avatar: item.avatar,
+  //       username: item.username,
+  //       userID: item.userID,
+  //     }));
+  //     console.log("avatar data:", formattedData);
+  //     console.log("chat data:", chats);
+  //     // setAvatar(formattedData);
+  //   } catch (error) {
+  //     console.error("Error fetching avatar data:", error);
+  //   }
+  // };
+
+  // Load the user avatars from session storage
+  const avatarData = JSON.parse(sessionStorage.getItem("avatarData")) || null;
+
+  useEffect(() => {
+    console.log("avatar data:", avatarData);
+  }, [])
+
   function get_time(timestamp) {
     const date = new Date(timestamp);
     const returnedDate = date.toLocaleDateString("en-US");
@@ -50,20 +76,36 @@ function Chatroom({
   function show_chats() {
     console.log(chats.length);
 
+    // Function to get base64 encoded avatar for user
+    const getAvatarForUser = (userID) => {
+      // Find user in the avatar state by userID
+      const userAvatar = avatarData.find(user => user.userID === userID);
+      // If user found in avatar state, return the avatar base64 string
+      return userAvatar ? userAvatar.avatar : null;
+    };
+
+    // Preprocess chat data to replace empty profile picture with default avatar
+    const processedChats = chats.map(chat => ({
+      ...chat,
+      profilePic: getAvatarForUser(chat.userID),
+    }));
+
     return (
       <div ref={chatContainerRef} className="chat-container">
-        {chats.map((chat, index) => (
+        {processedChats.map((chat, index) => (
           <div key={index} className="chat-panel">
             <div className="container-fluid the-chat-div rounded-0">
               <div className="flexed-container">
                 <div className="avatar-body">
                   <img
                     className="avatar-picture"
-                    src={
-                      chat.profilePic && chat.profilePic !== ""
-                        ? `data:image/png;base64,${chat.profilePic}`
-                        : avatarPic
-                    }
+                    // src={`${chat.profilePic}`}
+                    src={chat.profilePic && chat.profilePic !== "" ? `data:image/png;base64,${chat.profilePic}` : avatarPic}
+                    // src={
+                    //   chat.profilePic && chat.profilePic !== ""
+                    //     ? `data:image/png;base64,${chat.profilePic}`
+                    //     : avatarPic
+                    // }
                     alt="avatar-picture"
                   />
                 </div>
