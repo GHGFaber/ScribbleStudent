@@ -901,3 +901,12 @@ input[type="file"] {
   border: none;
   margin: 3px;
 }
+
+.the-dm-userbar {
+  color: #ffff90;
+}
+
+.profile-info-avatar {
+  width: 125px;
+  height: auto;
+}

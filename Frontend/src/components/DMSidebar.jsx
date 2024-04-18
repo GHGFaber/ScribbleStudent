@@ -5,6 +5,7 @@ import socket from "../components/Socket.jsx";
 import avatarPic from "../images/default_pic.png";
 import AddFriend from "./AddFriend.jsx";
 
+
 function DMSidebar({ handleFriendChange, setChats, setRoom, directChats, setDirectChats, friendInfo, setFriendInfo, userData }) {
 
   // Problem: what users are supposed to be here?
@@ -129,27 +130,32 @@ function DMSidebar({ handleFriendChange, setChats, setRoom, directChats, setDire
           </li>
           {listOfFriends.map((friend, index) => (
             <li className="side-list">
-              <Link
-                className="the-link"
-                to="/direct-messages"
-                state={{ data: "temp" }}
-                onClick={() => join_dm_room(friend.userID)}
-              >
-                <div className="the-user-container">
-                  <div className="the-user-avatar">
-                    <img
-                      className="avatar-picture"
-                      src={
-                        friend.avatar && friend.avatar != ""
-                          ? `data:image/jpeg;base64,${friend.avatar}`
-                          : avatarPic
-                      }
-                      alt="user-avatar-picture"
-                    />
+              <div className="side-selection">
+                <Link
+                  className="the-link"
+                  to="/direct-messages"
+                  state={{ data: "temp" }}
+                  onClick={() => join_dm_room(friend.userID)}
+                >
+                  <div className="the-user-container">
+                    <div className="the-user-avatar">
+                      <img
+                        className="avatar-picture"
+                        src={
+                          friend.avatar && friend.avatar != ""
+                            ? `data:image/jpeg;base64,${friend.avatar}`
+                            : avatarPic
+                        }
+                        alt="user-avatar-picture"
+                      />
+                    </div>
+                    <li key={index} className="the-link">
+                      <h5>{friend.username}</h5>
+                    </li>
                   </div>
-                  <li key={index}>{friend.username}</li>
-                </div>
-              </Link>
+                </Link>
+              </div>
+              
             </li>
           ))}
         </ul>

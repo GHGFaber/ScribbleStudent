@@ -181,7 +181,7 @@ function Navbar({
     try {
       let formattedListOfFriends = [];
       const list = await axios.post("http://localhost:3000/grab-friends");
-      console.log("Navbar: the dm list is: " + JSON.stringify(list));
+      // console.log("Navbar: the dm list is: " + JSON.stringify(list));
       if (list && list.length !== 0) {
         formattedListOfFriends = list.data.friends.map((item) => ({
           username: item.username,
