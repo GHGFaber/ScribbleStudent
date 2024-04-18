@@ -102,7 +102,7 @@ function UserProfile({ userData, isActive, callback }) {
                 <p>
                   {userData[0].userType} at {userData[0].schoolName}
                 </p> */}
-                <h5>My Classes</h5>
+                <b>My Classes</b>
                 {userData[0].classes != "" && (
                   <ul>
                     {userData[0].classes.map((classInSchool, index) => (

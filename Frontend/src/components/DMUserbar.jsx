@@ -85,10 +85,10 @@ function DMUserbar({ activeUsers, setActiveUsers, inactiveUsers, setInactiveUser
         <img className="profile-info-avatar"
              src={profileInfo1.avatar && profileInfo1.avatar != "" ? `data:image/png;base64,${profileInfo1.avatar.toString()}` : avatarPic}
              alt="friend-avatar"
-        />
-        <h5>{profileInfo1.username}</h5>
-        <h5>{profileInfo1.email}</h5>
-        <h5>Classes</h5>
+        /><br/>
+        <b>Username</b><h5>{profileInfo1.username}</h5>
+        <b>Email</b><h5>{profileInfo1.email}</h5>
+        <b>Classes</b>
         {profileInfo1.classes ? (
             <ul>
             {profileInfo1.classes.map((classInSchool, index) => (

@@ -297,9 +297,11 @@ function Navbar({
             <>
               {classes.map((classInSchool, index) => (
                 <li onClick={() => joinRoom(classInSchool)} key={index}>
-                  <label style={{ cursor: "pointer", userSelect: "none" }}>
-                    {classInSchool.className}
-                  </label>
+                  <Link className="the-link" to="/chatroom">
+                    <label style={{ cursor: "pointer", userSelect: "none" }}>
+                      {classInSchool.className}
+                    </label>
+                  </Link>
                 </li>
               ))}
               {/* Add a tab for "Add Class" */}

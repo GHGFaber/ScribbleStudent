@@ -653,6 +653,10 @@ p {
   list-style-type: none;
 }
 
+.the-link {
+  color: #414166;
+}
+
 .the-link:link {
   text-decoration: none;
 }

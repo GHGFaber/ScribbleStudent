@@ -94,7 +94,7 @@ function DMSidebar({ handleFriendChange, setChats, setRoom, directChats, setDire
           username: item.username,
           timestamp: item.timestamp,
           message: item.messages,
-          avatar: item.avatar
+          profilePic: item.avatar
         }))
         setDirectChats(directMessageData);
         const defaultDMRoom = dmessageID;
