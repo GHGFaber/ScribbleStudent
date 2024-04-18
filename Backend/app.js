@@ -31,6 +31,7 @@ import user_notes from "./user_notes.json" assert { type: "json" };
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+let friendCode = "";
 
 const app = express(); // Create application
 
@@ -104,6 +105,7 @@ populateInactiveUsers();
 
 io.on("connection", (socket) => {
   console.log(`User Connected: ${socket.id}`);
+  friendCode = socket.id;
 
   // Receive username from client
   socket.on("login", (username, avatar) => {
@@ -608,32 +610,22 @@ function display_users() {
 // START OF DIRECT MESSAGE ENDPOINTS
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-// use session ID of the other user instead
-
-// how to structure:
-// look into how one chatroom works in a smaller scale
-// for two users
-// class with one other user = DM
-// use a randomized friend code
-
-// try on login, randomly make a code
-
-// one other sol: randomly make code on login, saved on database table
-// If they share it, the person will be able to add em
-
-// Suggestion: If we had static codes, don't want it to have the person save it
-// and give to other users
-
-// is socket ID feasible????
-// -- It could be feasible for socket.io DMs, it should work
-// 
-
-// by the start of the weekend of the 20th - clean up the code
-// get the DMs done
-// website is best is can be
-// do we need extra help??????????
-// start merging on Tuesday on Expo week
-
+app.get("/retrieve-friend-code", async (req, res) => {
+  console.log("Initiating friend code...");
+  try {
+    const {dummy} = req.body;
+    if (friendCode) {
+      res.json(friendCode);
+      console.log("friend code sent to client: " + friendCode);
+    } else {
+      res.json("");
+      console.error("Friend code not retrieved");
+    }
+  } catch (error) {
+    res.status(500).send("Internal server error");
+    console.error("Error retrieving friend code: " + error);
+  }
+});
 
 app.post("/get-friend-id-from-code", async (req, res) => {
   try {
