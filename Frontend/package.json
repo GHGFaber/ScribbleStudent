@@ -11,6 +11,8 @@
   },
   "dependencies": {
     "@emotion/styled": "^11.11.0",
+    "@giphy/js-fetch-api": "^5.4.0",
+    "@giphy/react-components": "^9.3.0",
     "@mui/material": "^5.15.11",
     "@mui/styled-engine": "^5.15.11",
     "axios": "^1.6.7",
