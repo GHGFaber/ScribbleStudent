@@ -72,6 +72,9 @@ function Chatroom({
     if (searchQuery.trim() !== '') {
       const { data } = await giphyFetch.search(searchQuery);
       setGifs(data);
+    } else {
+      // Show trending gifs
+      fetchTrendingGifs();
     }
   };
   
@@ -388,17 +391,9 @@ function Chatroom({
                   {/* Added functionality for submitting */}
                   {selectedGif && selectedGif.length !== 0 && (
                     <img 
+                      className="dispaly-gif"
                       src={selectedGif.images.fixed_height.url} 
                       alt="Selected GIF"
-                      style={{
-                        position: "absolute",
-                        // top: "50px",
-                        bottom: "60px",
-                        left: "480px",
-                        zIndex: "1",
-                        pointerEvents: "none", // Ensures the image doesn't block textarea interaction
-                        width: "200px",
-                      }}
                     />
                   )}
                   <textarea
