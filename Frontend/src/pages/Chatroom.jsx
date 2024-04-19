@@ -471,15 +471,18 @@ function Chatroom({
                   ref={gifPopupRef}
                   style={{ display: showGiphyPopup ? "block" : "none" }}
                 >
-                  <input
-                    style={{ borderRadius: "3px", marginBottom: "5px", marginRight: "5px" }}
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    onKeyPress={handleGifKeyPress}
-                    placeholder="Search GIFs..."
-                  />
-                  <button className="gif-search-button" onClick={searchGifs}>Search</button>
+                  {/* Search bar and button fixed at top */}
+                  <div style={{ position: "fixed" }}>
+                    <input
+                      style={{ borderRadius: "3px", marginBottom: "5px", marginRight: "5px" }}
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      onKeyPress={handleGifKeyPress}
+                      placeholder="Search GIFs..."
+                    />
+                    <button className="gif-search-button" onClick={searchGifs}>Search</button>
+                  </div>
                   <div className="gif-container">
                     {gifs.map((gif) => (
                       <img
@@ -487,7 +490,7 @@ function Chatroom({
                         src={gif.images.fixed_height.url}
                         alt={gif.title}
                         onClick={() => handleGifSelect(gif)}
-                        style={{ cursor: "pointer" }}
+                        style={{ cursor: "pointer", marginTop: "40px" }}
                         className="glow"
                       />
                     ))}
