@@ -423,26 +423,30 @@ function Sidebar({
           {/* Notebook changes only for class owner */}
           <nav>
             <li className="side-list">
-              <div className="side-selection">
-                <label
-                  htmlFor="touch"
-                  className="the-link"
-                  onClick={() =>
-                    setClassNotesDropdownVisible(!classNotesDropdownVisible)
-                  }
-                >
-                  <h5>
-                    {room.Name}<br></br>Notebook
-                  </h5>
-                </label>
-                {classNotesDropdownVisible && (
-                  <button
-                    className="plus-button plus-button--small"
-                    onClick={newClassNote}
-                    title="add note"
-                  ></button>
-                )}
-              </div>
+              {/* Only show class notebook if user is joined in at least one class */}
+              {/* Causing issues when navigating to notes for classes and user notes */}
+              {/* {classes && classes.length > 0 && ( */}
+                <div className="side-selection">
+                  <label
+                    htmlFor="touch"
+                    className="the-link"
+                    onClick={() =>
+                      setClassNotesDropdownVisible(!classNotesDropdownVisible)
+                    }
+                  >
+                    <h5>
+                      {room.Name}<br></br>Notebook
+                    </h5>
+                  </label>
+                  {classNotesDropdownVisible && (
+                    <button
+                      className="plus-button plus-button--small"
+                      onClick={newClassNote}
+                      title="add note"
+                    ></button>
+                  )}
+                </div>
+              {/* )} */}
               <ul
                 className="slide"
                 style={{ display: classNotesDropdownVisible ? "block" : "none" }}

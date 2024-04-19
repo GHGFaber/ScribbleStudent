@@ -422,7 +422,7 @@ p {
 }
 
 .container-fluid {
-  height: 100%;
+  /* height: 100%; */
   background-color: #c3c3ff;
 }
 
@@ -469,7 +469,8 @@ p {
   margin-left: 0px;
   width: 65%;
   padding: 10px;
-  /* resize: none; */
+  resize: none;
+  /* overflow-y: auto; */
 }
 
 #txt {
@@ -620,6 +621,32 @@ p {
   margin-top: 10px;
   bottom: 10px;
   width: 936px;
+}
+
+.fade-in-container {
+  position: relative;
+}
+
+.fade-in-image,
+.fade-in-text {
+  opacity: 0;
+}
+
+.fade-in-image {
+  animation: fadeIn 2s ease forwards 1s;
+}
+
+.fade-in-text {
+  animation: fadeIn 2s ease forwards 2.5s;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .full-datetime {
@@ -789,6 +816,100 @@ input[type="file"] {
   text-align: center;
 }
 
+:root {
+  --viewport-height: 100vh; /* Height of the viewport */
+}
+
+.overlay-button-container {
+  position: fixed;
+  right: 22%;
+  /* bottom: calc((var(--viewport-height) - 750px)); */
+  bottom: calc((var(--viewport-height) - 350px));
+  padding-right: 20px;
+}
+
+.dispaly-gif {
+  position: fixed;
+  right: 22%;
+  bottom: calc((var(--viewport-height) - 738px));
+  padding-right: 20px;
+  z-index: 1;
+}
+
+.overlay-button-container button {
+  position: absolute;
+  background-color: #9b9bcc;
+  border: none;
+  cursor: pointer;
+  border-radius: 5px;
+  /* bolding for text inside button */
+  font-weight: 600; 
+}
+
+.overlay-button {
+  position: absolute;
+  top: 400px;
+  /* Make sure button overlays the textarea */
+  z-index: 1; 
+}
+
+.giphy-popup-container {
+  position: absolute;
+  bottom: 110px; 
+  right: 30px;
+  width: 450px;
+  height: 500px;
+}
+
+.glow {
+  transition: box-shadow 0.25s; 
+}
+
+.glow:hover {
+  box-shadow: 0 0 4px 2px #ffff90;
+}
+
+.giphy-popup {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-color: #6c6c90;
+  border: 2px solid #000000;
+  padding: 10px;
+  z-index: 1000;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.gif-search-button {
+  position: absolute;
+  display: inline-flex;
+  background-color: #ffff90;
+  color: #9090ff;
+  border-radius: 30px;
+  padding: 2px 5px 2px 5px;
+  border: none;
+}
+
+.gif-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  /* Set the height of each row to 200px */
+  /* grid-auto-rows: auto;  */
+  grid-auto-flow: dense;
+  /* grid-gap: 1px; */
+  /* Center items horizontally */
+  justify-content: center; 
+}
+
+.gif-container img {
+  /* Make sure images fill their grid cells */
+  width: 100%; 
+  height: 100%;
+  /* Maintain aspect ratio while filling grid cells */
+  /* object-fit: contain;  */
+}
+
 .empty-text-wrapper {
   top: 10%;
   left: 23%;
@@ -823,6 +944,7 @@ input[type="file"] {
 
 .the-user-column {
   overflow-y: scroll;
+  overflow-x: hidden;
   max-height: 92%;
 }
 .the-user-column::-webkit-scrollbar {

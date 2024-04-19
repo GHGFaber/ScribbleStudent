@@ -159,6 +159,7 @@ function Navbar({
           // Grab message data
           username: item.username,
           text: item.message,
+          gif: item.gif,
           timestamp: item.timestamp,
           userID: item.userID,
           // profilePic: item.avatar,
@@ -222,6 +223,7 @@ function Navbar({
         // Grab message data
         username: item.username,
         text: item.message,
+        gif: item.gif,
         timestamp: item.timestamp,
         classID: classID,
         userID: item.userID,

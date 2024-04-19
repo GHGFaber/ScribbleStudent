@@ -180,8 +180,10 @@ io.on("connection", (socket) => {
     // Include username along with message data
     const messageData = {
       username: data.username,
+      userID: data.userID,
       message: data.message,
       avatar: data.avatar,
+      gif: data.gif,
     };
     socket.to(socket.room).emit("receive_message", messageData);
   });
@@ -400,7 +402,7 @@ app.post("/messages", async (req, res) => {
     const { classID } = req.body;
     // fetch chatroom messages
     const [userData] = await pool.query(
-      "SELECT chatrooms.message, chatrooms.timestamp, user.username, user.userID FROM chatrooms INNER JOIN user ON user.userID = chatrooms.userID INNER JOIN classes ON classes.classID = chatrooms.classID WHERE classes.classID = ? ORDER BY chatrooms.timestamp ASC ",
+      "SELECT chatrooms.message, chatrooms.timestamp, chatrooms.gif, user.username, user.userID FROM chatrooms INNER JOIN user ON user.userID = chatrooms.userID INNER JOIN classes ON classes.classID = chatrooms.classID WHERE classes.classID = ? ORDER BY chatrooms.timestamp ASC ",
       [classID]
     );
     // // fetch chatroom messages
@@ -439,13 +441,13 @@ app.post("/messages", async (req, res) => {
 app.post("/insert-message", async (req, res) => {
   try {
     // grab chatroom data from frontend (send in same order from frontend)
-    const { message, timestamp, classID } = req.body;
+    const { message, timestamp, gif, classID } = req.body;
     // userID (session)
     const userID = req.session.userid;
     // insert chatroom data
     await pool.query(
-      "INSERT INTO chatrooms (classID, timestamp, message, userID) VALUES (?, ?, ?, ?)",
-      [classID, timestamp, message, userID]
+      "INSERT INTO chatrooms (classID, timestamp, message, gif, userID) VALUES (?, ?, ?, ?, ?)",
+      [classID, timestamp, message, gif, userID]
     );
   } catch (error) {
     console.error("Error inserting message:", error);
