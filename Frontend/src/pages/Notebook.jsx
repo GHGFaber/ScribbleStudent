@@ -3,11 +3,16 @@ import Sidebar from "../components/Sidebar.jsx";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import socket from "../components/Socket.jsx";
-import { useEffect, useState } from "react";
+import { useRef, useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import axios from "axios";
 import moment from "moment";
 import _ from 'lodash';
+import { pdfExporter } from 'quill-to-pdf';
+import { saveAs } from 'file-saver';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faDownload, faUpload } from '@fortawesome/free-solid-svg-icons';
+import mammoth from 'mammoth'; // For DOCX conversion
 import avatarPic from "../images/default_pic.png";
 
 // page that contains the pages of the user's virtual notebook
@@ -27,6 +32,11 @@ function Notebook(props) {
     classNotes,
     setClassNotes,
   } = props;
+
+  // Quill ref
+  const editorRef = useRef(null);
+  // File import
+  const fileImportRef = useRef(null);
 
   // Grab username object from session storage
   const storedData = JSON.parse(sessionStorage.getItem("userData"));
@@ -207,6 +217,85 @@ function Notebook(props) {
     }
   };
 
+  // Download pdf
+  const downloadPDF = async () => {
+    if (!selectedNote) return;
+    // Get note content
+    const noteContent = editorRef.current?.editor?.getContents();
+    // Generate PDF
+    const pdfAsBlob = await pdfExporter.generatePdf(noteContent);
+    // Save PDF
+    saveAs(pdfAsBlob, `${selectedNote.description}` + ".pdf");
+  }
+
+  // Import document
+  const importDocument = async (event) => {
+    const file = event.target.files?.[0];
+
+    if (!file) return;
+
+    const reader = new FileReader();
+    
+    // Check file extension
+    const fileExtension = file.name.split('.').pop().toLowerCase();
+
+    reader.onload = async function (evt) {
+      let content = evt.target.result;
+
+      try {
+        if (fileExtension === 'txt') {
+          // Text file, no conversion needed
+          content = evt.target.result;
+          console.log(content);
+        } else if (fileExtension === 'docx') {
+          // DOCX file, convert to text
+          // content = await convertDocxToText(evt.target.result);
+          content = await convertDocxToHtml(evt.target.result);
+        } else if (fileExtension === "pdf") {
+          // PDF file, convert to text
+          // content = await convertPdfToText(evt.target.result);
+          return;
+        } else {
+          console.error('Unsupported file format:', fileExtension);
+          return;
+        }
+        
+        // Set the content of the editor
+        console.log("Editor reference:", editorRef.current); // Log the editor reference
+        setSelectedNote({
+          ...selectedNote,
+          text: selectedNote.text + content,
+          modified: true,
+        });
+      } catch (error) {
+        console.error('Error importing document:', error);
+      }
+    };
+    
+    if (fileExtension === "txt") {
+      reader.readAsText(file);
+    } else {
+      reader.readAsArrayBuffer(file);
+    }
+  };
+
+  // Function to convert DOCX to HTML
+  const convertDocxToHtml = async (arrayBuffer) => {
+    return new Promise((resolve, reject) => {
+        mammoth.convertToHtml({ arrayBuffer })
+            .then((result) => {
+                resolve(result.value);
+            })
+            .catch((error) => {
+                if (error instanceof mammothError.DocumentNotFoundError) {
+                    reject('Error: Document not found.');
+                } else {
+                    reject('Error converting DOCX to HTML.');
+                }
+            });
+    });
+  };
+
 
   // When the selecteNote.text changes
   // update the database
@@ -281,7 +370,7 @@ function Notebook(props) {
     socket.emit("join_room", selectedNote.fileID);
 
     // Set collaborator 
-    setCollaborator([storedData]);
+    // setCollaborator([storedData]);
     // // Emit avatar and username to socket
     // socket.emit("join-collab", [storedData], selectedNote.fileID);
   }, []);
@@ -393,6 +482,18 @@ function Notebook(props) {
                 >
                   {selectedNote.description}
                 </h3> {""}
+                <div style={{ display: 'flex' }}>
+                  {/* Download button */}
+                  <div title="pdf" onClick={downloadPDF} style={{ cursor: 'pointer', marginLeft: "10px" }}>
+                    <FontAwesomeIcon icon={faDownload}/> PDF
+                  </div>
+                  {/* Upload button */}
+                  <div title="docx, txt" onClick={() => fileImportRef.current.click()} style={{ cursor: 'pointer', marginLeft: "15px" }}>
+                    <FontAwesomeIcon icon={faUpload}/> docx
+                  </div>
+                </div>
+                {/* Import file button */}
+                {/* <button onClick={() => fileImportRef.current.click()} style={{ fontSize: "15px" }}>Upload File</button> */}
                 {/* {collaborator.map((aUser, index) => (
                   <div className="the-user-container" key={index} style={{marginLeft: "10px"}}>
                     <div className="the-user-avatar" style={{cursor: "pointer"}}>
@@ -421,7 +522,7 @@ function Notebook(props) {
                       handleQuillChange(newText);
                     }
                   }}
-                  
+                  ref={editorRef}
                 />
                 {/* Delete note button */}
                 <button
@@ -443,6 +544,7 @@ function Notebook(props) {
           </div>
         </div>
       </div>
+      <input type="file" ref={fileImportRef} style={{ display: 'none' }} onChange={importDocument} accept=".txt, .docx" />
     </>
   );
 }
