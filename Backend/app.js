@@ -170,6 +170,7 @@ io.on("connection", (socket) => {
   // Join a room
   socket.on("join_room", (data) => {
     // Leave all rooms
+    console.log("Join_room data is: " + data);
     socket.rooms.forEach((room) => {
       if (room !== socket.id) {
         socket.leave(room);
@@ -773,8 +774,14 @@ app.post("/grab-friends", async (req, res) => {
     console.log("My user ID is: " + userID);
 
     const response = await pool.query("select user.username, user.avatar, user.userID from user cross join friendList on user.userID = friendList.friendID where friendList.userID = ?", [userID]);
-    
+    console.log("Response is: ", JSON.stringify(response));
     // TODO: also fetch the dm ID here too
+
+    response[0].forEach((data) => {
+      if (data.avatar !== null) {
+        data.avatar = data.avatar.toString();
+      }
+    });
 
     if (response && response[0].length !== 0) {
       convertedFriendList = response[0].map((item) => ({
@@ -894,6 +901,12 @@ app.post("/direct_messages", async (req, res) => {
     // Ex: userData[0].message grabs the message from the first object
     console.log("Message");
 
+    userData.forEach((data) => {
+      if (data.avatar !== null) {
+        data.avatar = data.avatar.toString();
+      }
+    });
+
     // return data to frontend
     res.json({
       userData: userData,
@@ -944,6 +957,13 @@ app.post("/get-friend-info", async (req, res) => {
                 where user.userID = ?;`,
         [friendID]
       );
+
+      userData.forEach((data) => {
+        if (data.avatar !== null) {
+          data.avatar = data.avatar.toString();
+        }
+      });
+      
       if (userData.length === 1) {
         // User data found, send user information to the frontend
         res.json(userData);

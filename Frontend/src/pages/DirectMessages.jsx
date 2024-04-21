@@ -80,6 +80,7 @@ function DirectMessages({
     //console.log("DirectMessages: direct chats is " + JSON.stringify(directChats));
     //if (!directChats) setDirectChats([]);
     //console.log("direct chats are: " + JSON.stringify(directChats));
+    console.log("The avatar string is: " + JSON.stringify(directChats[0]));
     return (
       <div ref={chatContainerRef} className="chat-container">
         {directChats.map((chat, index) => (
@@ -88,7 +89,7 @@ function DirectMessages({
               <div className="flexed-container">
                 <div className="avatar-body">
                  <img className="avatar-picture" 
-                      src={chat.profilePic && chat.profilePic != "" ? `data:image/png;base64,${chat.profilePic.toString()}` : avatarPic} 
+                      src={chat.profilePic && chat.profilePic !== "" ? `data:image/jpeg;base64,${chat.profilePic}` : avatarPic} 
                       alt="avatar-picture"/>
                 </div>
                 <div className="container-body">

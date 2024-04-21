@@ -47,22 +47,28 @@ function DMSidebar({ handleFriendChange, setChats, setRoom, directChats, setDire
         dmID: theDM
       });
 
+      if (response2) console.log("DMSidebar: Finished loading messages");
+
       const messageData = response2.data.userData.map((item) => ({
         // Grab message data
         username: item.username,
         message: item.messages,
         timestamp: item.timestamp,
+        profilePic: item.avatar
       }));
       const room = theDM;
-      // console.log("class: ", room);
-      console.log("dmID: ", theDM);
-      console.log("Room is... " + room);
+
       setRoom(room);
       sessionStorage.setItem("dmIDRoom", JSON.stringify(room));
       socket.emit("join_room", room);
       // Clear chat
       setDirectChats([]);
       setDirectChats(messageData);
+
+      // console.log("class: ", room);
+      // console.log("dmID: ", theDM);
+      // console.log("Room is... " + room);
+     
     }
   }
 

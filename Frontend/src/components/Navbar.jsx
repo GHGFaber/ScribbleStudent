@@ -204,6 +204,7 @@ function Navbar({
         console.log("Return to old " + JSON.stringify(theResponse));
 
         const dmessageID = theResponse.data.dmID;
+        console.log("Navbar: the dmID is " + JSON.stringify(dmessageID));
 
         const response = await axios.post("http://localhost:3000/direct_messages", {
           dmID: dmessageID
@@ -213,12 +214,14 @@ function Navbar({
           username: item.username,
           timestamp: item.timestamp,
           message: item.messages,
-          avatar: item.avatar
+          profilePic: item.avatar
         }))
         setDirectChats(directMessageData);
         const defaultDMRoom = dmessageID;
   
         setRoom(defaultDMRoom);
+        sessionStorage.setItem("dmIDRoom", JSON.stringify(defaultDMRoom));
+        console.log("the set ID room is: " + sessionStorage.getItem("dmIDRoom"));
         socket.emit("join_room", defaultDMRoom);
       } else {
         console.log("User has no friends");
