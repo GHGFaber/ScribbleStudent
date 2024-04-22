@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import axios from "axios";
 import moment from "moment";
-import _ from 'lodash';
+import _ from "lodash";
 import avatarPic from "../images/default_pic.png";
 
 // page that contains the pages of the user's virtual notebook
@@ -24,8 +24,10 @@ function Notebook(props) {
     setSelectedNote,
     room,
     setRoom,
-    classNotes,
-    setClassNotes,
+    directChats,
+    setDirectChats,
+    friendInfo,
+    setFriendInfo,
   } = props;
 
   // Grab username object from session storage
@@ -207,7 +209,6 @@ function Notebook(props) {
     }
   };
 
-
   // When the selecteNote.text changes
   // update the database
   useEffect(() => {
@@ -270,7 +271,7 @@ function Notebook(props) {
       // socket.off("join-collab-data");
       // socket.off("leave-collab-data");
     };
-  // }, [selectedNote]);
+    // }, [selectedNote]);
   }, [socket]);
 
   // Set the room for the selectedNote when in Notebook
@@ -280,13 +281,11 @@ function Notebook(props) {
     // }
     socket.emit("join_room", selectedNote.fileID);
 
-    // Set collaborator 
+    // Set collaborator
     setCollaborator([storedData]);
     // // Emit avatar and username to socket
     // socket.emit("join-collab", [storedData], selectedNote.fileID);
   }, []);
-
-
 
   //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   // - Show cursor for each collaborator
@@ -322,7 +321,6 @@ function Notebook(props) {
   // If selecteNote.fileID changes, emit to socket to have users remove username and avatar from collaborator
   // Clear collaborator state
 
-
   return (
     <>
       {
@@ -335,6 +333,10 @@ function Notebook(props) {
         setUsername={setUsername}
         room={room}
         setRoom={setRoom}
+        directChats={directChats}
+        setDirectChats={setDirectChats}
+        friendInfo={friendInfo}
+        setFriendInfo={setFriendInfo}
       />
       <div className="container-fluid">
         <div className="row no-gutters">
@@ -352,7 +354,10 @@ function Notebook(props) {
               username={username}
             />
           </div>
-          <div className="col-10 column2 the-note-section" style={{ whiteSpace: 'pre-wrap' }}>
+          <div
+            className="col-10 column2 the-note-section"
+            style={{ whiteSpace: "pre-wrap" }}
+          >
             {selectedNote && (
               <>
                 <h3
@@ -392,7 +397,8 @@ function Notebook(props) {
                   }}
                 >
                   {selectedNote.description}
-                </h3> {""}
+                </h3>{" "}
+                {""}
                 {/* {collaborator.map((aUser, index) => (
                   <div className="the-user-container" key={index} style={{marginLeft: "10px"}}>
                     <div className="the-user-avatar" style={{cursor: "pointer"}}>
@@ -421,7 +427,6 @@ function Notebook(props) {
                       handleQuillChange(newText);
                     }
                   }}
-                  
                 />
                 {/* Delete note button */}
                 <button

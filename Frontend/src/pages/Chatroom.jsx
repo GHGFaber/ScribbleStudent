@@ -20,6 +20,8 @@ function Chatroom({
   setClasses,
   chats,
   setChats,
+  directChats,
+  setDirectChats,
   username,
   setUsername,
   activeUsers,
@@ -30,8 +32,13 @@ function Chatroom({
   setNotes,
   selectedNote,
   setSelectedNote,
+<<<<<<< HEAD
   classNotes,
   setClassNotes,
+=======
+  friendInfo,
+  setFriendInfo
+>>>>>>> DirectMessages
 }) {
   console.log("YOOOO", room);
   // Message State
@@ -362,8 +369,12 @@ function Chatroom({
         setClasses={setClasses}
         chats={chats}
         setChats={setChats}
+        directChats={directChats}
+        setDirectChats={setDirectChats}
         username={username}
         setUsername={setUsername}
+        friendInfo={friendInfo}
+        setFriendInfo={setFriendInfo}
       />
       <div className="container-fluid">
         <div className="row no-gutters">
