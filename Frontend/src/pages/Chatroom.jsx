@@ -10,7 +10,7 @@ import avatarPic from "../images/default_pic.png";
 // GIPHY SDK code
 //+++++++++++++++++++++++++++++++++++++++++++++++++
 // import { Grid } from '@giphy/react-components';
-import { GiphyFetch } from '@giphy/js-fetch-api';
+import { GiphyFetch } from "@giphy/js-fetch-api";
 //+++++++++++++++++++++++++++++++++++++++++++++++++
 
 function Chatroom({
@@ -32,13 +32,10 @@ function Chatroom({
   setNotes,
   selectedNote,
   setSelectedNote,
-<<<<<<< HEAD
   classNotes,
   setClassNotes,
-=======
   friendInfo,
-  setFriendInfo
->>>>>>> DirectMessages
+  setFriendInfo,
 }) {
   console.log("YOOOO", room);
   // Message State
@@ -51,8 +48,8 @@ function Chatroom({
   const [showGiphyPopup, setShowGiphyPopup] = useState(false);
   const [selectedGif, setSelectedGif] = useState(null);
   const [gifs, setGifs] = useState([]);
-  const [searchQuery, setSearchQuery] = useState('');
-  const giphyFetch = new GiphyFetch('7nPk2WhT8IBxootuOo954A0bpDpESPac');
+  const [searchQuery, setSearchQuery] = useState("");
+  const giphyFetch = new GiphyFetch("7nPk2WhT8IBxootuOo954A0bpDpESPac");
   const gifPopupRef = useRef(null);
 
   useEffect(() => {
@@ -63,20 +60,20 @@ function Chatroom({
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
-  
+
   useEffect(() => {
     // Fetch trending GIFs
     fetchTrendingGifs();
   }, []);
-  
+
   const fetchTrendingGifs = async () => {
     const { data } = await giphyFetch.trending();
     setGifs(data);
   };
-  
+
   const searchGifs = async () => {
     // Check for whitespace or empty text
-    if (searchQuery.trim() !== '') {
+    if (searchQuery.trim() !== "") {
       const { data } = await giphyFetch.search(searchQuery);
       setGifs(data);
     } else {
@@ -84,12 +81,12 @@ function Chatroom({
       fetchTrendingGifs();
     }
   };
-  
+
   const handleGifSelect = (gif) => {
     setSelectedGif(gif);
 
     setShowGiphyPopup(false);
-    setSearchQuery(''); 
+    setSearchQuery("");
   };
 
   // Closes popup when clicking outside of box
@@ -102,13 +99,13 @@ function Chatroom({
     ) {
       setShowGiphyPopup(false);
       // Clear the search query when popup closes
-      setSearchQuery(''); 
+      setSearchQuery("");
     }
   };
 
   // Allow user to press enter for search for gifs
   const handleGifKeyPress = (e) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       searchGifs();
     }
   };
@@ -117,19 +114,19 @@ function Chatroom({
     console.log("Gif:", selectedGif);
   }, [selectedGif]);
   //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  
+
   // // Get avatar data for all users
   // const getAvatarData = async () => {
-    //   try {
-      //     // Fetch avatar data
-      //     const response = await axios.get("http://localhost:3000/user-avatars");
-      //     const formattedData = response.data.avatarData.map((item) => ({
-        //       // Grab message data
-        //       avatar: item.avatar,
-        //       username: item.username,
-        //       userID: item.userID,
-        //     }));
-        //     console.log("avatar data:", formattedData);
+  //   try {
+  //     // Fetch avatar data
+  //     const response = await axios.get("http://localhost:3000/user-avatars");
+  //     const formattedData = response.data.avatarData.map((item) => ({
+  //       // Grab message data
+  //       avatar: item.avatar,
+  //       username: item.username,
+  //       userID: item.userID,
+  //     }));
+  //     console.log("avatar data:", formattedData);
   //     console.log("chat data:", chats);
   //     // setAvatar(formattedData);
   //   } catch (error) {
@@ -142,7 +139,7 @@ function Chatroom({
 
   useEffect(() => {
     console.log("avatar data:", avatarData);
-  }, [])
+  }, []);
 
   function get_time(timestamp) {
     const date = new Date(timestamp);
@@ -155,9 +152,11 @@ function Chatroom({
   // Function to get base64 encoded avatar for user
   const getAvatarForUser = (userID) => {
     // Find user in the avatar state by userID
-    const userAvatar = avatarData.find(user => user.userID === userID);
+    const userAvatar = avatarData.find((user) => user.userID === userID);
     // If user found in avatar state, return the avatar base64 string
-    return userAvatar ? `data:image/png;base64,${userAvatar.avatar}` : avatarPic;
+    return userAvatar
+      ? `data:image/png;base64,${userAvatar.avatar}`
+      : avatarPic;
   };
 
   // Reference for chat container
@@ -190,9 +189,7 @@ function Chatroom({
                   <p className="full-datetime">{get_time(chat.timestamp)}</p>
                   <p className="user-text">{chat.username}</p>
                   <p className="text-content">{chat.text}</p>
-                  {chat.gif !== null && (
-                    <img src={chat.gif}/>
-                  )}
+                  {chat.gif !== null && <img src={chat.gif} />}
                 </div>
               </div>
             </div>
@@ -241,7 +238,12 @@ function Chatroom({
 
   const sendMessage = async () => {
     let gifUrl = null;
-    if (selectedGif && selectedGif.images && selectedGif.images.fixed_height && selectedGif.images.fixed_height.url) {
+    if (
+      selectedGif &&
+      selectedGif.images &&
+      selectedGif.images.fixed_height &&
+      selectedGif.images.fixed_height.url
+    ) {
       gifUrl = selectedGif.images.fixed_height.url;
     }
     console.log("gifUrl:", gifUrl);
@@ -401,9 +403,9 @@ function Chatroom({
                 <div id="the-textarea" className="container-fluid">
                   {/* Added functionality for submitting */}
                   {selectedGif && selectedGif.length !== 0 && (
-                    <img 
+                    <img
                       className="dispaly-gif"
-                      src={selectedGif.images.fixed_height.url} 
+                      src={selectedGif.images.fixed_height.url}
                       alt="Selected GIF"
                     />
                   )}
@@ -472,12 +474,17 @@ function Chatroom({
             {/* Show button if user is in at least one class */}
             {classes && classes.length > 0 && (
               <div className="overlay-button-container">
-                <button className="overlay-button" onClick={() => setShowGiphyPopup(!showGiphyPopup)}>GIF</button>
+                <button
+                  className="overlay-button"
+                  onClick={() => setShowGiphyPopup(!showGiphyPopup)}
+                >
+                  GIF
+                </button>
               </div>
             )}
             {showGiphyPopup && (
               <div className="giphy-popup-container">
-                <div 
+                <div
                   className="giphy-popup"
                   ref={gifPopupRef}
                   style={{ display: showGiphyPopup ? "block" : "none" }}
@@ -485,14 +492,20 @@ function Chatroom({
                   {/* Search bar and button fixed at top */}
                   <div style={{ position: "fixed" }}>
                     <input
-                      style={{ borderRadius: "3px", marginBottom: "5px", marginRight: "5px" }}
+                      style={{
+                        borderRadius: "3px",
+                        marginBottom: "5px",
+                        marginRight: "5px",
+                      }}
                       type="text"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       onKeyPress={handleGifKeyPress}
                       placeholder="Search GIFs..."
                     />
-                    <button className="gif-search-button" onClick={searchGifs}>Search</button>
+                    <button className="gif-search-button" onClick={searchGifs}>
+                      Search
+                    </button>
                   </div>
                   <div className="gif-container">
                     {gifs.map((gif) => (
@@ -510,30 +523,39 @@ function Chatroom({
               </div>
             )}
             {classes && classes.length === 0 && (
-              <div className="fade-in-container" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <img 
-                  src={emptyPic} 
-                  alt="Empty" 
-                  className="fade-in-image" 
-                  style={{ 
-                    maxWidth: '100%', 
-                    height: 'auto',
-                    marginTop: '20%',
-                  }} 
+              <div
+                className="fade-in-container"
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                }}
+              >
+                <img
+                  src={emptyPic}
+                  alt="Empty"
+                  className="fade-in-image"
+                  style={{
+                    maxWidth: "100%",
+                    height: "auto",
+                    marginTop: "20%",
+                  }}
                 />
-                <p className="fade-in-text"
-                  style={{ 
-                    textAlign: 'center',
+                <p
+                  className="fade-in-text"
+                  style={{
+                    textAlign: "center",
                     marginTop: "20px",
                     marginLeft: "5px",
                     fontFamily: "Montserrat",
                     fontWeight: "bold",
-                    fontSize: "20px"
+                    fontSize: "20px",
                   }}
-                >It looks like you don't have any classes.</p>
+                >
+                  It looks like you don't have any classes.
+                </p>
               </div>
             )}
-
           </div>
           <div className="col-2 column3">
             <Userbar

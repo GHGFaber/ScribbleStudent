@@ -28,6 +28,8 @@ function Notebook(props) {
     setDirectChats,
     friendInfo,
     setFriendInfo,
+    classNotes,
+    setClassNotes,
   } = props;
 
   // Grab username object from session storage

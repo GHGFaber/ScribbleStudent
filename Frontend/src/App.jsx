@@ -114,6 +114,8 @@ function App() {
                 setRoom={setRoom}
                 friendInfo={friendInfo}
                 setFriendInfo={setFriendInfo}
+                setClassNotes={setClassNotes}
+                classNotes={classNotes}
               />
             }
           />
