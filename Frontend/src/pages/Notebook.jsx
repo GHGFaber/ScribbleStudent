@@ -106,7 +106,9 @@ function Notebook(props) {
   // *** Pass as prop for callback so not having to duplicate code in sidebar ***
   const getUserNotes = async () => {
     try {
-      const response = await axios.get("http://localhost:3000/user-notes");
+      const response = await axios.get(
+        `${import.meta.env.VITE_ENDPOINT}/user-notes`
+      );
       console.log("User Notes:", response.data.noteData);
       // Format the notes for displaying
       const formattedNotes = response.data.noteData.map((note) => ({
@@ -127,9 +129,12 @@ function Notebook(props) {
   // *** Pass as prop for callback so not having to duplicate code in sidebar ***
   const getClassNotes = async () => {
     try {
-      const response = await axios.post("http://localhost:3000/class-notes", {
-        classID: room.ID,
-      });
+      const response = await axios.post(
+        `${import.meta.env.VITE_ENDPOINT}/class-notes`,
+        {
+          classID: room.ID,
+        }
+      );
       // Format the notes for displaying
       const formattedNotes = response.data.noteData.map((note) => ({
         description: note.description,
@@ -166,7 +171,7 @@ function Notebook(props) {
       // If not the user that modified the note, then don't save to database
       if (!selectedNote || !selectedNote.modified) return;
       // Update notes in database
-      await axios.post("http://localhost:3000/update-user-note", {
+      await axios.post(`${import.meta.env.VITE_ENDPOINT}/update-user-note`, {
         fileID: selectedNote.fileID,
         newFileName: selectedNote.fileName,
         newUploadDate: moment().format("YYYY-MM-DD HH:mm:ss"),
@@ -195,7 +200,7 @@ function Notebook(props) {
 
       if (isConfirmed) {
         // Delete note after user clicks button
-        await axios.post("http://localhost:3000/delete-user-note", {
+        await axios.post(`${import.meta.env.VITE_ENDPOINT}/delete-user-note`, {
           fileID: noteID,
         });
         // Update note list

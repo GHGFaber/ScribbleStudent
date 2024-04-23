@@ -5,9 +5,16 @@ import socket from "../components/Socket.jsx";
 import avatarPic from "../images/default_pic.png";
 import AddFriend from "./AddFriend.jsx";
 
-
-function DMSidebar({ handleFriendChange, setChats, setRoom, directChats, setDirectChats, friendInfo, setFriendInfo, userData }) {
-
+function DMSidebar({
+  handleFriendChange,
+  setChats,
+  setRoom,
+  directChats,
+  setDirectChats,
+  friendInfo,
+  setFriendInfo,
+  userData,
+}) {
   // Problem: what users are supposed to be here?
   // Look into the possibility of adding friends like how
   // it is implemented in Discord...
@@ -24,9 +31,13 @@ function DMSidebar({ handleFriendChange, setChats, setRoom, directChats, setDire
     handleFriendChange();
   }
 
-  function turn_on_add_friend() { setAddFriendIsOn(true); }
+  function turn_on_add_friend() {
+    setAddFriendIsOn(true);
+  }
 
-  function turn_off_add_friend() { setAddFriendIsOn(false); }
+  function turn_off_add_friend() {
+    setAddFriendIsOn(false);
+  }
 
   // join_dm_room()
   // Uses friend's ID to access the DM room's ID
@@ -36,16 +47,22 @@ function DMSidebar({ handleFriendChange, setChats, setRoom, directChats, setDire
       // Get message data for room
       const friendID = userData;
       setFriendInfo(friendID);
-      const response1 = await axios.post("http://localhost:3000/match-dm-ids", {
-        friendID: friendID
-      });
+      const response1 = await axios.post(
+        `${import.meta.env.VITE_ENDPOINT}/match-dm-ids`,
+        {
+          friendID: friendID,
+        }
+      );
 
       console.log("DMSidebar: the response is: " + JSON.stringify(response1));
       const theDM = response1.data.dmID;
 
-      const response2 = await axios.post("http://localhost:3000/direct_messages", {
-        dmID: theDM
-      });
+      const response2 = await axios.post(
+        `${import.meta.env.VITE_ENDPOINT}/direct_messages`,
+        {
+          dmID: theDM,
+        }
+      );
 
       if (response2) console.log("DMSidebar: Finished loading messages");
 
@@ -54,7 +71,7 @@ function DMSidebar({ handleFriendChange, setChats, setRoom, directChats, setDire
         username: item.username,
         message: item.messages,
         timestamp: item.timestamp,
-        profilePic: item.avatar
+        profilePic: item.avatar,
       }));
       const room = theDM;
 
@@ -68,43 +85,50 @@ function DMSidebar({ handleFriendChange, setChats, setRoom, directChats, setDire
       // console.log("class: ", room);
       // console.log("dmID: ", theDM);
       // console.log("Room is... " + room);
-     
     }
   }
 
   async function retrieve_friend_list() {
     try {
       console.log("retrieving friends...");
-      const list = await axios.post("http://localhost:3000/grab-friends");
+      const list = await axios.post(
+        `${import.meta.env.VITE_ENDPOINT}/grab-friends`
+      );
       const formattedListOfFriends = list.data.friends.map((item) => ({
         username: item.username,
         avatar: item.avatar,
-        userID: item.userID
-      }))
+        userID: item.userID,
+      }));
       setListOfFriends(formattedListOfFriends);
-  
+
       if (formattedListOfFriends.length > 0) {
         const firstFriendID = formattedListOfFriends[0].userID;
         setFriendInfo(firstFriendID);
-        const theResponse = await axios.post("http://localhost:3000/match-dm-ids", {
-          friendID: firstFriendID
-        });
+        const theResponse = await axios.post(
+          `${import.meta.env.VITE_ENDPOINT}/match-dm-ids`,
+          {
+            friendID: firstFriendID,
+          }
+        );
         console.log("res is: " + JSON.stringify(theResponse.data));
         const dmessageID = theResponse.data.dmID;
-       
-        const response = await axios.post("http://localhost:3000/direct_messages", {
-          dmID: dmessageID
-        });
-  
+
+        const response = await axios.post(
+          `${import.meta.env.VITE_ENDPOINT}/direct_messages`,
+          {
+            dmID: dmessageID,
+          }
+        );
+
         const directMessageData = response.data.userData.map((item) => ({
           username: item.username,
           timestamp: item.timestamp,
           message: item.messages,
-          profilePic: item.avatar
-        }))
+          profilePic: item.avatar,
+        }));
         setDirectChats(directMessageData);
         const defaultDMRoom = dmessageID;
-  
+
         setRoom(defaultDMRoom);
         socket.emit("join_room", defaultDMRoom);
       } else {
@@ -120,16 +144,16 @@ function DMSidebar({ handleFriendChange, setChats, setRoom, directChats, setDire
 
   return (
     <div>
-       <div className="the-column">
+      <div className="the-column">
         <ul className="sidebar-content">
           <li className="side-list">
             <div className="side-selection">
               <Link
-                  className="the-link"
-                  to="/direct-messages"
-                  state={{ data: "temp" }}
-                  onClick={() => turn_on_add_friend()}
-                >
+                className="the-link"
+                to="/direct-messages"
+                state={{ data: "temp" }}
+                onClick={() => turn_on_add_friend()}
+              >
                 <h5 className="the-link">Add a Friend...</h5>
               </Link>
             </div>
@@ -161,16 +185,15 @@ function DMSidebar({ handleFriendChange, setChats, setRoom, directChats, setDire
                   </div>
                 </Link>
               </div>
-              
             </li>
           ))}
         </ul>
-       </div> 
-       <AddFriend
-          userData={userData}
-          isActive={addFriendIsOn}
-          handleAddFriendActive={turn_off_add_friend}
-       />
+      </div>
+      <AddFriend
+        userData={userData}
+        isActive={addFriendIsOn}
+        handleAddFriendActive={turn_off_add_friend}
+      />
     </div>
   );
 }

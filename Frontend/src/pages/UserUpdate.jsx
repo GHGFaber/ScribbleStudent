@@ -25,7 +25,9 @@ function UserUpdate() {
   // Grabs the user info to display for user
   const userInfo = async () => {
     try {
-      const response = await axios.get("http://localhost:3000/user-info");
+      const response = await axios.get(
+        `${import.meta.env.VITE_ENDPOINT}/user-info`
+      );
 
       const { username, email, password, user_id, userType, name } =
         response.data[0];
@@ -71,7 +73,7 @@ function UserUpdate() {
       const email = formData.current.elements.email.value;
 
       // Send a POST request to update the user information
-      await axios.post("http://localhost:3000/update-user-info", {
+      await axios.post(`${import.meta.env.VITE_ENDPOINT}/update-user-info`, {
         name,
         username,
         email,

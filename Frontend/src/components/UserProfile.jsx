@@ -38,13 +38,18 @@ function UserProfile({ userData, isActive, callback }) {
 
   async function get_friend_code() {
     try {
-      const response = await axios.get("http://localhost:3000/retrieve-friend-code", {
-        dummy: ""
-      });
+      const response = await axios.get(
+        `${import.meta.env.VITE_ENDPOINT}/retrieve-friend-code`,
+        {
+          dummy: "",
+        }
+      );
 
       if (response) {
         setFriendCode(response.data);
-        console.log("friend code has been retrieved: " + JSON.stringify(response.data));
+        console.log(
+          "friend code has been retrieved: " + JSON.stringify(response.data)
+        );
       } else {
         console.log("friend code has not been received");
       }
@@ -95,9 +100,12 @@ function UserProfile({ userData, isActive, callback }) {
                 {/* <h4>
                   {userData[0].firstName} {userData[0].lastName}
                 </h4> */}
-                <b>Username</b><h5>{userData[0].username}</h5>
-                <b>Email</b><h5>{userData[0].email}</h5>
-                <b>Friend Code</b><h5>{friendCode}</h5>
+                <b>Username</b>
+                <h5>{userData[0].username}</h5>
+                <b>Email</b>
+                <h5>{userData[0].email}</h5>
+                <b>Friend Code</b>
+                <h5>{friendCode}</h5>
                 {/* <p>Member since {get_member_since(userData[0].memberSince)}</p>
                 <p>
                   {userData[0].userType} at {userData[0].schoolName}

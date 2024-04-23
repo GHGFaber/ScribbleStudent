@@ -271,7 +271,7 @@ function Chatroom({
       // Need the current classID (got it)
       console.log("Current classID: ", room.ID);
       const classID = room.ID;
-      await axios.post("http://localhost:3000/insert-message", {
+      await axios.post(`${import.meta.env.VITE_ENDPOINT}/insert-message`, {
         message: message,
         gif: gifUrl,
         timestamp: moment().format("YYYY-MM-DD HH:mm:ss"),

@@ -12,6 +12,7 @@ import { dirname, join } from "path";
 import bcrypt from "bcrypt";
 import cors from "cors";
 import { Server } from "socket.io";
+import dotenvFlow from "dotenv-flow";
 
 //++++++++++++++++++++++++++++++++++++++++++++
 import http from "http";
@@ -29,6 +30,7 @@ import inactive_users from "./inactive_chat_users.json" assert { type: "json" };
 import user_notes from "./user_notes.json" assert { type: "json" };
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+dotenvFlow.config();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 let friendCode = "";
@@ -52,7 +54,7 @@ const sessionMiddleware = session({
 });
 app.use(sessionMiddleware);
 
-app.use(cors({ origin: "http://localhost:5173", credentials: true }));
+app.use(cors({ origin: `${process.env.ORIGIN}`, credentials: true }));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.json());
 
@@ -60,13 +62,24 @@ const server = app.listen(3000, () => {
   console.log("App listening on port 3000");
 });
 
+if (process.env.LOCAL) {
+  var addrPath = "";
+} else {
+  addrPath = "/socket.io";
+}
+
 const io = new Server(server, {
-  // path: "/socket.io",
+  path: `${addrPath}`,
   cors: {
-    origin: "http://localhost:5173",
+    origin: `${process.env.ORIGIN}`,
     methods: ["GET", "POST"],
   },
 });
+
+console.log(io);
+console.log(process.env.ORIGIN);
+console.log(process.env.LOCAL);
+console.log(addrPath);
 
 // Session context shared w/ socket.io
 io.engine.use(sessionMiddleware);

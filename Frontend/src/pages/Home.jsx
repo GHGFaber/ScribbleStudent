@@ -14,13 +14,18 @@ function Home() {
     const username = JSON.parse(uData).username;
     console.log("PLSEASEFAS", uData);
     sessionStorage.setItem("userData", uData);
-    const response = await axios.post("http://localhost:3000/bypassLogin", {
-      username: username,
-    });
+    const response = await axios.post(
+      `${import.meta.env.VITE_ENDPOINT}/bypassLogin`,
+      {
+        username: username,
+      }
+    );
 
     console.log(response.data);
 
-    const response2 = await axios.get("http://localhost:3000/user-avatars");
+    const response2 = await axios.get(
+      `${import.meta.env.VITE_ENDPOINT}/user-avatars`
+    );
     const avatarData = response2.data.avatarData.map((item) => ({
       // Grab message data
       avatar: item.avatar,

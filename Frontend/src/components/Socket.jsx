@@ -1,11 +1,15 @@
 //connect to socket.io server
 import io from "socket.io-client";
-
-// const socket = io.connect("http://localhost:3000", {
+import.meta.env.VITE_ENDPOINT;
+// const socket = io.connect(`${import.meta.env.VITE_ENDPOINT}{
 //     reconnection: false
 // });
-const socket = io.connect("http://localhost:3000", {
-  // path: "/api/socket.io",
+var pathValue = null;
+if (import.meta.env.VITE_ENDPOINT === "https://scribblestudent/api") {
+  pathValue = "/api/socket.io";
+}
+const socket = io.connect(`${import.meta.env.VITE_SOCKET}`, {
+  path: pathValue || "",
   transports: ["polling"],
 });
 
