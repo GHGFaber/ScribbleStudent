@@ -1282,7 +1282,34 @@ app.post("/reset-password", async (req, res) => {
 });
 
 //------------------------------------------------------------------------------------------------------
+app.post("/bypassLogin", async (req, res) => {
+  let savedUsername = req.body.username;
+  try {
+    const [userData] = await pool.query(
+      "SELECT * FROM user WHERE username = ?",
+      savedUsername
+    );
+    const userid = userData[0].userID; // grab userid
+    const username = userData[0].username; // grab username
+    const email = userData[0].email; // grab email
+    const img = userData[0].avatar;
 
+    res.send({
+      user: userData[0].userID,
+      success: true,
+      username,
+      email,
+      userID: req.session.userid,
+      avatar:
+        userData[0].avatar !== null
+          ? userData[0].avatar.toString()
+          : userData[0].avatar,
+    });
+  } catch (error) {
+    res.status(500).send("Error checking username");
+    console.error(error);
+  }
+});
 // Check login credentials (create user session)
 app.post("/login", async (req, res) => {
   let username = req.body.username;
