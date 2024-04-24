@@ -31,7 +31,7 @@ function ResetPassword() {
       }
 
       // Send a POST request to update the user password
-      await axios.post("http://localhost:3000/reset-password", {
+      await axios.post(`${import.meta.env.VITE_ENDPOINT}/reset-password`, {
         oldPassword: formData.current.elements.old_password.value,
         newPassword: formData.current.elements.new_pass1.value,
       });

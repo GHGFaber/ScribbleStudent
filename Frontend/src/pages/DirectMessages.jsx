@@ -1,5 +1,5 @@
 import avatarPic from "../images/default_pic.png";
-import {useState, useEffect, useRef} from "react";
+import { useState, useEffect, useRef } from "react";
 import socket from "../components/Socket.jsx";
 import Navbar from "../components/Navbar.jsx";
 import DMSidebar from "../components/DMSidebar.jsx";
@@ -24,7 +24,7 @@ function DirectMessages({
   friendInfo,
   setFriendInfo,
   profileInfo,
-  setProfileInfo
+  setProfileInfo,
 }) {
   // Message State
   const [message, setMessage] = useState(null);
@@ -38,7 +38,7 @@ function DirectMessages({
     const timeString = returnedDate.concat(" ", returnedTime);
     return timeString;
   }
-  
+
   // Have a method similar to this
   /*
    // Join a room
@@ -75,7 +75,6 @@ function DirectMessages({
     if (!directChats) setDirectChats([]);
   }
 
-
   function show_chats() {
     //console.log("DirectMessages: direct chats is " + JSON.stringify(directChats));
     //if (!directChats) setDirectChats([]);
@@ -88,14 +87,20 @@ function DirectMessages({
             <div className="container-fluid the-chat-div rounded-0">
               <div className="flexed-container">
                 <div className="avatar-body">
-                 <img className="avatar-picture" 
-                      src={chat.profilePic && chat.profilePic !== "" ? `data:image/jpeg;base64,${chat.profilePic}` : avatarPic} 
-                      alt="avatar-picture"/>
+                  <img
+                    className="avatar-picture"
+                    src={
+                      chat.profilePic && chat.profilePic !== ""
+                        ? `data:image/jpeg;base64,${chat.profilePic}`
+                        : avatarPic
+                    }
+                    alt="avatar-picture"
+                  />
                 </div>
                 <div className="container-body">
-                 <p className="full-datetime">{get_time(chat.timestamp)}</p>
-                 <p className="user-text">{chat.username}</p>
-                 <p className="text-content">{chat.message}</p>
+                  <p className="full-datetime">{get_time(chat.timestamp)}</p>
+                  <p className="user-text">{chat.username}</p>
+                  <p className="text-content">{chat.message}</p>
                 </div>
               </div>
             </div>
@@ -108,7 +113,8 @@ function DirectMessages({
   // Function to scroll to the bottom of the chat container
   function scrollToBottom() {
     if (chatContainerRef.current) {
-      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+      chatContainerRef.current.scrollTop =
+        chatContainerRef.current.scrollHeight;
     }
   }
 
@@ -154,26 +160,32 @@ function DirectMessages({
       userMsg();
       // Send username and message
       // setMessage(storedData);
-      socket.emit("send_direct_message", { username: storedData.username, 
-                                           message,
-                                           avatar:
-                                            storedData.avatar !== null
-                                              ? storedData.avatar.toString()
-                                              : storedData.avatar, // Include avatar in the message data 
+      socket.emit("send_direct_message", {
+        username: storedData.username,
+        message,
+        avatar:
+          storedData.avatar !== null
+            ? storedData.avatar.toString()
+            : storedData.avatar, // Include avatar in the message data
       });
       // Update chatroom for class
       // Need the current classID (got it)
       console.log("Current dmID: ", room.ID);
       //const dmID = room.ID;
-      console.log("Your DM ID String: " + JSON.parse(sessionStorage.getItem("dmIDRoom")));
+      console.log(
+        "Your DM ID String: " + JSON.parse(sessionStorage.getItem("dmIDRoom"))
+      );
       const dmID = parseInt(sessionStorage.getItem("dmIDRoom"));
       console.log("The dmID for this direct message is " + dmID);
-      await axios.post("http://localhost:3000/insert-direct-message", {
-        message: message,
-        timestamp: new Date(Date.now()).toISOString(),
-        dmID: dmID,
-        username: storedData.username
-      });
+      await axios.post(
+        `${import.meta.env.VITE_ENDPOINT}/insert-direct-message`,
+        {
+          message: message,
+          timestamp: new Date(Date.now()).toISOString(),
+          dmID: dmID,
+          username: storedData.username,
+        }
+      );
     }
   };
 
@@ -193,7 +205,7 @@ function DirectMessages({
 
   }, [message]);
   */
-  
+
   useEffect(() => {
     socket.on(
       "receive_direct_message",
@@ -203,7 +215,7 @@ function DirectMessages({
           username: data.username,
           message: data.message,
           timestamp: Date.now(),
-          profilePic: data.avatar
+          profilePic: data.avatar,
         };
         // Update chats
         setDirectChats((prevMessages) => [...prevMessages, newMsg]);
@@ -263,7 +275,14 @@ function DirectMessages({
       <div className="container-fluid">
         <div className="row no-gutters">
           <div className="col-2 column1">
-            <DMSidebar parentCallback={dummyCallback} setDirectChats={setDirectChats} notePages={notePages} friendInfo={friendInfo} setFriendInfo={setFriendInfo} setRoom={setRoom}/>
+            <DMSidebar
+              parentCallback={dummyCallback}
+              setDirectChats={setDirectChats}
+              notePages={notePages}
+              friendInfo={friendInfo}
+              setFriendInfo={setFriendInfo}
+              setRoom={setRoom}
+            />
           </div>
           <div className="col-7 column2">
             <div id="chat-window">{show_chats()}</div>
@@ -295,7 +314,7 @@ function DirectMessages({
                   Send
                 </button>
               </div>
-            </form>  
+            </form>
           </div>
           <div className="col-3 column3">
             <DMUserbar
@@ -320,9 +339,12 @@ function DirectMessages({
     const id = localStorage.getItem("id");
     console.log(id);
     try {
-      const response = await axios.get("http://localhost:3000/class_data", {
-        params: { id: id },
-      });
+      const response = await axios.get(
+        `${import.meta.env.VITE_ENDPOINT}/class_data`,
+        {
+          params: { id: id },
+        }
+      );
       console.log(response.data);
       if (response.data) {
         localStorage.setItem("classes", JSON.stringify(response.data.class[0]));
@@ -344,8 +366,7 @@ function DirectMessages({
   }
 
   // contacts backend to retrieve the chatroom messages for a particular class
-  function get_direct_messages_from_server() {
-  }
+  function get_direct_messages_from_server() {}
 
   // receives timestamp and converts it to mm/dd/yyyy hh:mm:ss format
   function get_time(timestamp) {
@@ -357,4 +378,3 @@ function DirectMessages({
   }
 }
 export default DirectMessages;
-

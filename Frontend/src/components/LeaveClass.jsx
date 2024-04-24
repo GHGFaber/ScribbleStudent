@@ -12,7 +12,7 @@ function LeaveClass({ onClose, classes }) {
   const leaveClass = async (req, res) => {
     try {
       // Remove user from classList table
-      await axios.post("http://localhost:3000/leave-class", {
+      await axios.post(`${import.meta.env.VITE_ENDPOINT}/leave-class`, {
         classID: selectedClass.classID,
       });
       // Refresh browser to show changes

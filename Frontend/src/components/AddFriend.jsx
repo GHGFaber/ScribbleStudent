@@ -10,8 +10,8 @@ function AddFriend({ userData, isActive, handleAddFriendActive }) {
   console.log("YAH BIG INFO THERE", userData);
 
   const formData = {
-    friendCode: useRef(null)
-  }
+    friendCode: useRef(null),
+  };
 
   // retrieve the data from local storage
   // will determine whether or not to display the popup
@@ -38,32 +38,44 @@ function AddFriend({ userData, isActive, handleAddFriendActive }) {
   async function validate_friend_code() {
     console.log("AddFriend: running function validate_friend_code()...");
     try {
-      const response = await axios.post("http://localhost:3000/get-friend-id-from-code", {
-        friendCode: formData.current.friendCode.value
-      })
+      const response = await axios.post(
+        `${import.meta.env.VITE_ENDPOINT}/get-friend-id-from-code`,
+        {
+          friendCode: formData.current.friendCode.value,
+        }
+      );
 
       let secondResponse = "";
       let thirdResponse = "";
 
       if (response) {
         const friendID = response.data.friendID[0];
-        console.log("What is the friend ID????? It is " + JSON.stringify(friendID));
-        secondResponse = await axios.post("http://localhost:3000/add-friend-dm", {
-          friendID: friendID
-        })
+        console.log(
+          "What is the friend ID????? It is " + JSON.stringify(friendID)
+        );
+        secondResponse = await axios.post(
+          `${import.meta.env.VITE_ENDPOINT}/add-friend-dm`,
+          {
+            friendID: friendID,
+          }
+        );
         if (secondResponse) {
           console.log("Friend successfully added");
-          thirdResponse = await axios.post("http://localhost:3000/add-to-friend-list", {
-            friendID: friendID
-          })
-          if (thirdResponse) console.log("Friend successfully appended to friend list");
+          thirdResponse = await axios.post(
+            `${import.meta.env.VITE_ENDPOINT}/add-to-friend-list`,
+            {
+              friendID: friendID,
+            }
+          );
+          if (thirdResponse)
+            console.log("Friend successfully appended to friend list");
         }
       }
     } catch (error) {
       console.error("Error retrieving friend through code: " + error);
     }
   }
-  
+
   // if the user closes the profile, the flag will be set to false
   // and the pop-up will no longer be visible
   function close_add_friend() {
@@ -87,16 +99,15 @@ function AddFriend({ userData, isActive, handleAddFriendActive }) {
             <Box id="add-friend-box">
               <div className="add-friend-content">
                 <form ref={formData}>
-                    <h5>Friend Code</h5>
-                    <input id="add-friend-code" 
-                           type="text" 
-                           name="friendCode"
-                    />
-                    <button id="add-friend-button"
-                            type="button"
-                            onClick={() => validate_friend_code()}>
-                      Add Friend
-                    </button>
+                  <h5>Friend Code</h5>
+                  <input id="add-friend-code" type="text" name="friendCode" />
+                  <button
+                    id="add-friend-button"
+                    type="button"
+                    onClick={() => validate_friend_code()}
+                  >
+                    Add Friend
+                  </button>
                 </form>
                 <button
                   type="button"

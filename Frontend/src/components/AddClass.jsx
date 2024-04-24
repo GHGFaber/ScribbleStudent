@@ -13,7 +13,7 @@ function AddClass({ onClose, classes }) {
   const availableClasses = async (req, res) => {
     try {
       const response = await axios.get(
-        "http://localhost:3000/available-classes"
+        `${import.meta.env.VITE_ENDPOINT}/available-classes`
       );
       const formattedData = response.data.classData.map((item) => ({
         // Grab message data
@@ -29,7 +29,7 @@ function AddClass({ onClose, classes }) {
   // Add user to class
   const addClass = async (req, res) => {
     try {
-      await axios.post("http://localhost:3000/add-class", {
+      await axios.post(`${import.meta.env.VITE_ENDPOINT}/add-class`, {
         classID: selectedClass,
       });
       // Refresh browser to show changes

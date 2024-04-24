@@ -111,7 +111,7 @@ function Sidebar({
       // local timestamp
       const uploadDate = moment().format("YYYY-MM-DD HH:mm:ss");
 
-      await axios.post("http://localhost:3000/add-user-note", {
+      await axios.post(`${import.meta.env.VITE_ENDPOINT}/add-user-note`, {
         fileName: fileName,
         uploadDate: uploadDate,
         description: description,
@@ -127,7 +127,9 @@ function Sidebar({
   // Get the user notes from the database
   const getUserNotes = async () => {
     try {
-      const response = await axios.get("http://localhost:3000/user-notes");
+      const response = await axios.get(
+        `${import.meta.env.VITE_ENDPOINT}/user-notes`
+      );
       console.log("User Notes:", response.data.noteData);
       // Format the notes for displaying
       const formattedNotes = response.data.noteData.map((note) => ({
@@ -143,50 +145,53 @@ function Sidebar({
     }
   };
 
-    // Create a new class note
-    const newClassNote = async (req, res) => {
-      try {
-        // file description (Title)
-        var description = "NewNote";
-        if (classNotes.some((page) => page.description === description)) {
-          const uniqueFilename = generateUniqueFilename(description, classNotes);
-          description = uniqueFilename;
-          console.log("Unique Filename:", uniqueFilename);
-        } else {
-          console.log("NewNote is unique");
-        }
-        // FileName
-        const fileName = description + ".txt";
-        console.log(fileName);
-        // // File
-        // const file = "";
-        // Text
-        const text = "";
-        // local timestamp
-        const uploadDate = moment().format("YYYY-MM-DD HH:mm:ss");
-  
-        await axios.post("http://localhost:3000/add-class-note", {
-          fileName: fileName,
-          uploadDate: uploadDate,
-          description: description,
-          text: text,
-          classID: room.ID,
-        });
-        // Update class notes list
-        getClassNotes();
-        // emit for users to get new class list
-        socket.emit("new-class-list");
-      } catch (error) {
-        console.error("Error adding new class note:", error);
+  // Create a new class note
+  const newClassNote = async (req, res) => {
+    try {
+      // file description (Title)
+      var description = "NewNote";
+      if (classNotes.some((page) => page.description === description)) {
+        const uniqueFilename = generateUniqueFilename(description, classNotes);
+        description = uniqueFilename;
+        console.log("Unique Filename:", uniqueFilename);
+      } else {
+        console.log("NewNote is unique");
       }
-    };
+      // FileName
+      const fileName = description + ".txt";
+      console.log(fileName);
+      // // File
+      // const file = "";
+      // Text
+      const text = "";
+      // local timestamp
+      const uploadDate = moment().format("YYYY-MM-DD HH:mm:ss");
+
+      await axios.post(`${import.meta.env.VITE_ENDPOINT}/add-class-note`, {
+        fileName: fileName,
+        uploadDate: uploadDate,
+        description: description,
+        text: text,
+        classID: room.ID,
+      });
+      // Update class notes list
+      getClassNotes();
+      // emit for users to get new class list
+      socket.emit("new-class-list");
+    } catch (error) {
+      console.error("Error adding new class note:", error);
+    }
+  };
 
   // Get the class notes from the database
   const getClassNotes = async () => {
     try {
-      const response = await axios.post("http://localhost:3000/class-notes", {
-        classID: room.ID,
-      });
+      const response = await axios.post(
+        `${import.meta.env.VITE_ENDPOINT}/class-notes`,
+        {
+          classID: room.ID,
+        }
+      );
       // Format the notes for displaying
       const formattedNotes = response.data.noteData.map((note) => ({
         description: note.description,
@@ -203,7 +208,7 @@ function Sidebar({
   };
 
   // Set the note that the user clicks
-  // If user clicks personal note, room should be 
+  // If user clicks personal note, room should be
   // set back to previous class room.Name
   const setUserNote = async (note) => {
     try {
@@ -211,9 +216,8 @@ function Sidebar({
       setSelectedNote(note);
 
       console.log("page clicked:", note);
-      // Set room back to class room 
+      // Set room back to class room
       socket.emit("join_room", room.Name);
-
     } catch (error) {
       console.error("Error setting user note:", error);
     }
@@ -231,14 +235,20 @@ function Sidebar({
       socket.emit("join_room", noteRoom);
 
       // get latest note changes before setting selectedNote
-      const response = await axios.post("http://localhost:3000/latest-note-changes", {
-        fileID: note.fileID,
-      });
+      const response = await axios.post(
+        `${import.meta.env.VITE_ENDPOINT}/latest-note-changes`,
+        {
+          fileID: note.fileID,
+        }
+      );
       const newNote = response.data.noteData[0];
 
       // If the updated data does not equal the initial data
       // then update the selected Note
-      if (note.text !== newNote.text || note.description !== newNote.description) {
+      if (
+        note.text !== newNote.text ||
+        note.description !== newNote.description
+      ) {
         console.log("Old Data !== New Data");
         setSelectedNote(response.data.noteData[0]);
       } else {
@@ -256,12 +266,15 @@ function Sidebar({
 
   // Save class notebook dropdown to sessionStorage when it changes
   useEffect(() => {
-    sessionStorage.setItem("classNotesDropdownVisible", classNotesDropdownVisible);
+    sessionStorage.setItem(
+      "classNotesDropdownVisible",
+      classNotesDropdownVisible
+    );
   }, [classNotesDropdownVisible]);
 
   // save selected note to sessionStorage when it changes
   useEffect(() => {
-    sessionStorage.setItem('selectedNote', JSON.stringify(selectedNote));
+    sessionStorage.setItem("selectedNote", JSON.stringify(selectedNote));
   }, [selectedNote]);
 
   // class room change
@@ -274,7 +287,7 @@ function Sidebar({
   // sockets
   useEffect(() => {
     if (!chats) {
-      // update class list 
+      // update class list
       socket.on("update-class-list", () => {
         getClassNotes();
       });
@@ -380,13 +393,15 @@ function Sidebar({
                     {username}'s<br></br>Notebook
                   </h5>
                 </label>
-                {notebookDropdownVisible && notePages && notePages.length < 5 && (
-                  <button
-                    className="plus-button plus-button--small"
-                    onClick={newUserNote}
-                    title="add note"
-                  ></button>
-                )}
+                {notebookDropdownVisible &&
+                  notePages &&
+                  notePages.length < 5 && (
+                    <button
+                      className="plus-button plus-button--small"
+                      onClick={newUserNote}
+                      title="add note"
+                    ></button>
+                  )}
               </div>
               <ul
                 className="slide"
@@ -414,7 +429,7 @@ function Sidebar({
                     </li>
                   ))}
                 {notePages && notePages.length === 0 && (
-                  <p style={{marginLeft: "12px"}}>(Empty)</p>
+                  <p style={{ marginLeft: "12px" }}>(Empty)</p>
                 )}
               </ul>
             </li>
@@ -426,30 +441,33 @@ function Sidebar({
               {/* Only show class notebook if user is joined in at least one class */}
               {/* Causing issues when navigating to notes for classes and user notes */}
               {/* {classes && classes.length > 0 && ( */}
-                <div className="side-selection">
-                  <label
-                    htmlFor="touch"
-                    className="the-link"
-                    onClick={() =>
-                      setClassNotesDropdownVisible(!classNotesDropdownVisible)
-                    }
-                  >
-                    <h5>
-                      {room.Name}<br></br>Notebook
-                    </h5>
-                  </label>
-                  {classNotesDropdownVisible && (
-                    <button
-                      className="plus-button plus-button--small"
-                      onClick={newClassNote}
-                      title="add note"
-                    ></button>
-                  )}
-                </div>
+              <div className="side-selection">
+                <label
+                  htmlFor="touch"
+                  className="the-link"
+                  onClick={() =>
+                    setClassNotesDropdownVisible(!classNotesDropdownVisible)
+                  }
+                >
+                  <h5>
+                    {room.Name}
+                    <br></br>Notebook
+                  </h5>
+                </label>
+                {classNotesDropdownVisible && (
+                  <button
+                    className="plus-button plus-button--small"
+                    onClick={newClassNote}
+                    title="add note"
+                  ></button>
+                )}
+              </div>
               {/* )} */}
               <ul
                 className="slide"
-                style={{ display: classNotesDropdownVisible ? "block" : "none" }}
+                style={{
+                  display: classNotesDropdownVisible ? "block" : "none",
+                }}
               >
                 {/* Use classNotes state to display list */}
                 {classNotes &&
@@ -467,16 +485,14 @@ function Sidebar({
                           display: "block",
                           paddingRight: "65px",
                         }}
-                        >
+                      >
                         <div className="side-selection">
                           <h6>{page.description}</h6>
                         </div>
                       </Link>
                     </li>
                   ))}
-                {classNotes && classNotes.length === 0 && (
-                  <h6>(Empty)</h6>
-                )}
+                {classNotes && classNotes.length === 0 && <h6>(Empty)</h6>}
               </ul>
             </li>
           </nav>
