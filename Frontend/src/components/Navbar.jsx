@@ -30,6 +30,10 @@ function Navbar({
   setClasses,
   username,
   setUsername,
+  directChats,
+  setDirectChats,
+  friendInfo,
+  setFriendInfo,
 }) {
   // Create a ref for Popup
   const popupRef = useRef(null);
@@ -65,6 +69,7 @@ function Navbar({
   };
 
   const [userProfileIsOn, setUserProfileIsOn] = useState(false);
+  const [listOfFriends, setListOfFriends] = useState([]);
   const [userData, setUserData] = useState([]);
   const testClosureString = "This originates from Navbar.jsx";
   const formData = useRef(null);
@@ -171,7 +176,7 @@ function Navbar({
         if (room.Name) {
           defaultRoom = room.Name;
         } else {
-          defaultRoom = formattedData[0].className
+          defaultRoom = formattedData[0].className;
         }
         console.log(
           "🚀 ~ fetchClasses ~ formattedData[0].className:",
@@ -190,6 +195,68 @@ function Navbar({
       // console.log("Error fetching class info:", error);
     }
   };
+
+  async function get_default_dm_room() {
+    try {
+      let formattedListOfFriends = [];
+      const list = await axios.post("http://localhost:3000/grab-friends");
+      // console.log("Navbar: the dm list is: " + JSON.stringify(list));
+      if (list && list.length !== 0) {
+        formattedListOfFriends = list.data.friends.map((item) => ({
+          username: item.username,
+          avatar: item.avatar,
+          userID: item.userID,
+        }));
+        setListOfFriends(formattedListOfFriends);
+      } else console.log("Nothing in direct messages!!!!!");
+
+      if (formattedListOfFriends.length !== 0) {
+        const firstFriendID = formattedListOfFriends[0].userID;
+        console.log("the firstFriendID is " + JSON.stringify(firstFriendID));
+        setFriendInfo(firstFriendID);
+        //console.log("session Storage is " + sessionStorage.getItem("friendID"));
+        const theResponse = await axios.post(
+          "http://localhost:3000/match-dm-ids",
+          {
+            friendID: firstFriendID,
+          }
+        );
+
+        console.log("Return to old " + JSON.stringify(theResponse));
+
+        const dmessageID = theResponse.data.dmID;
+        console.log("Navbar: the dmID is " + JSON.stringify(dmessageID));
+
+        const response = await axios.post(
+          "http://localhost:3000/direct_messages",
+          {
+            dmID: dmessageID,
+          }
+        );
+
+        const directMessageData = response.data.userData.map((item) => ({
+          username: item.username,
+          timestamp: item.timestamp,
+          message: item.messages,
+          profilePic: item.avatar,
+        }));
+        setDirectChats(directMessageData);
+        const defaultDMRoom = dmessageID;
+
+        setRoom(defaultDMRoom);
+        sessionStorage.setItem("dmIDRoom", JSON.stringify(defaultDMRoom));
+        console.log(
+          "the set ID room is: " + sessionStorage.getItem("dmIDRoom")
+        );
+        socket.emit("join_room", defaultDMRoom);
+      } else {
+        console.log("User has no friends");
+        setDirectChats([]);
+      }
+    } catch (error) {
+      console.error("Error retrieving friend list: " + error);
+    }
+  }
 
   function turn_on_user_profile() {
     console.log("User profile was originally " + userProfileIsOn);
@@ -264,26 +331,34 @@ function Navbar({
         <div className="class-buttons">
           {/* Added function to display class name of tab clicked */}
           {/* If classes is null, and chats DNE, then do not display tabs */}
-          {classes && classes.length > 0 && (
-            <ul className="nav-items my-auto">
-              {classes.map((classInSchool, index) => (
-                <li onClick={() => joinRoom(classInSchool)} key={index}>
-                  <label style={{ cursor: "pointer", userSelect: "none" }}>
-                    {classInSchool.className}
-                  </label>
-                </li>
-              ))}
-              {/* Add a tab for "Add Class" */}
-              {/* <li>
+          <ul className="nav-items my-auto">
+            {classes && chats && classes.length > 0 && (
+              <>
+                {classes.map((classInSchool, index) => (
+                  <li onClick={() => joinRoom(classInSchool)} key={index}>
+                    <Link className="the-link" to="/chatroom">
+                      <label style={{ cursor: "pointer", userSelect: "none" }}>
+                        {classInSchool.className}
+                      </label>
+                    </Link>
+                  </li>
+                ))}
+                {/* Add a tab for "Add Class" */}
+                {/* <li>
                 <label className="add-class-button" style={{ cursor: "pointer", userSelect: "none" }}>
                   <h5>+</h5>
                 </label>
               </li> */}
-              {/* End of "Add Class" tab */}
-            </ul>
-          )}
+                {/* End of "Add Class" tab */}
+              </>
+            )}
+            <li onClick={() => get_default_dm_room()}>
+              <Link className="the-link" to="/direct-messages">
+                <label style={{ cursor: "pointer" }}>Direct Messages</label>
+              </Link>
+            </li>
+          </ul>
         </div>
-
         <Popup
           ref={popupRef} // assign ref to popup
           className="signout-button-popup"

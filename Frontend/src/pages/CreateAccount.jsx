@@ -14,6 +14,7 @@ function CreateAccount() {
   const [cropperState, setCropperState] = useState("none");
   const [imgData, setImgData] = useState();
   const [profileData, setProfileData] = useState();
+  const [cropped, setCropped] = useState(false);
   const navigate = useNavigate();
 
   const formData = {
@@ -49,6 +50,7 @@ function CreateAccount() {
     }
   };
   function emptyImg() {
+    setCropped(false);
     setImgData(null);
     setImage(null);
   }
@@ -77,10 +79,10 @@ function CreateAccount() {
   const getCropData = (event) => {
     event.preventDefault();
     const cropper = formData.cropper.current.cropper;
-    setImgData(cropper.getCroppedCanvas().toDataURL());
+    setImgData(cropper.getCroppedCanvas().toDataURL("image/jpeg", 0.4));
     console.log(imgData);
+    setCropped(true);
     setProfileData(imgData.split(",")[1]);
-    console.log(profileData);
   };
 
   const extractBase = async (img) => {
@@ -211,9 +213,11 @@ function CreateAccount() {
           </form>
           <div className="spacer-0"></div>
           <Link to="/chatroom">
-            <button id="create-account-button" onClick={handleAccount}>
-              Sign Up
-            </button>
+            {cropped !== false && (
+              <button id="create-account-button" onClick={handleAccount}>
+                Sign Up
+              </button>
+            )}
           </Link>
           <div className="spacer-0"></div>
           <Link to="/login-page">Have an account? Log In!</Link>

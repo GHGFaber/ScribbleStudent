@@ -29,6 +29,10 @@ function Notebook(props) {
     setSelectedNote,
     room,
     setRoom,
+    directChats,
+    setDirectChats,
+    friendInfo,
+    setFriendInfo,
     classNotes,
     setClassNotes,
   } = props;
@@ -359,7 +363,7 @@ function Notebook(props) {
       // socket.off("join-collab-data");
       // socket.off("leave-collab-data");
     };
-  // }, [selectedNote]);
+    // }, [selectedNote]);
   }, [socket]);
 
   // Set the room for the selectedNote when in Notebook
@@ -374,8 +378,6 @@ function Notebook(props) {
     // // Emit avatar and username to socket
     // socket.emit("join-collab", [storedData], selectedNote.fileID);
   }, []);
-
-
 
   //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   // - Show cursor for each collaborator
@@ -411,7 +413,6 @@ function Notebook(props) {
   // If selecteNote.fileID changes, emit to socket to have users remove username and avatar from collaborator
   // Clear collaborator state
 
-
   return (
     <>
       {
@@ -424,6 +425,10 @@ function Notebook(props) {
         setUsername={setUsername}
         room={room}
         setRoom={setRoom}
+        directChats={directChats}
+        setDirectChats={setDirectChats}
+        friendInfo={friendInfo}
+        setFriendInfo={setFriendInfo}
       />
       <div className="container-fluid">
         <div className="row no-gutters">
@@ -441,7 +446,10 @@ function Notebook(props) {
               username={username}
             />
           </div>
-          <div className="col-10 column2 the-note-section" style={{ whiteSpace: 'pre-wrap' }}>
+          <div
+            className="col-10 column2 the-note-section"
+            style={{ whiteSpace: "pre-wrap" }}
+          >
             {selectedNote && (
               <>
                 <h3
