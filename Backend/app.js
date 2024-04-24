@@ -34,6 +34,7 @@ dotenvFlow.config();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 let friendCode = "";
+let addrPath = "";
 
 const app = express(); // Create application
 
@@ -62,8 +63,10 @@ const server = app.listen(3000, () => {
   console.log("App listening on port 3000");
 });
 
-if (process.env.LOCAL) {
-  var addrPath = "";
+let local = process.env.LOCAL;
+
+if (local === "true") {
+  addrPath = "";
 } else {
   addrPath = "/socket.io";
 }
@@ -79,7 +82,8 @@ const io = new Server(server, {
 console.log(io);
 console.log(process.env.ORIGIN);
 console.log(process.env.LOCAL);
-console.log(addrPath);
+console.log("path", addrPath);
+console.log("testers", local);
 
 // Session context shared w/ socket.io
 io.engine.use(sessionMiddleware);
