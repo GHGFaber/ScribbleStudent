@@ -347,15 +347,18 @@ function Navbar({
           <ul className="nav-items my-auto">
             {classes && chats && classes.length > 0 && (
               <>
-                {classes.map((classInSchool, index) => (
-                  <li onClick={() => joinRoom(classInSchool)} key={index}>
-                    <Link className="the-link">
-                      <label style={{ cursor: "pointer", userSelect: "none" }}>
-                        {classInSchool.className}
-                      </label>
-                    </Link>
-                  </li>
-                ))}
+                {!inDirect &&
+                  classes.map((classInSchool, index) => (
+                    <li onClick={() => joinRoom(classInSchool)} key={index}>
+                      <Link className="the-link">
+                        <label
+                          style={{ cursor: "pointer", userSelect: "none" }}
+                        >
+                          {classInSchool.className}
+                        </label>
+                      </Link>
+                    </li>
+                  ))}
                 {/* Add a tab for "Add Class" */}
                 {/* <li>
                 <label className="add-class-button" style={{ cursor: "pointer", userSelect: "none" }}>
