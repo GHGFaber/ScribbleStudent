@@ -348,7 +348,7 @@ function Navbar({
               <>
                 {classes.map((classInSchool, index) => (
                   <li onClick={() => joinRoom(classInSchool)} key={index}>
-                    <Link className="the-link" to="/chatroom">
+                    <Link className="the-link">
                       <label style={{ cursor: "pointer", userSelect: "none" }}>
                         {classInSchool.className}
                       </label>
