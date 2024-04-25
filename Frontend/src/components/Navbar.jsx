@@ -34,6 +34,7 @@ function Navbar({
   setDirectChats,
   friendInfo,
   setFriendInfo,
+  inDirect,
 }) {
   // Create a ref for Popup
   const popupRef = useRef(null);
@@ -364,11 +365,19 @@ function Navbar({
                 {/* End of "Add Class" tab */}
               </>
             )}
-            <li onClick={() => get_default_dm_room()}>
-              <Link className="the-link" to="/direct-messages">
-                <label style={{ cursor: "pointer" }}>Direct Messages</label>
-              </Link>
-            </li>
+            {!inDirect ? (
+              <li onClick={() => get_default_dm_room()}>
+                <Link className="the-link" to="/direct-messages">
+                  <label style={{ cursor: "pointer" }}>Direct Messages</label>
+                </Link>
+              </li>
+            ) : (
+              <li>
+                <Link className="the-link" to="/chatroom">
+                  <label style={{ cursor: "pointer" }}>Chatroom</label>
+                </Link>
+              </li>
+            )}
           </ul>
         </div>
         <Popup

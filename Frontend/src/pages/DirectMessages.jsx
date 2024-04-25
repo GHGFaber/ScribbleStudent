@@ -29,6 +29,7 @@ function DirectMessages({
   // Message State
   const [message, setMessage] = useState(null);
   const [notePages, setNotes] = useState([]);
+  const [inDirect, setInDirect] = useState(true);
   let userData = JSON.parse(sessionStorage.getItem("userData"));
 
   function get_time(timestamp) {
@@ -195,7 +196,9 @@ function DirectMessages({
   }, []);
 
   useEffect(() => {
+    setInDirect(true);
     scrollToBottom();
+    console.log("are we", inDirect);
   }, [chats]);
 
   /*
@@ -258,6 +261,7 @@ function DirectMessages({
     <>
       {/* Pass props to Navbar component */}
       <Navbar
+        inDirect={inDirect}
         classes={classes}
         setClasses={setClasses}
         chats={chats}
