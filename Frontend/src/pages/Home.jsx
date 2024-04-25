@@ -3,50 +3,8 @@ import pyramid from "../images/scrib_pyramid.png";
 import chat_ex from "../images/chat_ex.png";
 import note_ex from "../images/notes_ex.png";
 import { Link } from "react-router-dom";
-import { useEffect } from "react";
-import axios from "axios";
-import { useNavigate } from "react-router-dom";
 // landing page for the application
 function Home() {
-  const navigation = useNavigate();
-  const bypassLogin = async () => {
-    const uData = JSON.parse(JSON.stringify(localStorage.getItem("userData")));
-    const username = JSON.parse(uData).username;
-    console.log("PLSEASEFAS", uData);
-    sessionStorage.setItem("userData", uData);
-    const response = await axios.post(
-      `${import.meta.env.VITE_ENDPOINT}/bypassLogin`,
-      {
-        username: username,
-      }
-    );
-
-    console.log(response.data);
-
-    const response2 = await axios.get(
-      `${import.meta.env.VITE_ENDPOINT}/user-avatars`
-    );
-    const avatarData = response2.data.avatarData.map((item) => ({
-      // Grab message data
-      avatar: item.avatar,
-      username: item.username,
-      userID: item.userID,
-    }));
-    sessionStorage.setItem("avatarData", JSON.stringify(avatarData));
-
-    navigation("/chatroom");
-  };
-
-  useEffect(() => {
-    localStorage.setItem("userData", null);
-    if (sessionStorage.getItem("userData")) {
-      localStorage.setItem("userData", sessionStorage.getItem("userData"));
-    }
-    console.log("local", localStorage.getItem("userData"));
-
-    bypassLogin();
-  }, []);
-
   return (
     <>
       <nav id="top" className="purple-nav">
@@ -72,9 +30,11 @@ function Home() {
           <div className="intro">
             <h1>Your class, your notes, and</h1>
             <h1>your peers - all in one place.</h1>
-            <button className="dark-button">
-              Open Scribble in your browser
-            </button>
+            <Link to="/login-page">
+              <button className="dark-button">
+                Open Scribble in your browser
+              </button>
+            </Link>
           </div>
         </div>
         <div className="home-1">

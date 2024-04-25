@@ -35,6 +35,8 @@ function Notebook(props) {
     setFriendInfo,
     classNotes,
     setClassNotes,
+    chats,
+    setChats
   } = props;
 
   // Quill ref
@@ -429,6 +431,8 @@ function Notebook(props) {
         username={username}
         setUsername={setUsername}
         room={room}
+        chats={chats}
+        setChats={setChats}
         setRoom={setRoom}
         directChats={directChats}
         setDirectChats={setDirectChats}

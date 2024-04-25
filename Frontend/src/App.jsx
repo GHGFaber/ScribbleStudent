@@ -102,6 +102,8 @@ function App() {
             path="notebook"
             element={
               <Notebook
+                chats={chats}
+                setChats={setChats}
                 classes={classes}
                 setClasses={setClasses}
                 username={username}

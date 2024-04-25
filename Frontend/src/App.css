@@ -1036,3 +1036,17 @@ input[type="file"] {
   width: 125px;
   height: auto;
 }
+
+#return-home-button {
+  padding: 10px 40px 10px 40px;
+  color: #9090ff;
+  background-color: #ffff90;
+  border: none;
+  border-radius: 30px;
+  position: fixed;
+  bottom: 10%;
+  align-items: center;
+  left: 50%;
+  transform: translate(-50%, -50%);
+
+}
