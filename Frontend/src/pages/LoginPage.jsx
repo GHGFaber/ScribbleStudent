@@ -14,11 +14,14 @@ function LoginPage() {
     event.preventDefault();
     console.log("hi");
     try {
-      const response = await axios.post("http://localhost:3000/login", {
-        username: formData.current.username.value,
-        password: formData.current.password.value,
-        withCredentials: true,
-      });
+      const response = await axios.post(
+        `${import.meta.env.VITE_ENDPOINT}/login`,
+        {
+          username: formData.current.username.value,
+          password: formData.current.password.value,
+          withCredentials: true,
+        }
+      );
       if (response.data.success) {
         console.log(response.data);
         // Store username in sessionStorage
@@ -35,7 +38,9 @@ function LoginPage() {
         // socket.emit("login", response.data.username, response.data.avatar);
 
         // Fetch avatar data
-        const response2 = await axios.get("http://localhost:3000/user-avatars");
+        const response2 = await axios.get(
+          `${import.meta.env.VITE_ENDPOINT}/user-avatars`
+        );
         const avatarData = response2.data.avatarData.map((item) => ({
           // Grab message data
           avatar: item.avatar,
@@ -91,7 +96,7 @@ function LoginPage() {
           <div className="spacer-0"></div>
         </div>
         <Link to="/">
-            <button id="return-home-button">Return to Home</button>
+          <button id="return-home-button">Return to Home</button>
         </Link>
       </div>
     </>
