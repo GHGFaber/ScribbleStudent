@@ -10,7 +10,7 @@ function Userbar({
 }) {
   // Grab username object from session storage
   const storedData = JSON.parse(sessionStorage.getItem("userData"));
-  console.log("TESTIN", storedData);
+  // console.log("TESTIN", storedData);
   useEffect(() => {
     socket.connect();
     // Send the username to socket.io ('username')

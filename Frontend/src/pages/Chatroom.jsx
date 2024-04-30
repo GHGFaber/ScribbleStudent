@@ -37,7 +37,7 @@ function Chatroom({
   friendInfo,
   setFriendInfo,
 }) {
-  console.log("YOOOO", room);
+  // console.log("YOOOO", room);
   // Message State
   const [message, setMessage] = useState(null);
   // Typing State
