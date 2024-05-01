@@ -49,8 +49,11 @@ function Chatroom({
   const [selectedGif, setSelectedGif] = useState(null);
   const [gifs, setGifs] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const giphyFetch = new GiphyFetch("7nPk2WhT8IBxootuOo954A0bpDpESPac");
+  // const giphyFetch = new GiphyFetch("7nPk2WhT8IBxootuOo954A0bpDpESPac"); // SDK
+  const giphyFetch = new GiphyFetch("I8oisuSvgC1h3zzTR5ebvLRdOZcTnUQV"); // API
   const gifPopupRef = useRef(null);
+
+
 
   useEffect(() => {
     // Event listener to detect clicks outside popup
@@ -67,6 +70,7 @@ function Chatroom({
   }, []);
 
   const fetchTrendingGifs = async () => {
+    // const { data } = await giphyFetch.trending();
     const { data } = await giphyFetch.trending();
     setGifs(data);
   };

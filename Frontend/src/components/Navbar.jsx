@@ -87,6 +87,8 @@ function Navbar({
       socket.emit("logout", username);
       // Clear session storage
       sessionStorage.clear();
+      // Clear local storage
+      localStorage.clear();
       window.location.href = "/login-page"; // Navigate to login page
     } catch (error) {
       console.error("Error during logout", error);
