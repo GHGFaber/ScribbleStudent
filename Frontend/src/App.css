@@ -834,12 +834,22 @@ input[type="file"] {
   padding-right: 20px;
 }
 
-.dispaly-gif {
+.display-gif {
   position: fixed;
   right: 22%;
   bottom: calc((var(--viewport-height) - 738px));
-  padding-right: 20px;
+  /* padding-right: 20px; */
   z-index: 1;
+  border: 1px solid #000000;
+  display: inline-block;
+  border-radius: 5px;
+}
+
+.display-gif-chat {
+  border: 1px solid #000000;
+  display: inline-block;
+  border-radius: 5px;
+  margin-bottom: 3px;
 }
 
 .overlay-button-container button {

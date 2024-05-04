@@ -193,7 +193,11 @@ function Chatroom({
                   <p className="full-datetime">{get_time(chat.timestamp)}</p>
                   <p className="user-text">{chat.username}</p>
                   <p className="text-content">{chat.text}</p>
-                  {chat.gif !== null && <img src={chat.gif} />}
+                    {chat.gif !== null && (
+                    <div className="display-gif-chat">
+                      <img src={chat.gif} />
+                    </div>
+                    )}
                 </div>
               </div>
             </div>
@@ -408,7 +412,7 @@ function Chatroom({
                   {/* Added functionality for submitting */}
                   {selectedGif && selectedGif.length !== 0 && (
                     <img
-                      className="dispaly-gif"
+                      className="display-gif"
                       src={selectedGif.images.fixed_height.url}
                       alt="Selected GIF"
                     />
