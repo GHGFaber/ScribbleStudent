@@ -1032,6 +1032,10 @@ input[type="file"] {
   color: #ffff90;
 }
 
+.the-content-dm {
+  height: 1000px;
+}
+
 .profile-info-avatar {
   width: 125px;
   height: auto;
@@ -1049,4 +1053,34 @@ input[type="file"] {
   left: 50%;
   transform: translate(-50%, -50%);
 
+}
+
+.the-current-avatar {
+  border-radius: 50%;
+  display: block;
+  height: 100px;
+  width: auto;
+}
+
+.idle-dm-render {
+  transform: translate(-50%, -50%);
+  left: 50%;
+  top: 40%;
+  position: absolute;
+}
+
+.idle-dm-render h2 {
+  transform: translate(-50%, -50%);
+  left: 65%;
+  top: 115%;
+  width: 500px;
+  position: absolute;
+}
+
+.idle-dm-render p {
+  transform: translate(-50%, -50%);
+  left: 49%;
+  top: 130%;
+  width: 600px;
+  position: absolute;
 }

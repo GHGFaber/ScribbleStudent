@@ -5,6 +5,7 @@ import Navbar from "../components/Navbar.jsx";
 import DMSidebar from "../components/DMSidebar.jsx";
 import DMUserbar from "../components/DMUserbar.jsx";
 import axios from "axios";
+import GetAFriend from "../images/get_a_friend.png";
 
 function DirectMessages({
   classes,
@@ -80,7 +81,7 @@ function DirectMessages({
     //console.log("DirectMessages: direct chats is " + JSON.stringify(directChats));
     //if (!directChats) setDirectChats([]);
     //console.log("direct chats are: " + JSON.stringify(directChats));
-    console.log("The avatar string is: " + JSON.stringify(directChats[0]));
+    //console.log("The avatar string is: " + JSON.stringify(directChats[0]));
     return (
       <div ref={chatContainerRef} className="chat-container">
         {directChats.map((chat, index) => (
@@ -161,6 +162,12 @@ function DirectMessages({
       userMsg();
       // Send username and message
       // setMessage(storedData);
+
+      console.log("send message payload:");
+      console.log("+++++++++++++++++++++")
+      console.log("username: " + storedData.username);
+      console.log("message: " + message);
+      console.log("avatar: " + avatar);
       socket.emit("send_direct_message", {
         username: storedData.username,
         message,
@@ -192,6 +199,7 @@ function DirectMessages({
 
   useEffect(() => {
     console.log("Chatroom: this useEffect has ran");
+    console.log("DirectMessages: the DMs are: " + directChats);
     set_chats_to_empty();
   }, []);
 
@@ -220,6 +228,7 @@ function DirectMessages({
           timestamp: Date.now(),
           profilePic: data.avatar,
         };
+        console.log("Direct message payload is: " + JSON.stringify(newMsg));
         // Update chats
         setDirectChats((prevMessages) => [...prevMessages, newMsg]);
       },
@@ -277,7 +286,7 @@ function DirectMessages({
         setRoom={setRoom}
       />
       <div className="container-fluid">
-        <div className="row no-gutters">
+        <div className="row no-gutters the-content-dm">
           <div className="col-2 column1">
             <DMSidebar
               parentCallback={dummyCallback}
@@ -289,36 +298,46 @@ function DirectMessages({
             />
           </div>
           <div className="col-7 column2">
-            <div id="chat-window">{show_chats()}</div>
-            <form className="the-chat-form">
-              <div id="the-dm-textarea" className="container-fluid">
-                {/* Added functionality for submitting */}
-                <textarea
-                  id="txt"
-                  onChange={(event) => {
-                    setMessage(event.target.value);
-                  }}
-                  onKeyDown={handleKeyDown}
-                  style={{ resize: "none" }}
-                  required
-                ></textarea>
+            {friendInfo || (directChats && directChats.length !== 0) ? (
+              <>
+               <div id="chat-window">{show_chats()}</div>
+                <form className="the-chat-form">
+                  <div id="the-dm-textarea" className="container-fluid">
+                    {/* Added functionality for submitting */}
+                    <textarea
+                      id="txt"
+                      onChange={(event) => {
+                        setMessage(event.target.value);
+                      }}
+                      onKeyDown={handleKeyDown}
+                      style={{ resize: "none" }}
+                      required
+                    ></textarea>
+                  </div>
+                  <div
+                    id="chat-text-dm-btn"
+                    className="container-fluid"
+                    style={{
+                      width: "57%",
+                      marginLeft: "0px",
+                      marginTop: "-20px",
+                      position: "fixed",
+                    }}
+                  >
+                    {/* Send the message after entering */}
+                    <button onClick={sendMessage} id="send-dm-button">
+                      Send
+                    </button>
+                  </div>
+                </form>
+              </>  
+            ) : (
+              <div className="idle-dm-render">
+                <img src={GetAFriend} alt="get-a-friend"/>
+                <h2>Make some friends!</h2>
+                <p>Use a friend code to make a connection with another classmate.</p>
               </div>
-              <div
-                id="chat-text-dm-btn"
-                className="container-fluid"
-                style={{
-                  width: "57%",
-                  marginLeft: "0px",
-                  marginTop: "-20px",
-                  position: "fixed",
-                }}
-              >
-                {/* Send the message after entering */}
-                <button onClick={sendMessage} id="send-dm-button">
-                  Send
-                </button>
-              </div>
-            </form>
+            )} 
           </div>
           <div className="col-3 column3">
             <DMUserbar
