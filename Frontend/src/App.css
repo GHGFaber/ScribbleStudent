@@ -413,6 +413,28 @@ p {
   float: left;
 }
 
+.the-avatar-pic-link {
+  height: 40px;
+  width: auto;
+  border-radius: 30px;
+  padding: 0px 0px 0px 0px;
+}
+
+.profile-button {
+  position: absolute;
+  display: inline-flex;
+  text-align: right;
+  top: 4px;
+  right: 20px;
+  border-radius: 30px;
+  padding: 0px 0px 0px 0px;
+  border: none;
+}
+
+.profile-button:hover {
+  border: 1px solid #ffff90;
+}
+
 .container-body p {
   padding: 0px 0px 0px 0px;
   margin: 2px;
@@ -580,6 +602,7 @@ p {
   background-color: #b487ba;
 }
 
+/*
 .profile-button {
   position: absolute;
   display: inline-flex;
@@ -592,6 +615,7 @@ p {
   padding: 5px 10px 5px 10px;
   border: none;
 }
+*/
 
 .reset-password {
   display: inline-flex;
