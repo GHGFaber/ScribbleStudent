@@ -87,9 +87,9 @@ function App() {
   });
   */
 
-  useEffect(() => {
-    console.log("app.jsx: notes are: " + JSON.stringify(userNotePages));
-  }, [userNotePages]);
+  // useEffect(() => {
+  //   console.log("app.jsx: notes are: " + JSON.stringify(userNotePages));
+  // }, [userNotePages]);
 
   return (
     <BrowserRouter>

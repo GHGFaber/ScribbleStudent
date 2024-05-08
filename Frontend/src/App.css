@@ -418,7 +418,8 @@ p {
   margin: 2px;
 }
 .container-body {
-  width: 862px;
+  /* width: 862px; */
+  width: 100%;
 }
 
 .container-fluid {
@@ -663,6 +664,7 @@ p {
   width: 100%;
   padding: 10px 0;
   user-select: none;
+  transition: background-color 0.3s ease;
 }
 
 .side-selection h5,
@@ -832,12 +834,22 @@ input[type="file"] {
   padding-right: 20px;
 }
 
-.dispaly-gif {
+.display-gif {
   position: fixed;
   right: 22%;
   bottom: calc((var(--viewport-height) - 738px));
-  padding-right: 20px;
+  /* padding-right: 20px; */
   z-index: 1;
+  border: 1px solid #000000;
+  display: inline-block;
+  border-radius: 5px;
+}
+
+.display-gif-chat {
+  border: 1px solid #000000;
+  display: inline-block;
+  border-radius: 5px;
+  margin-bottom: 3px;
 }
 
 .overlay-button-container button {
@@ -949,26 +961,42 @@ input[type="file"] {
 .the-user-column {
   overflow-y: scroll;
   overflow-x: hidden;
-  max-height: 92%;
-}
-.the-user-column::-webkit-scrollbar {
-  background-color: transparent; /* or add it to the track */
-  display: none;
-  width: 7px;
-  transition: 5s;
-}
-.the-user-column::-webkit-scrollbar:hover {
-  background-color: #c3c3ff; /* or add it to the track */
+  max-height: 94vh;
+  padding-bottom: 5px;
 }
 
-.the-user-column::-webkit-scrollbar-thumb {
-  background: #ffff90;
-  border-radius: 10px;
+/* Styling for Firefox */
+.the-user-column:hover {
+  scrollbar-width: thin;
+  scrollbar-color: #ffff90 transparent;
 }
 
 .column3:hover .the-user-column::-webkit-scrollbar {
   display: contents;
   transition: 5s;
+} 
+
+/* Styling for WebKit browsers (Chrome, Safari, etc.) */
+@media screen and (-webkit-min-device-pixel-ratio:0) {
+  .the-user-column {
+    scrollbar-width: none; /* Hide scrollbar in WebKit browsers */
+  }
+  .the-user-column::-webkit-scrollbar {
+    width: 7px;
+  }
+  .the-user-column::-webkit-scrollbar-thumb {
+    background: #ffff90;
+    border-radius: 10px;
+  }
+  .the-user-column:hover::-webkit-scrollbar-thumb {
+    background: #ffff90; /* Color on hover */
+  }
+  .the-user-column::-webkit-scrollbar-track {
+    background-color: transparent;
+  }
+  .the-user-column:hover::-webkit-scrollbar-track {
+    background-color: #c3c3ff; /* Background color on hover */
+  }
 }
 
 #the-dm-textarea {
