@@ -413,6 +413,28 @@ p {
   float: left;
 }
 
+.the-avatar-pic-link {
+  height: 40px;
+  width: auto;
+  border-radius: 30px;
+  padding: 0px 0px 0px 0px;
+}
+
+.profile-button {
+  position: absolute;
+  display: inline-flex;
+  text-align: right;
+  top: 4px;
+  right: 20px;
+  border-radius: 30px;
+  padding: 0px 0px 0px 0px;
+  border: none;
+}
+
+.profile-button:hover {
+  border: 1px solid #ffff90;
+}
+
 .container-body p {
   padding: 0px 0px 0px 0px;
   margin: 2px;
@@ -581,6 +603,7 @@ p {
   background-color: #b487ba;
 }
 
+/*
 .profile-button {
   position: absolute;
   display: inline-flex;
@@ -593,6 +616,7 @@ p {
   padding: 5px 10px 5px 10px;
   border: none;
 }
+*/
 
 .reset-password {
   display: inline-flex;
@@ -1060,6 +1084,10 @@ input[type="file"] {
   color: #ffff90;
 }
 
+.the-content-dm {
+  height: 1000px;
+}
+
 .profile-info-avatar {
   width: 125px;
   height: auto;
@@ -1077,4 +1105,34 @@ input[type="file"] {
   left: 50%;
   transform: translate(-50%, -50%);
 
+}
+
+.the-current-avatar {
+  border-radius: 50%;
+  display: block;
+  height: 100px;
+  width: auto;
+}
+
+.idle-dm-render {
+  transform: translate(-50%, -50%);
+  left: 50%;
+  top: 40%;
+  position: absolute;
+}
+
+.idle-dm-render h2 {
+  transform: translate(-50%, -50%);
+  left: 65%;
+  top: 115%;
+  width: 500px;
+  position: absolute;
+}
+
+.idle-dm-render p {
+  transform: translate(-50%, -50%);
+  left: 49%;
+  top: 130%;
+  width: 600px;
+  position: absolute;
 }
