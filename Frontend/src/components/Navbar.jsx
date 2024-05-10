@@ -8,6 +8,7 @@ import { useEffect, useState, useRef } from "react";
 import socket from "../components/Socket.jsx";
 import { connect } from "socket.io-client";
 import moment from "moment";
+import avatarPic from "../images/default_pic.png";
 
 //+++++++++++++++++++++++++++++++++
 // 2 SEPARATE INSTANCES OF NAVBAR:
@@ -64,6 +65,18 @@ function Navbar({
     setAddClassModalOpen(false);
   };
 
+  /*
+  // Function to get base64 encoded avatar for user
+  const getAvatarForUser = (userID) => {
+    // Find user in the avatar state by userID
+    const userAvatar = avatarData.find((user) => user.userID === userID);
+    // If user found in avatar state, return the avatar base64 string
+    return userAvatar
+      ? `data:image/png;base64,${userAvatar.avatar}`
+      : avatarPic;
+  };
+  */
+
   const center_offset = {
     left: window.innerWidth / 2,
     top: window.innerHeight / 2,
@@ -87,6 +100,8 @@ function Navbar({
       socket.emit("logout", username);
       // Clear session storage
       sessionStorage.clear();
+      // Clear local storage
+      localStorage.clear();
       window.location.href = "/login-page"; // Navigate to login page
     } catch (error) {
       console.error("Error during logout", error);
@@ -124,6 +139,7 @@ function Navbar({
   };
 
   const fetchUserInfo = async () => {
+    console.log("Initiating user info...");
     try {
       const response = await axios.get(
         `${import.meta.env.VITE_ENDPOINT}/user-info`
@@ -132,6 +148,7 @@ function Navbar({
       // if empty username, set username "Anonymous"
       // console.log("userdata:", response.data);
       setUserData(response.data);
+      console.log("User data for fetch info is: " + JSON.stringify(userData));
     } catch (error) {
       console.log("Error fetching user info:", error);
     }
@@ -335,10 +352,12 @@ function Navbar({
     fetchUserInfo();
     fetchUsername();
     fetchClasses();
-  }, [socket]);
+   
+  }, []);
 
   return (
     <nav>
+      {console.log("User data is: " + JSON.stringify(userData))}
       <div className="the-nav">
         <img className="scrib-emblem" src={logo} alt="Scribble-emblem" />
         <div className="class-buttons">
@@ -383,11 +402,14 @@ function Navbar({
             )}
           </ul>
         </div>
+        {console.log("user data again is " + JSON.stringify(userData))}
         <Popup
           ref={popupRef} // assign ref to popup
           className="signout-button-popup"
           trigger={
-            <button className="profile-button my-auto">{username}</button>
+            <button className="profile-button my-auto">
+              <img src={userData.length !== 0 && userData[0].avatar ? `data:image/png;base64,${userData[0].avatar}` : avatarPic} className="the-avatar-pic-link" alt="user-avatar-picture"/>
+            </button>
           }
           position="bottom right"
         >

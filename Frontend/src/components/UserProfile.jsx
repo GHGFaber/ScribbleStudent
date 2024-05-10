@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useState } from "react";
 import { Modal, Box } from "@mui/material";
 import axios from "axios";
+import avatarPic from "../images/default_pic.png";
 
 // allows the user to view their information in a popup
 function UserProfile({ userData, isActive, callback }) {
@@ -97,6 +98,7 @@ function UserProfile({ userData, isActive, callback }) {
           >
             <Box id="user-profile-box">
               <div className="user-profile-content">
+                <img className="the-current-avatar" src={userData[0].avatar ? `data:image/png;base64,${userData[0].avatar}` : avatarPic} alt="user-avatar"/>
                 {/* <h4>
                   {userData[0].firstName} {userData[0].lastName}
                 </h4> */}

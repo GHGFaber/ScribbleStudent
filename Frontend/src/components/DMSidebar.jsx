@@ -4,7 +4,9 @@ import axios from "axios";
 import socket from "../components/Socket.jsx";
 import avatarPic from "../images/default_pic.png";
 import AddFriend from "./AddFriend.jsx";
-
+// DMSidebar.jsx
+// Sidebar within Direct Message page containing add friend function
+// and all user's friends
 function DMSidebar({
   handleFriendChange,
   setChats,
@@ -15,11 +17,9 @@ function DMSidebar({
   setFriendInfo,
   userData,
 }) {
-  // Problem: what users are supposed to be here?
-  // Look into the possibility of adding friends like how
-  // it is implemented in Discord...
-
+  
   const [listOfFriends, setListOfFriends] = useState([]);
+  // Boolean that is used to toggle rendering of Add Friend component
   const [addFriendIsOn, setAddFriendIsOn] = useState(false);
 
   useEffect(() => {
@@ -47,6 +47,7 @@ function DMSidebar({
       // Get message data for room
       const friendID = userData;
       setFriendInfo(friendID);
+      // matches DM ID with the provided friend ID
       const response1 = await axios.post(
         `${import.meta.env.VITE_ENDPOINT}/match-dm-ids`,
         {
@@ -57,6 +58,7 @@ function DMSidebar({
       console.log("DMSidebar: the response is: " + JSON.stringify(response1));
       const theDM = response1.data.dmID;
 
+      // loads direct messages between user and friend
       const response2 = await axios.post(
         `${import.meta.env.VITE_ENDPOINT}/direct_messages`,
         {
@@ -81,13 +83,10 @@ function DMSidebar({
       // Clear chat
       setDirectChats([]);
       setDirectChats(messageData);
-
-      // console.log("class: ", room);
-      // console.log("dmID: ", theDM);
-      // console.log("Room is... " + room);
     }
   }
 
+  // grab all friends of user
   async function retrieve_friend_list() {
     try {
       console.log("retrieving friends...");
@@ -101,6 +100,9 @@ function DMSidebar({
       }));
       setListOfFriends(formattedListOfFriends);
 
+      // set default friend (first one on the list)
+      // match their ID with DM ID and load all messages
+      // with them
       if (formattedListOfFriends.length > 0) {
         const firstFriendID = formattedListOfFriends[0].userID;
         setFriendInfo(firstFriendID);
@@ -137,9 +139,6 @@ function DMSidebar({
     } catch (error) {
       console.error("Error retrieving friend list: " + error);
     }
-    // retrieve DM room for first friend in list
-
-    // in the map, call the dm match endpoint to retrieve the dmID of the friend
   }
 
   return (

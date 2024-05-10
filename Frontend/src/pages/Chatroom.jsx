@@ -37,7 +37,7 @@ function Chatroom({
   friendInfo,
   setFriendInfo,
 }) {
-  console.log("YOOOO", room);
+  // console.log("YOOOO", room);
   // Message State
   const [message, setMessage] = useState(null);
   // Typing State
@@ -49,8 +49,11 @@ function Chatroom({
   const [selectedGif, setSelectedGif] = useState(null);
   const [gifs, setGifs] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const giphyFetch = new GiphyFetch("7nPk2WhT8IBxootuOo954A0bpDpESPac");
+  // const giphyFetch = new GiphyFetch("7nPk2WhT8IBxootuOo954A0bpDpESPac"); // SDK
+  const giphyFetch = new GiphyFetch("I8oisuSvgC1h3zzTR5ebvLRdOZcTnUQV"); // API
   const gifPopupRef = useRef(null);
+
+
 
   useEffect(() => {
     // Event listener to detect clicks outside popup
@@ -67,6 +70,7 @@ function Chatroom({
   }, []);
 
   const fetchTrendingGifs = async () => {
+    // const { data } = await giphyFetch.trending();
     const { data } = await giphyFetch.trending();
     setGifs(data);
   };
@@ -189,7 +193,11 @@ function Chatroom({
                   <p className="full-datetime">{get_time(chat.timestamp)}</p>
                   <p className="user-text">{chat.username}</p>
                   <p className="text-content">{chat.text}</p>
-                  {chat.gif !== null && <img src={chat.gif} />}
+                    {chat.gif !== null && (
+                    <div className="display-gif-chat">
+                      <img src={chat.gif} />
+                    </div>
+                    )}
                 </div>
               </div>
             </div>
@@ -404,7 +412,7 @@ function Chatroom({
                   {/* Added functionality for submitting */}
                   {selectedGif && selectedGif.length !== 0 && (
                     <img
-                      className="dispaly-gif"
+                      className="display-gif"
                       src={selectedGif.images.fixed_height.url}
                       alt="Selected GIF"
                     />

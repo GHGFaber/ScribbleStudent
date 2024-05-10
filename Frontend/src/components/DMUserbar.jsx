@@ -24,7 +24,8 @@ function DMUserbar({
 
   useEffect(() => {
     fetch_the_friend_info();
-  }, []);
+    console.log("profile info is " + JSON.stringify(profileInfo1));
+  }, [])
 
   /*
   useEffect(() => {
@@ -150,11 +151,7 @@ function DMUserbar({
   return (
     <div>
       {console.log("Info is " + profileInfo1.username)}
-      {profileInfo1
-        ? showProfileInfo()
-        : console.log(
-            "WARNING: The function did not run: PInfo: " + profileInfo1
-          )}
+      {profileInfo1 && profileInfo1.username != null ? showProfileInfo() : ''}
     </div>
   );
 }
