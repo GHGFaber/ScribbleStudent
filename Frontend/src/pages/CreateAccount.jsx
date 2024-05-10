@@ -52,7 +52,6 @@ function CreateAccount() {
         setnotUniqueUser(true);
       }
     } catch (error) {
-      console.error("Error during login", error);
       //   let errorMSG = document.getElementsByClassName("err-msg-2");
     }
   };
