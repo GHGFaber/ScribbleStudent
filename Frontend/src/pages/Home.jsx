@@ -92,9 +92,6 @@ function Home() {
                   miss a beat when studying.
                 </p>
               </div>
-              <a href="#top">
-                <button className="return-top">Return to Top</button>
-              </a>
             </div>
           </div>
         </div>
