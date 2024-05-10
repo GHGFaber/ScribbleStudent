@@ -16,7 +16,10 @@ function DMUserbar({
   setProfileInfo,
 }) {
   let userData = "";
+  let mutualClasses = [];
   const [profileInfo1, setProfileInfo1] = useState([]);
+  const [theMutualClasses, setTheMutualClasses] = useState([]);
+
   let theFriendInfo = "";
   const [doTheyHaveFriends, setDoTheyHaveFriends] = useState(true);
   // Grab username object from session storage
@@ -26,20 +29,6 @@ function DMUserbar({
     fetch_the_friend_info();
     console.log("profile info is " + JSON.stringify(profileInfo1));
   }, [])
-
-  /*
-  useEffect(() => {
-    socket.on("dmFriendInfo", (information) => {
-      // get the friend info here...
-      // Sephiroth!!!!!
-      setProfileInfo1(information);
-    });
-
-    return () => {
-      socket.off("dmFriendInfo");
-    };
-  }, [socket])
-  */
 
   useEffect(() => {
     console.log("This had been modified: friendInfo");
@@ -81,6 +70,17 @@ function DMUserbar({
     theFriendInfo = formattedInfo[0];
     setProfileInfo1(formattedInfo[0]);
 
+    console.log("friendId for mutual classes is: " + friendID);
+    const response2 = await axios.post(`${import.meta.env.VITE_ENDPOINT}/get-mutual-classes`, {
+      friendID: friendID
+    });
+
+    console.log("response2 is: " + JSON.stringify(Object.values(response2.data)));
+    mutualClasses = response2.data;
+    console.log(JSON.stringify(mutualClasses));
+    setTheMutualClasses(mutualClasses);
+    
+
     console.log(
       "Where have you gone, " + JSON.stringify(profileInfo1.classes) + "?"
     );
@@ -108,12 +108,13 @@ function DMUserbar({
         <h5>{profileInfo1.username}</h5>
         <b>Email</b>
         <h5>{profileInfo1.email}</h5>
-        <b>Classes</b>
-        {profileInfo1.classes ? (
+        <b>Mutual Classes</b>
+        {console.log(mutualClasses)}
+        {theMutualClasses ? (
           <ul>
-            {profileInfo1.classes.map((classInSchool, index) => (
+            {theMutualClasses.map((classInSchool, index) => (
               <li key={index}>
-                <label>{classInSchool}</label>
+                <label>{classInSchool.className}</label>
               </li>
             ))}
           </ul>

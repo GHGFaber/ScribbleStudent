@@ -1123,6 +1123,44 @@ app.post("/get-friend-info", async (req, res) => {
     res.status(500).send("Internal server error");
   }
 });
+
+// grabs the classes shared by both the user and friend
+app.post("/get-mutual-classes", async (req, res) => {
+  try {
+    // extract friend ID
+    const { friendID } = req.body;
+    const userID = req.session.userid;
+    console.log("get-mutual-classes: friendID is " + JSON.stringify(friendID));
+
+    // Query the database to retrieve user information based on friend ID
+    const [userData] = await pool.query(
+      `select distinct classes.className as className
+       from classList as firstList
+       cross join (select distinct * from classList) as secondList
+       on firstList.classID = secondList.classID
+       cross join classes
+       on firstList.classID = classes.classID
+       where firstList.userID = ?
+       and secondList.userID = ?;`,
+      [userID, friendID]
+    );
+
+    console.log(JSON.stringify(userData) + ": length " + userData.length);
+
+    if (userData.length !== 0) {
+      console.log("Mutual classes successfully sent");
+      // User data found, send user information to the frontend
+      res.json(userData);
+    } else {
+      // User not found in the database
+      res.status(404).send("User not found");
+    }
+  } catch (error) {
+    // Error occurred while fetching user information
+    console.error("Error fetching mutual classes:", error);
+    res.status(500).send("Internal server error");
+  }
+});
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // END OF DIRECT MESSAGE ENDPOINTS
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
