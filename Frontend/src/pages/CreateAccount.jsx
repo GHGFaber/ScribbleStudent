@@ -16,6 +16,8 @@ function CreateAccount() {
   const [profileData, setProfileData] = useState();
   const [cropped, setCropped] = useState(false);
   const navigate = useNavigate();
+  const [passIncorrect, setPassIncorrect] = useState(false);
+  const [notUniqueUser, setnotUniqueUser] = useState(false);
 
   const formData = {
     cropper: useRef(null),
@@ -28,6 +30,10 @@ function CreateAccount() {
     event.preventDefault();
     console.log("hi");
     try {
+      setPassIncorrect(false);
+      if (formData.password.current.value.length < 8) {
+        setPassIncorrect(true);
+      }
       const response = await axios.post(
         `${import.meta.env.VITE_ENDPOINT}/create-account`,
         {
@@ -41,8 +47,9 @@ function CreateAccount() {
       if (response.data.success) {
         // Redirect to the LoggedInComponent
         navigate("/login-page");
+        setnotUniqueUser(false);
       } else {
-        alert("error!");
+        setnotUniqueUser(true);
       }
     } catch (error) {
       console.error("Error during login", error);
@@ -181,7 +188,7 @@ function CreateAccount() {
               name="croppedimg"
             />
             <br />
-            <p id="uname-create-text">Create Username</p>
+            <p id="uname-create-text">Username</p>
             <input
               type="text"
               className="cr-in"
@@ -190,7 +197,7 @@ function CreateAccount() {
               ref={formData.username}
             />
             <div className="spacer-0"></div>
-            <p id="ps-create-text">Create Password</p>
+            <p id="ps-create-text">Password</p>
             <input
               type="password"
               className="cr-in"
@@ -219,6 +226,16 @@ function CreateAccount() {
               </button>
             )}
           </Link>
+          {passIncorrect == true && (
+            <p style={{ margin: 10, padding: 10 }}>
+              Password is too short. Please make sure it is 8 characters long.
+            </p>
+          )}
+          {notUniqueUser == true && (
+            <p style={{ margin: 10, padding: 10 }}>
+              Username or email already exists. Please choose a different one.
+            </p>
+          )}
           <div className="spacer-0"></div>
           <Link to="/login-page">Have an account? Log In!</Link>
           <div className="spacer-0"></div>
