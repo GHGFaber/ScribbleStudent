@@ -357,7 +357,7 @@ function Navbar({
 
   return (
     <nav>
-      {console.log("User data is: " + JSON.stringify(userData))}
+      {/*console.log("User data is: " + JSON.stringify(userData))*/}
       <div className="the-nav">
         <img className="scrib-emblem" src={logo} alt="Scribble-emblem" />
         <div className="class-buttons">
@@ -402,7 +402,7 @@ function Navbar({
             )}
           </ul>
         </div>
-        {console.log("user data again is " + JSON.stringify(userData))}
+        {/*console.log("user data again is " + JSON.stringify(userData))*/}
         <Popup
           ref={popupRef} // assign ref to popup
           className="signout-button-popup"
